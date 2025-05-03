@@ -1,0 +1,986 @@
+github_issues:
+  project_name: DeepRead
+  version: 1.0 # Based on Agile Requirements List v2.0
+  date: 2025-05-03
+
+  proposed_milestones:
+    - "MVP Foundation"
+    - "MVP Pipeline"
+    - "MVP Library & Search"
+    - "MVP Core QA"
+    - "MVP Release"
+    - "Cross-Document QA"
+    - "Utilities (Extract/Summarize)"
+    - "Library Enhancements (Folders, etc.)"
+    - "Feedback & Improvement Enhancements"
+    - "Settings Enhancements"
+    - "NFR Enhancements (Performance, Security)"
+
+  proposed_labels:
+    type:
+      - "type:user-story"
+      - "type:technical-task"
+      - "type:spike"
+      - "type:bug"
+      - "type:chore"
+      - "type:refactoring"
+      - "type:test"
+      - "type:documentation"
+    layer:
+      - "layer:domain"
+      - "layer:usecase"
+      - "layer:adapter-ui"
+      - "layer:adapter-db"
+      - "layer:adapter-search"
+      - "layer:adapter-ai"
+      - "layer:adapter-external"
+      - "layer:adapter-notification"
+      - "layer:infrastructure"
+      - "layer:architecture"
+      - "layer:legal" # Added for legal tasks
+      - "layer:application-wide" # Added for cross-cutting concerns like logging
+      - "layer:development-process" # Added for process-related tasks like CI/CD setup
+      - "layer:testing" # Added for testing specific tasks
+    feature_epic:
+      - "feature:auth"
+      - "feature:pipeline"
+      - "feature:library"
+      - "feature:qa"
+      - "feature:extract-summ"
+      - "feature:feedback"
+      - "feature:settings"
+      - "feature:nfr"
+      - "epic:EPIC-FOUNDATION"
+      - "epic:EPIC-PIPELINE"
+      - "epic:EPIC-LIBRARY"
+      - "epic:EPIC-QA-CORE"
+      - "epic:EPIC-UTILITIES"
+      - "epic:EPIC-FEEDBACK-LOOP"
+      - "epic:EPIC-SETTINGS"
+      - "epic:EPIC-ARCH-NFR"
+    principle:
+      - "TDD"
+      - "DDD"
+      - "CleanArchitecture"
+      - "Accessibility" # Added for accessibility tasks
+    priority:
+      - "priority:high"
+      - "priority:medium"
+      - "priority:low"
+    status:
+      - "status:todo"
+      - "status:in-progress"
+      - "status:review"
+      - "status:done"
+      - "status:blocked"
+      - "status:needs-discussion"
+    other:
+      - "MVP"
+      - "needs-refinement"
+
+  issues:
+    - id: ISSUE-001
+      title: "[UserStory] 新規ユーザ登録機能のバックエンド実装 (US-AUTH-001)"
+      description: |
+        ユーザーストーリー US-AUTH-001 のバックエンド処理を実装する。
+        > 初めてDeepReadを使うユーザ として、メールアドレスとパスワードで安全にアカウント登録したい。それは、自分のライブラリをパーソナルな空間として利用するためだ。
+      tasks:
+        - "[ ] `UserAccount` ドメインエンティティ/集約の定義（`User` ID, Email, HashedPassword等） (`layer:domain`, `DDD`)"
+        - "[ ] `RegisterUser` ユースケース（Interactor）のインターフェースと実装（入力バリデーション、パスワードハッシュ化、ドメインイベント発行） (`layer:usecase`, `CleanArchitecture`)"
+        - "[ ] `UserRepository` インターフェース定義 (`layer:usecase`)"
+        - "[ ] （TDD）`UserAccount` ドメインモデルの単体テスト (`type:test`, `layer:domain`, `TDD`)"
+        - "[ ] （TDD）`RegisterUser` ユースケースの単体テスト (`type:test`, `layer:usecase`, `TDD`)"
+      acceptance_criteria:
+        - サインアップページにメールアドレス、パスワード、パスワード確認の入力フィールドが表示される。 # UI側のACだが参考として
+        - 有効なメールアドレス形式、最低限のパスワード強度（例: 8文字以上）がクライアントサイド/サーバーサイドで検証される。
+        - パスワードとパスワード確認が一致しない場合、エラーが表示される。
+        - 既に登録済みのメールアドレスを入力した場合、エラーが表示される。
+        - 有効な情報を入力し登録ボタンを押すと、アカウントが作成され、パスワードはハッシュ化されて保存される。
+        - 登録後、自動的にログイン状態となり、ライブラリ画面にリダイレクトされる。
+        - 関連する単体テストが全て成功すること。
+      related_requirements: [US-AUTH-001]
+      dependencies: [TASK-SEC-001, TASK-AUTH-DB-ADAPTER, ISSUE-AUTH-UI] # Dependencies refer to other Issue IDs (placeholders for now)
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:domain, layer:usecase, epic:EPIC-FOUNDATION, MVP, priority:high, TDD, DDD]
+    - id: ISSUE-002
+      title: "[TechnicalTask] UserAccount DBアダプタの実装 (US-AUTH-001, US-AUTH-002関連)"
+      description: "`UserRepository` インターフェースを実装し、`UserAccount` 集約をPostgreSQLに永続化するアダプタを作成する。"
+      tasks:
+        - "[ ] Djangoモデル (`User`) の定義とマイグレーション作成 (`layer:adapter-db`)"
+        - "[ ] `UserRepository` のPostgreSQL実装クラス作成 (`layer:adapter-db`)"
+        - "[ ] ユーザ情報の保存、メールアドレスによる検索、IDによる検索処理の実装 (`layer:adapter-db`)"
+        - "[ ] （TDD）リポジトリ実装の結合テスト作成 (`type:test`, `layer:adapter-db`, `TDD`)"
+      acceptance_criteria:
+        - "`UserRepository` インターフェースの仕様を満たすこと。"
+        - "作成したテストがすべて成功すること。"
+      related_requirements: [US-AUTH-001, US-AUTH-002]
+      dependencies: [] # Assumes DB connection is set up
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, chore, layer:adapter-db, epic:EPIC-FOUNDATION, MVP, priority:high, TDD]
+    - id: ISSUE-003
+      title: "[UserStory] ユーザ登録UIの実装 (US-AUTH-001関連)"
+      description: |
+        ユーザーストーリー US-AUTH-001 のためのサインアップ画面UIを実装する。
+        `RegisterUser` ユースケースを呼び出す。
+      tasks:
+        - "[ ] サインアップページのHTMLテンプレート/コンポーネント作成 (`layer:adapter-ui`)"
+        - "[ ] フォーム入力のクライアントサイドバリデーション実装 (`layer:adapter-ui`)"
+        - "[ ] フォーム送信時に `RegisterUser` ユースケースを呼び出すビュー/コントローラ処理実装 (`layer:adapter-ui`)"
+        - "[ ] ユースケース実行結果（成功・エラー）に応じた画面表示（リダイレクト、エラーメッセージ表示）処理実装 (`layer:adapter-ui`)"
+        - "[ ] （TDD）UIコンポーネントのテスト作成（可能であれば） (`type:test`, `layer:adapter-ui`)"
+      acceptance_criteria:
+        - "ユーザが画面から有効な情報を入力し登録ボタンを押下すると、ライブラリ画面にリダイレクトされること。"
+        - "不正な入力（メール形式、パスワード強度、重複メアド等）時には、対応するエラーメッセージが画面に表示されること。"
+      related_requirements: [US-AUTH-001]
+      dependencies: [ISSUE-001] # Depends on backend implementation
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:adapter-ui, epic:EPIC-FOUNDATION, MVP, priority:medium]
+    - id: ISSUE-004
+      title: "[UserStory] ログイン機能のバックエンド実装 (US-AUTH-002)"
+      description: |
+        ユーザーストーリー US-AUTH-002 のバックエンド処理を実装する。
+        > 登録済みのユーザ として、メールアドレスとパスワードでシステムにログインしたい。それは、自分のライブラリにアクセスするためだ。
+      tasks:
+        - "[ ] `LoginUser` ユースケース（Interactor）のインターフェースと実装（認証処理、セッション生成） (`layer:usecase`)"
+        - "[ ] パスワード検証ロジック（ハッシュ比較） (`layer:usecase`, `layer:domain`)"
+        - "[ ] 認証成功時のセッション管理（例: Django session） (`layer:infrastructure`)"
+        - "[ ] （TDD）`LoginUser` ユースケースの単体テスト (`type:test`, `layer:usecase`, `TDD`)"
+      acceptance_criteria:
+        - 登録済みのメールアドレスと正しいパスワードで認証が成功すること。
+        - 認証失敗時にはエラーが返されること。
+        - 認証成功時にはセッションが開始されること。
+        - 関連する単体テストが成功すること。
+      related_requirements: [US-AUTH-002]
+      dependencies: [ISSUE-001, ISSUE-002] # Depends on registration and DB adapter
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:usecase, layer:domain, layer:infrastructure, epic:EPIC-FOUNDATION, MVP, priority:high, TDD]
+    - id: ISSUE-005
+      title: "[UserStory] ログインUIの実装 (US-AUTH-002)"
+      description: ユーザーストーリー US-AUTH-002 のためのログイン画面UIを実装する。`LoginUser` ユースケースを呼び出す。
+      tasks:
+        - "[ ] ログインページのHTMLテンプレート/コンポーネント作成 (`layer:adapter-ui`)"
+        - "[ ] フォーム送信時に `LoginUser` ユースケースを呼び出すAPIリクエスト処理実装 (`layer:adapter-ui`)"
+        - "[ ] API応答（成功・エラー）に応じた画面表示（リダイレクト、エラーメッセージ表示）処理実装 (`layer:adapter-ui`)"
+        - "[ ] （TDD）UIコンポーネントのテスト作成（可能であれば） (`type:test`, `layer:adapter-ui`)"
+      acceptance_criteria:
+        - ユーザが正しい認証情報を入力しログインボタンを押すと、ライブラリ画面にリダイレクトされること。
+        - 不正な認証情報の場合、エラーメッセージが表示されること。
+      related_requirements: [US-AUTH-002]
+      dependencies: [ISSUE-004] # Depends on backend implementation
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:adapter-ui, epic:EPIC-FOUNDATION, MVP, priority:medium]
+    - id: ISSUE-006
+      title: "[UserStory] パスワードリセット機能のバックエンド実装 (US-AUTH-003)"
+      description: |
+        ユーザーストーリー US-AUTH-003 のバックエンド処理を実装する。パスワードリセット要求を受け付け、トークンを生成し、メールを送信し、パスワードを更新する。
+        > パスワードを忘れたユーザ として、メールで指示を受け取りパスワードを再設定したい。それは、アカウントへのアクセスを回復するためだ。
+      tasks:
+        - "[ ] パスワードリセットトークン生成・検証ロジック実装 (`layer:usecase`, `layer:domain`)"
+        - "[ ] `RequestPasswordReset` ユースケース実装（メールアドレス検証、トークン生成、メール送信トリガー） (`layer:usecase`)"
+        - "[ ] `ResetPassword` ユースケース実装（トークン検証、パスワード強度検証、パスワード更新） (`layer:usecase`)"
+        - "[ ] リセットトークンの保存・管理（有効期限含む） (`layer:domain`, `layer:adapter-db`)"
+        - "[ ] メール送信処理呼び出し (`layer:usecase` -> `adapter-notification`) - **Depends on: `TASK-INFRA-01`**"
+        - "[ ] （TDD）関連ユースケース、ドメインロジックの単体テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 登録済みメールアドレスに対しリセット要求があると、トークンが生成・保存され、メール送信がトリガーされること。
+        - 有効なトークンと新しいパスワードでリセットを実行すると、パスワードが更新されること。
+        - 無効なメールアドレス、期限切れ/無効トークン、弱いパスワードの場合はエラーとなること。
+        - 関連する単体テストが成功すること。
+      related_requirements: [US-AUTH-003]
+      dependencies: [TASK-INFRA-01, TASK-AUTH-DB-ADAPTER, ISSUE-PWRESET-UI] # TASK-AUTH-DB-ADAPTER is likely ISSUE-002, ISSUE-PWRESET-UI is likely ISSUE-007
+      milestone: "MVP Foundation" # Or subsequent
+      labels: [type:user-story, feature:auth, layer:usecase, layer:domain, layer:adapter-db, layer:adapter-notification, epic:EPIC-FOUNDATION, priority:medium, TDD]
+    - id: ISSUE-007
+      title: "[UserStory] パスワードリセットUIの実装 (US-AUTH-003)"
+      description: ユーザーストーリー US-AUTH-003 のためのUI（リクエスト画面、パスワード再設定画面）を実装する。
+      tasks:
+        - "[ ] パスワードリセット要求フォームUI作成 (`layer:adapter-ui`)"
+        - "[ ] 新パスワード設定フォームUI作成 (`layer:adapter-ui`)"
+        - "[ ] 各フォーム送信時に対応するバックエンド処理を呼び出す (`layer:adapter-ui`)"
+        - "[ ] 結果に応じた画面表示（成功メッセージ、エラーメッセージ） (`layer:adapter-ui`)"
+        - "[ ] （TDD）UIコンポーネントテスト（可能であれば） (`type:test`)"
+      acceptance_criteria:
+        - ユーザがメールアドレスを入力してリセット要求を送信できること。
+        - ユーザがメールのリンクからパスワード再設定ページにアクセスし、新しいパスワードを設定できること。
+        - 各ステップで適切なフィードバック（メール送信通知、成功、エラー）が表示されること。
+      related_requirements: [US-AUTH-003]
+      dependencies: [ISSUE-006] # Depends on backend implementation
+      milestone: "MVP Foundation" # Or subsequent
+      labels: [type:user-story, feature:auth, layer:adapter-ui, epic:EPIC-FOUNDATION, priority:medium]
+    - id: ISSUE-008
+      title: "[UserStory] 利用規約・プライバシーポリシー同意機能のバックエンド実装 (US-LEGAL-001)"
+      description: |
+        ユーザーストーリー US-LEGAL-001 のバックエンド処理を実装する。利用規約・ポリシーのバージョン管理とユーザの同意状況を記録・検証する。
+        > DeepReadを利用するユーザ として、サービス利用前に利用規約とプライバシーポリシーを確認し、同意したい。それは、サービスの利用条件とデータの扱い（AI学習への不使用を含む）について理解し、納得して利用するためだ。
+      tasks:
+        - "[ ] 利用規約・ポリシーのバージョン管理方法定義（例: DBテーブル、設定ファイル） (`layer:domain`, `layer:infrastructure`)"
+        - "[ ] `TermsAgreement` 値オブジェクト（またはエンティティ）の更新 (`layer:domain`)"
+        - "[ ] ユーザ登録時およびログイン時に同意状況をチェックするロジック (`layer:usecase`)"
+        - "[ ] 同意状況をDBに保存・更新する処理 (`layer:usecase` -> `adapter-db`)"
+        - "[ ] （TDD）同意状況チェック、記録ロジックの単体テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザの最新の同意バージョンと日時がDBに記録されること。
+        - 未同意または古いバージョンに同意しているユーザに対して、システムが適切にアクセス制御（または再同意要求）を行えること。
+        - 関連する単体テストが成功すること。
+      related_requirements: [US-LEGAL-001]
+      dependencies: [US-AUTH-001, US-AUTH-002, TASK-LEGAL-01] # US-AUTH-001 is ISSUE-001, US-AUTH-002 is ISSUE-004, TASK-LEGAL-01 is ISSUE-031
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:usecase, layer:domain, layer:adapter-db, epic:EPIC-FOUNDATION, MVP, priority:medium, TDD]
+    - id: ISSUE-009
+      title: "[UserStory] 利用規約・プライバシーポリシー同意UIの実装 (US-LEGAL-001)"
+      description: ユーザーストーリー US-LEGAL-001 のためのUIを実装する。利用規約・ポリシーの表示、同意チェックボックス、および更新時の再同意要求を行う。
+      tasks:
+        - "[ ] サインアップ画面に規約リンクと同意チェックボックスを配置 (`layer:adapter-ui`)"
+        - "[ ] ログイン時に未同意/更新がある場合に、規約表示と同意要求モーダル等を表示する処理 (`layer:adapter-ui`)"
+        - "[ ] 同意アクション実行時にバックエンド処理を呼び出す (`layer:adapter-ui`)"
+        - "[ ] （TDD）UIコンポーネントテスト（可能であれば） (`type:test`)"
+      acceptance_criteria:
+        - 新規登録時に同意チェックが必須となること。
+        - 規約更新時にログインユーザに再同意が要求されること。
+        - 同意後に通常利用が可能になること。
+      related_requirements: [US-LEGAL-001]
+      dependencies: [ISSUE-008] # Depends on backend implementation
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:adapter-ui, epic:EPIC-FOUNDATION, MVP, priority:medium]
+    - id: ISSUE-010
+      title: "[UserStory] PDFアップロードUIの実装 (US-UPLOAD-001)"
+      description: |
+        ユーザーストーリー US-UPLOAD-001 のためのUIを実装する。
+        > DeepReadのユーザ として、自分のコンピュータからPDFドキュメントをシステムに簡単に追加したい。それは、後でシステム上でその内容を活用するためだ。
+      tasks:
+        - "[ ] ライブラリ画面に「アップロード」ボタンを追加 (`layer:adapter-ui`)"
+        - "[ ] ファイル選択ダイアログ表示とPDFファイル選択処理 (`layer:adapter-ui`)"
+        - "[ ] ファイルサイズ等のクライアントサイドバリデーション（任意） (`layer:adapter-ui`)"
+        - "[ ] 選択されたファイルをバックエンドAPIに送信する処理 (`layer:adapter-ui`)"
+        - "[ ] アップロード中のプログレス表示 (`layer:adapter-ui`)"
+        - "[ ] バックエンドからの応答（成功、エラー）に応じたUI表示 (`layer:adapter-ui`)"
+      acceptance_criteria:
+        - ユーザがアップロードボタンからPDFファイルを選択し、アップロードを実行できること。
+        - アップロード中は進捗が表示されること。
+        - ファイル制限を超える場合はエラーが表示されること。
+        - アップロード成功後、処理開始がユーザに通知されること（例: ライブラリに「処理中」表示）。
+      related_requirements: [US-UPLOAD-001]
+      dependencies: [ISSUE-011] # Depends on backend endpoint
+      milestone: "MVP Pipeline"
+      labels: [type:user-story, feature:pipeline, layer:adapter-ui, epic:EPIC-PIPELINE, MVP, priority:medium]
+    - id: ISSUE-011
+      title: "[UserStory] PDFアップロード機能のバックエンド実装 (US-UPLOAD-001, US-PIPE-001関連)"
+      description: |
+        ユーザーストーリー US-UPLOAD-001, US-PIPE-001 のバックエンド処理を実装する。PDFを受け取り、ファイルストレージに保存し、非同期解析パイプラインをトリガーする。
+      tasks:
+        - "[ ] PDFファイルアップロードを受け付けるAPIエンドポイント/ビュー実装 (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] アップロードファイルのバリデーション（ファイル形式、サイズ、ページ数[ユーザ設定値に基づく]） (`layer:usecase`)"
+        - "[ ] ファイルを永続ストレージ（例: S3, ローカルストレージ）に保存する処理 (`layer:adapter-infrastructure`)"
+        - "[ ] `Document` エンティティを作成し、初期ステータス（例: `Uploaded`）でDBに保存 (`layer:usecase`, `layer:domain`, `layer:adapter-db`)"
+        - "[ ] 非同期処理キュー（Celery等）にPDF解析タスクを投入する処理 (`layer:usecase`, `layer:adapter-infrastructure`)"
+        - "[ ] （TDD）関連するユースケース、ドメインロジックの単体テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 制限内のPDFファイルが正常にアップロードされ、ストレージに保存され、DBにドキュメントレコードが作成されること。
+        - 制限外のファイルはエラーとなること。
+        - 非同期解析タスクがキューに投入されること。
+        - 関連する単体テストが成功すること。
+      related_requirements: [US-UPLOAD-001, US-PIPE-001]
+      dependencies: [US-SETTINGS-001, TASK-INFRA-03, TASK-STORAGE-01, ISSUE-LIB-DB-ADAPTER] # Needs User Settings, Async Infra, Storage, Library DB Adapter
+      milestone: "MVP Pipeline"
+      labels: [type:user-story, feature:pipeline, layer:usecase, layer:domain, layer:adapter-infrastructure, layer:adapter-db, epic:EPIC-PIPELINE, MVP, priority:high, TDD]
+    - id: ISSUE-012
+      title: "[UserStory] PDF解析ステータス表示UI (US-PIPE-001)"
+      description: |
+        ユーザーストーリー US-PIPE-001 のためのUIを実装する。ライブラリ画面でドキュメントの解析ステータスと進捗を表示する。
+        > DeepReadのユーザ として、アップロードしたPDFがバックグラウンドで自動的に解析され、内容が抽出・準備されることを知りたい。それは、いつからドキュメントを活用できるか見通しを立てるためだ。
+      tasks:
+        - "[ ] ライブラリ一覧の各ドキュメントにステータス（処理中, 準備完了, エラー）を表示するUI実装 (`layer:adapter-ui`)"
+        - "[ ] 「処理中」の場合、進捗を示す表示（例: 簡易メッセージ、プログレスバー）を実装 (`layer:adapter-ui`)"
+        - "[ ] バックエンドからのステータス更新をポーリングまたはWebSocket等で検知し、UIに反映する仕組み (`layer:adapter-ui`, `layer:infrastructure`)"
+      acceptance_criteria:
+        - アップロード直後のドキュメントは「処理中」と表示されること。
+        - 解析完了後は「準備完了」と表示されること。
+        - 解析エラー時は「エラー」と表示されること。
+        - 処理中の進捗が適切に表示されること（MVPでは簡易でも可）。
+      related_requirements: [US-PIPE-001]
+      dependencies: [ISSUE-011, TASK-PIPE-01] # Depends on backend pipeline status update
+      milestone: "MVP Pipeline"
+      labels: [type:user-story, feature:pipeline, layer:adapter-ui, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:medium]
+    - id: ISSUE-013
+      title: "[UserStory] ライブラリ一覧表示UIの実装 (US-LIB-001)"
+      description: |
+        ユーザーストーリー US-LIB-001 のためのUIを実装する。
+        > DeepReadのユーザ として、アップロードしたドキュメントをライブラリで一覧表示したい。それは、自分が管理しているドキュメントを俯瞰し、目的のドキュメントを見つけやすくするためだ。
+      tasks:
+        - "[ ] ライブラリ画面の基本レイアウト作成 (`layer:adapter-ui`)"
+        - "[ ] ドキュメント一覧を取得するAPI呼び出しと表示処理 (`layer:adapter-ui` -> `usecase`)"
+        - "[ ] 各ドキュメントの情報（サムネイル、タイトル、ファイル名、更新日時、ステータス）表示コンポーネント作成 (`layer:adapter-ui`)"
+        - "[ ] 一覧表示/サムネイル表示切り替え機能 (`layer:adapter-ui`)"
+        - "[ ] ページネーションまたは無限スクロール実装 (`layer:adapter-ui`)"
+      acceptance_criteria:
+        - ログイン後、ライブラリ画面に自身のドキュメント一覧が表示されること。
+        - 表示形式を切り替えられること。
+        - 多数のドキュメントがある場合にページ遷移またはスクロールで続きを読み込めること。
+      related_requirements: [US-LIB-001]
+      dependencies: [ISSUE-004, ISSUE-LIB-BACKEND] # Depends on login and backend for fetching library
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:adapter-ui, epic:EPIC-LIBRARY, MVP, priority:medium]
+    - id: ISSUE-014
+      title: "[UserStory] ライブラリ一覧取得バックエンド実装 (US-LIB-001)"
+      description: ユーザーストーリー US-LIB-001 のためのバックエンドAPIを実装する。ユーザのライブラリ内のドキュメント情報を取得する。
+      tasks:
+        - "[ ] `GetLibraryDocuments` ユースケース（Interactor）のインターフェースと実装（ページネーション、ソート含む） (`layer:usecase`)"
+        - "[ ] `Library` / `Document` 集約、関連リポジトリの利用 (`layer:usecase` -> `domain`, `adapter-db`)"
+        - "[ ] APIエンドポイント（例: `/api/library/documents`）の実装 (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] 応答データのシリアライズ（ドキュメント情報、ページネーション情報） (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] （TDD）ユースケース、関連ロジックのテスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - APIを呼び出すと、ユーザのライブラリに属するドキュメントのリスト（指定されたページ/件数）が返されること。
+        - ドキュメント情報（ID, タイトル, 更新日時, ステータス等）が含まれること。
+        - 関連するテストが成功すること。
+      related_requirements: [US-LIB-001]
+      dependencies: [ISSUE-002, ISSUE-LIB-DB-ADAPTER] # Depends on User DB and Library DB adapter
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:usecase, layer:domain, layer:adapter-db, epic:EPIC-LIBRARY, MVP, priority:medium, TDD]
+    - id: ISSUE-015
+      title: "[UserStory] ライブラリ検索UIの実装 (US-LIB-002)"
+      description: ユーザーストーリー US-LIB-002 のためのUIを実装する。キーワード入力と検索結果表示を行う。
+      tasks:
+        - "[ ] ライブラリ画面に検索ボックスを配置 (`layer:adapter-ui`)"
+        - "[ ] キーワード入力時にバックエンドの検索APIを呼び出す処理 (`layer:adapter-ui`)"
+        - "[ ] 検索結果（ドキュメントリスト）を一覧表示エリアに反映する処理 (`layer:adapter-ui`)"
+        - "[ ] 検索中のインジケータ表示 (`layer:adapter-ui`)"
+        - "[ ] 検索結果のソート順選択UI（任意） (`layer:adapter-ui`)"
+      acceptance_criteria:
+        - ユーザが検索ボックスにキーワードを入力すると、関連するドキュメントが一覧表示されること。
+        - 検索応答時間は目標値を満たすこと。
+      related_requirements: [US-LIB-002]
+      dependencies: [ISSUE-013, ISSUE-SEARCH-BACKEND] # Depends on list UI and search backend
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:adapter-ui, epic:EPIC-LIBRARY, MVP, priority:medium]
+    - id: ISSUE-016
+      title: "[UserStory] ライブラリ検索バックエンド実装 (US-LIB-002)"
+      description: ユーザーストーリー US-LIB-002 のためのバックエンドAPIを実装する。キーワードに基づいてドキュメントを検索する。
+      tasks:
+        - "[ ] `SearchLibraryDocuments` ユースケース（Interactor）の実装 (`layer:usecase`)"
+        - "[ ] 全文検索エンジン（PostgreSQL FTS or Elasticsearch等）へのクエリ実行処理 (`layer:usecase` -> `adapter-search`) - **Depends on: `TASK-SEARCH-01`**"
+        - "[ ] 検索結果のランキング/ソート処理 (`layer:usecase`)"
+        - "[ ] APIエンドポイント（例: `/api/library/search`）の実装 (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] 応答データのシリアライズ (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] （TDD）ユースケース、検索ロジックのテスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - APIにキーワードを渡すと、関連するドキュメントリストが（関連度順等で）返されること。
+        - 応答時間は目標値を満たすこと。
+        - 関連するテストが成功すること。
+      related_requirements: [US-LIB-002]
+      dependencies: [ISSUE-014, TASK-SEARCH-01]
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:usecase, layer:adapter-search, epic:EPIC-LIBRARY, MVP, priority:high, TDD]
+    - id: ISSUE-017
+      title: "[UserStory] ドキュメントへのタグ付け機能実装 (US-LIB-003)"
+      description: |
+        ユーザーストーリー US-LIB-003 を実装する。ドキュメントへのタグ追加・削除・フィルタリング機能を提供する。
+        > DeepReadのユーザ として、ライブラリ内のドキュメントにタグを付けて整理したい。それは、後で関連するドキュメントをグループ化して見つけやすくするためだ。
+      tasks:
+        - "[ ] `Tag` ドメインモデル（または値オブジェクト）定義 (`layer:domain`, `DDD`)"
+        - "[ ] `Document` 集約にタグ関連付けを追加 (`layer:domain`)"
+        - "[ ] `AddTagToDocument`, `RemoveTagFromDocument` ユースケース実装 (`layer:usecase`)"
+        - "[ ] タグによるドキュメントフィルタリングロジック (`GetLibraryDocuments` ユースケース拡張 or 新規UseCase) (`layer:usecase`)"
+        - "[ ] DBスキーマ変更（タグ、中間テーブル）とアダプタ実装 (`layer:adapter-db`)"
+        - "[ ] ライブラリUIでのタグ表示、追加/削除UI、フィルタリングUI実装 (`layer:adapter-ui`)"
+        - "[ ] （TDD）関連ドメイン、ユースケース、リポジトリのテスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - UIからドキュメントに任意のタグを追加・削除できること。
+        - 付与されたタグが表示されること。
+        - 特定のタグでドキュメントをフィルタリングできること。
+        - 関連するテストが成功すること。
+      related_requirements: [US-LIB-003]
+      dependencies: [ISSUE-013, ISSUE-014]
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:domain, layer:usecase, layer:adapter-db, layer:adapter-ui, epic:EPIC-LIBRARY, MVP, priority:medium, TDD, DDD]
+    - id: ISSUE-018
+      title: "[UserStory] 単一文書Q&A UIの実装 (US-QA-001)"
+      description: |
+        ユーザーストーリー US-QA-001 のためのUIを実装する。チャットインターフェースを提供し、応答と出典を表示する。
+        > DeepReadのユーザ として、特定のドキュメントを開き、その内容について自然言語で質問したい。それは、ドキュメント全体を読まなくても、知りたい情報をピンポイントで得られるようにするためだ。
+      tasks:
+        - "[ ] ドキュメント表示画面内にチャットパネルUIを実装 (`layer:adapter-ui`)"
+        - "[ ] 質問入力、送信ボタン、回答表示エリアの作成 (`layer:adapter-ui`)"
+        - "[ ] 質問送信時にバックエンドAPIを呼び出す処理 (`layer:adapter-ui`)"
+        - "[ ] バックエンドからの応答（回答、出典）を表示する処理 (`layer:adapter-ui`)"
+        - "[ ] 出典情報（例: 類似QA ID）から関連情報へのリンクやハイライト表示を実装 (`layer:adapter-ui`)"
+        - "[ ] 処理中の進捗表示 (`layer:adapter-ui`)"
+        - "[ ] Q&A履歴のスクロール表示 (`layer:adapter-ui`)"
+      acceptance_criteria:
+        - ユーザが質問を入力・送信すると、回答がチャットエリアに表示されること。
+        - 回答には出典情報（リンク等）が付与されていること。
+        - 処理中は進捗が表示されること。
+      related_requirements: [US-QA-001]
+      dependencies: [ISSUE-QA-BACKEND] # Depends on backend QA implementation
+      milestone: "MVP Core QA"
+      labels: [type:user-story, feature:qa, layer:adapter-ui, epic:EPIC-QA-CORE, MVP, priority:high]
+    - id: ISSUE-019 # Placeholder for US-QA-001 backend implementation
+      title: "[UserStory] 単一文書Q&A機能のコア実装 (US-QA-001)"
+      description: |
+        ユーザーストーリー US-QA-001 のコア機能（類似QA検索・要約による応答）を実装する。 **[優先度: 高]**
+      tasks:
+        - "[ ] `AskQuestion` ユースケース（Interactor）のインターフェースと実装（RAGパイプライン呼び出し、履歴保存） (`layer:usecase`)"
+        - "[ ] RAGパイプライン内での類似Q&A検索ロジック実装（ベクトルDB利用） (`layer:usecase` -> `adapter-search`) - **Depends on: `TASK-VEC-01`**"
+        - "[ ] 検索された類似Q&A回答群を要約・統合するためのAI呼び出しロジック実装 (`layer:usecase` -> `adapter-ai`) - **Depends on: `TASK-AI-01`**"
+        - "[ ] `QApair` 値オブジェクト、`UserInteraction` 集約の更新 (`layer:domain`, `DDD`)"
+        - "[ ] Q&A履歴を保存するためのリポジトリ/アダプタ実装 (`layer:usecase`, `layer:adapter-db`)"
+        - "[ ] （TDD）`AskQuestion` ユースケース、RAG関連ロジックの単体・結合テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザが質問を送信すると、システムが類似QAを検索し、AIが要約・統合した回答を（目標時間内に）返すこと。
+        - 回答には可能な範囲で出典情報が付与されること。
+        - Q&A履歴がDBに保存されること。
+        - 類似QAが見つからない場合の代替フローが動作すること（MVP後検討）。
+        - 関連するテストが成功すること。
+      related_requirements: [US-QA-001]
+      dependencies: [TASK-AI-01, TASK-VEC-01, TASK-BATCH-01, ISSUE-QA-UI] # QAデータ生成, UI実装Issue
+      milestone: "MVP Core QA"
+      labels: [type:user-story, feature:qa, layer:usecase, layer:domain, layer:adapter-ai, layer:adapter-search, layer:adapter-db, epic:EPIC-QA-CORE, MVP, priority:high, TDD, DDD, CleanArchitecture, RAG]
+      notes: '[分割案あり] RAGパイプライン実装、類似QA検索、AI要約呼び出し、履歴保存など、詳細タスクに分割推奨。'
+    - id: ISSUE-020
+      title: "[TechnicalTask] クリーンアーキテクチャ設計定義 (TASK-ARCH-01)"
+      description: |
+        技術タスク TASK-ARCH-01 を実施する。システムのレイヤー構造、主要コンポーネント、依存関係ルールを文書化し、チームで共有する。
+      tasks:
+        - "[ ] レイヤー（Domain, UseCase, Adapters[UI, DB, Search, AI, etc.], Infrastructure）の責務定義。"
+        - "[ ] 主要ドメインモデルと集約の図示（初期案）。"
+        - "[ ] 主要ユースケースとInteractorのリストアップ。"
+        - "[ ] レイヤー間のインターフェース（リポジトリ、ゲートウェイ）定義方針。"
+        - "[ ] 依存関係の方向性ルール（例: Domainは他レイヤーに依存しない）の明確化。"
+        - "[ ] 設計ドキュメント作成（例: Markdown, 図ツール）。"
+      acceptance_criteria:
+        - アーキテクチャ設計が文書化され、チームメンバーが理解・合意していること。
+      related_requirements: [TASK-ARCH-01]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, architecture, layer:architecture, epic:EPIC-ARCH-NFR, MVP, priority:high, CleanArchitecture, DDD]
+    - id: ISSUE-021
+      title: "[TechnicalTask] PDF解析パイプラインの実装 (TASK-PIPE-01)"
+      description: |
+        技術タスク TASK-PIPE-01 を実装する。非同期キューからPDF解析タスクを受け取り、ページ画像化、AI情報抽出、ベクトル化を実行し、結果をDBに保存、ドキュメントステータスを更新する。
+      tasks:
+        - "[ ] 非同期タスクワーカの設定（例: Celery Worker） (`layer:infrastructure`)"
+        - "[ ] タスク実行ロジック（キューからメッセージ取得、エラーハンドリング、リトライ） (`layer:usecase`)"
+        - "[ ] ページ画像化処理呼び出し (`layer:usecase` -> `adapter-infrastructure`) - **Depends on: `TASK-PDF-01`**"
+        - "[ ] AI情報抽出処理呼び出し (`layer:usecase` -> `adapter-ai`) - **Depends on: `TASK-AI-02`**"
+        - "[ ] 抽出情報の構造化、`ContentElement` 生成 (`layer:usecase`, `layer:domain`)"
+        - "[ ] テキストチャンク分割とベクトル埋め込み生成・保存処理呼び出し (`layer:usecase` -> `adapter-ai`, `adapter-search`) - **Depends on: `TASK-VEC-01`**"
+        - "[ ] 解析結果（Page, ContentElement, Vector等）のDB保存 (`layer:usecase` -> `adapter-db`)"
+        - "[ ] `Document` ステータス更新（Processing -> Ready/Error） (`layer:usecase`, `layer:domain`)"
+        - "[ ] パイプライン全体の進捗状況を更新するメカニズム実装 (`layer:usecase`)"
+        - "[ ] （TDD）各ステップの処理ロジック、エラーハンドリングに関する単体・結合テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 投入されたPDF解析タスクが正常に実行され、解析結果がDBに保存され、ドキュメントステータスが更新されること。
+        - 各ステップでエラーが発生した場合、エラーがログ記録され、ドキュメントステータスがエラーになること。
+        - リトライが適切に行われること（もし実装する場合）。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-PIPE-01]
+      dependencies: [TASK-PDF-01, TASK-AI-02, TASK-VEC-01, TASK-INFRA-03]
+      milestone: "MVP Pipeline"
+      labels: [type:technical-task, feature:pipeline, layer:usecase, layer:domain, layer:adapter-ai, layer:adapter-search, layer:adapter-db, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:high, TDD]
+      notes: '[分割案あり] ステップごとにIssue分割推奨。'
+    - id: ISSUE-022
+      title: "[TechnicalTask] PDFページ画像化実装 (TASK-PDF-01)"
+      description: |
+        技術タスク TASK-PDF-01 を実施する。PDFページ画像化ライブラリ（例: pdf2image + Poppler）を導入し、調整可能な解像度でPDFをページ画像に変換する機能を実装・テストする。PopplerのGPLライセンス影響についてTASK-LEGAL-02の結果を考慮する。
+      tasks:
+        - "[ ] `pdf2image` ライブラリ（および依存関係にあるPoppler）をプロジェクトに導入・設定する (`layer:infrastructure`) - **Depends on: `TASK-INFRA-04`**"
+        - "[ ] 指定されたPDFファイルを受け取り、各ページを指定された解像度（テスト後に決定）で画像ファイル（例: PNG, JPEG）に変換する関数/クラスを実装する (`layer:adapter-infrastructure`)"
+        - "[ ] 生成された画像ファイルの保存場所（一時的か永続的か、ストレージ戦略）を決定し実装する (`layer:adapter-infrastructure`)"
+        - "[ ] エラーハンドリング（例: Popplerが見つからない、PDF破損、メモリ不足）を実装する (`layer:adapter-infrastructure`)"
+        - "[ ] PopplerのGPLライセンスに関する調査結果(TASK-LEGAL-02)を考慮し、必要な対応（例: 動的リンクの確認、ライセンス表示）を行う (`layer:legal`, `layer:infrastructure`)"
+        - "[ ] （TDD）ページ画像化機能の単体テスト・結合テスト（サンプルPDFを使用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 入力されたPDFファイルの全ページが、指定された解像度の画像ファイルとして正常に生成・保存されること。
+        - サポートされていない形式や破損したPDFに対して、適切なエラーが記録または返されること。
+        - ライセンス要件（GPL）が遵守されていること（TASK-LEGAL-02の結果に基づく）。
+        - 関連するテストがすべて成功すること。
+      related_requirements: [TASK-PDF-01, FR-PDFPROC-001]
+      dependencies: [TASK-INFRA-04, TASK-LEGAL-02] # TASK-INFRA-04 is ISSUE-036, TASK-LEGAL-02 is ISSUE-040
+      milestone: "MVP Pipeline"
+      labels: [type:technical-task, feature:pipeline, layer:adapter-infrastructure, layer:legal, epic:EPIC-PIPELINE, MVP, priority:medium, TDD, needs-discussion]
+      notes: ライセンス注意。
+    - id: ISSUE-023
+      title: "[TechnicalTask] RAGコアロジック実装 (TASK-AI-01)"
+      description: |
+        技術タスク TASK-AI-01 を実施する。RAGアーキテクチャのコアロジック（類似QA/文書チャンク検索 + コンテキスト付きプロンプト生成 + AI応答生成）を実装する。Langchain等のフレームワーク利用を前提とする。
+      tasks:
+        - "[ ] Langchainフレームワークの導入と基本設定 (`layer:infrastructure`, `layer:adapter-ai`)"
+        - "[ ] RAGパイプラインの定義:"
+        - "    - [ ] 1. 入力（ユーザ質問、対象ドキュメント/QA範囲）の受け取り"
+        - "    - [ ] 2. 質問に対する関連情報検索（ベクトルDBへのクエリ発行）処理 - **Depends on: `TASK-VEC-01`** (`layer:usecase` -> `adapter-search`)"
+        - "    - [ ] 3. 検索結果（類似QA、文書チャンク）をコンテキストとして整形する処理 (`layer:usecase`)"
+        - "    - [ ] 4. コンテキストと元の質問を組み合わせたプロンプトを生成する処理（プロンプトエンジニアリング含む、設定ファイル利用） (`layer:usecase`)"
+        - "    - [ ] 5. 生成AI APIを呼び出して応答を生成する処理 - **Depends on: `TASK-AI-03`** (`layer:usecase` -> `adapter-ai`)"
+        - "    - [ ] 6. AI応答から最終的な回答と出典情報を抽出・整形する処理 (`layer:usecase`)"
+        - "[ ] Q&A応答、要約、バッチQ&A生成の各ユースケースから上記RAGパイプラインを呼び出すインターフェースを実装 (`layer:usecase`)"
+        - "[ ] （TDD）RAGパイプラインの各ステップおよび全体の結合テスト（モック/スタブを利用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 入力された質問と対象範囲に基づき、ベクトルDBから関連情報が検索されること。
+        - 検索結果をコンテキストとして含んだプロンプトが生成されること。
+        - 生成AI APIが呼び出され、コンテキストに基づいた応答が生成されること。
+        - 応答から最終的な回答と出典情報が抽出・整形されること。
+        - 関連するテストがすべて成功すること。
+      related_requirements: [TASK-AI-01, FR-QA-002, FR-SUMM-001, FR-IMPROVE-001]
+      dependencies: [TASK-VEC-01, TASK-AI-03, TASK-CONFIG-PROMPT] # TASK-VEC-01 is ISSUE-026, TASK-AI-03 is ISSUE-025, TASK-CONFIG-PROMPT needs new issue
+      milestone: "MVP Core QA"
+      labels: [type:technical-task, feature:qa, feature:extract-summ, feature:feedback, layer:usecase, layer:adapter-ai, layer:adapter-search, epic:EPIC-QA-CORE, epic:EPIC-UTILITIES, epic:EPIC-FEEDBACK-LOOP, MVP, priority:high, TDD, RAG]
+    - id: ISSUE-024
+      title: "[TechnicalTask] Gemini 1.5 Flashによる情報抽出実装 (TASK-AI-02)"
+      description: |
+        技術タスク TASK-AI-02 を実施する。ページ画像から情報（テキスト、表、図説明）を抽出するために、Gemini 1.5 Flashを利用するAI連携を実装する（Langchain使用）。
+      tasks:
+        - "[ ] LangchainのGoogle Geminiインテグレーション (`langchain-google-genai`) を設定 (`layer:adapter-ai`)"
+        - "[ ] ページ画像を入力としてGemini 1.5 Flash APIを呼び出す関数/クラスを実装 (`layer:adapter-ai`)"
+        - "[ ] 画像からテキスト、表（構造化データ形式）、図の説明文を抽出させるための適切なプロンプトを作成・設定（設定ファイル管理） (`layer:adapter-ai`, `layer:usecase`)"
+        - "[ ] API応答をパースし、抽出された情報を `ContentElement` オブジェクト等にマッピングする処理 (`layer:adapter-ai` -> `domain`)"
+        - "[ ] API呼び出し時のエラーハンドリング（例: APIエラー、コンテンツフィルタリング） (`layer:adapter-ai`)"
+        - "[ ] （TDD）Gemini API連携部分のテスト（モックAPIを使用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 入力されたページ画像に対してGemini 1.5 Flash APIが呼び出されること。
+        - API応答からテキスト、構造化された表データ、図の説明文が抽出・パースされ、内部データ構造に格納されること。
+        - APIエラー等が適切にハンドリングされること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-AI-02, FR-AICONV-001]
+      dependencies: [TASK-AI-03, TASK-CONFIG-PROMPT] # TASK-AI-03 is ISSUE-025, TASK-CONFIG-PROMPT needs new issue
+      milestone: "MVP Pipeline"
+      labels: [type:technical-task, feature:pipeline, layer:adapter-ai, layer:domain, epic:EPIC-PIPELINE, epic:EPIC-AI-CORE, MVP, priority:high, TDD]
+      notes: 将来的なChatGPT等への切り替えも考慮したインターフェース設計。
+    - id: ISSUE-025
+      title: "[TechnicalTask] 生成AI API連携インターフェース実装 (TASK-AI-03)"
+      description: |
+        技術タスク TASK-AI-03 を実施する。外部生成AI API（初期はGoogle Gemini 1.5 Flash）との連携インターフェース（APIキー管理含む）を実装する。モデル切り替え（Langchain利用）を考慮した設計とする。
+      tasks:
+        - "[ ] LangchainのLLM/ChatModelインターフェースを利用したAPI呼び出しラッパーを作成 (`layer:adapter-ai`)"
+        - "[ ] ユーザ毎のAPIキーを安全に取得し（`TASK-SEC-002` の実装に依存）、APIリクエスト時に利用する仕組み (`layer:adapter-ai`, `layer:usecase`)"
+        - "[ ] 異なるAIプロバイダー（Gemini, OpenAI等）のAPI呼び出しを抽象化するインターフェース設計（Langchain活用） (`layer:adapter-ai`, `CleanArchitecture`)"
+        - "[ ] API呼び出しのタイムアウト設定、リトライ処理（必要な場合）の実装 (`layer:adapter-ai`)"
+        - "[ ] API利用状況の基本的なロギング（呼び出し回数、トークン数など、コスト管理はユーザ責任だが状況把握のため） (`layer:adapter-ai`)"
+        - "[ ] （TDD）API連携ラッパーのテスト（モックサーバー/ライブラリを使用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 指定されたAIモデル（初期はGemini）のAPIを、ユーザ固有のAPIキーを用いて呼び出せること。
+        - API呼び出し時のエラー（認証エラー、タイムアウト等）がハンドリングされること。
+        - Langchain経由でモデル切り替えが容易な設計になっていること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-AI-03, NFR(Security), Constraints(Technology Stack)]
+      dependencies: [US-SETTINGS-001, TASK-SEC-002] # US-SETTINGS-001 is ISSUE-048, TASK-SEC-002 is ISSUE-042
+      milestone: "MVP Foundation" # Or MVP Pipeline
+      labels: [type:technical-task, layer:adapter-ai, layer:infrastructure, epic:EPIC-AI-CORE, MVP, priority:medium, TDD, CleanArchitecture]
+    - id: ISSUE-026
+      title: "[TechnicalTask] ベクトル埋め込み生成とDB登録・検索実装 (TASK-VEC-01)"
+      description: |
+        技術タスク TASK-VEC-01 を実施する。テキストチャンク（段落単位基本）とQAデータのベクトル埋め込み生成（API利用）およびベクトルDB（Qdrant推奨）への登録・検索機能を実装する。チャンク分割ロジック含む。
+      tasks:
+        - "[ ] テキストチャンク分割ロジック実装（段落単位基本、設定ファイルで調整可能） (`layer:usecase`, `layer:domain`) - **Depends on: `TASK-CONFIG-CHUNK`**"
+        - "[ ] 埋め込み生成API（例: OpenAI Embeddings API）呼び出し実装 (`layer:adapter-ai`) - **Depends on: `TASK-EMBEDDING-API`**"
+        - "[ ] Qdrantクライアント設定と接続 (`layer:adapter-search`) - **Depends on: `TASK-VEC-02`**"
+        - "[ ] ベクトルデータと関連メタデータ（ドキュメントID, ページ番号, チャンクID, データ種別[Text/QA]等）をQdrantに登録する処理 (`layer:adapter-search`)"
+        - "[ ] 入力ベクトルに類似するベクトルをQdrantから検索する処理（メタデータフィルタリング含む） (`layer:adapter-search`)"
+        - "[ ] Qdrantへの登録・検索時のエラーハンドリング (`layer:adapter-search`)"
+        - "[ ] （TDD）チャンク分割、埋め込み生成呼び出し、Qdrant登録・検索処理の単体・結合テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - テキストデータが適切にチャンク分割されること。
+        - 各チャンクとQAデータがベクトル化され、メタデータと共にQdrantに登録されること。
+        - 入力ベクトルに対して、類似するベクトル（とメタデータ）がQdrantから検索できること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-VEC-01, FR-AICONV-003, NFR(Performance)]
+      dependencies: [TASK-VEC-02, TASK-EMBEDDING-API, TASK-CONFIG-CHUNK] # TASK-VEC-02 is ISSUE-027, TASK-EMBEDDING-API and TASK-CONFIG-CHUNK need new issues
+      milestone: "MVP Pipeline" # Or MVP Core QA
+      labels: [type:technical-task, feature:pipeline, feature:qa, layer:usecase, layer:domain, layer:adapter-search, layer:adapter-ai, layer:infrastructure, epic:EPIC-PIPELINE, epic:EPIC-QA-CORE, MVP, priority:high, TDD]
+      notes: '[分割案あり] チャンク分割、埋め込み生成、DB登録、DB検索は分割可能。'
+    - id: ISSUE-027
+      title: "[TechnicalTask] QdrantベクトルDB導入と設定 (TASK-VEC-02)"
+      description: |
+        技術タスク TASK-VEC-02 を実施する。選定されたベクトルDBであるQdrant (Self-Hosted) をDocker環境にデプロイし、基本的なコレクション作成、インデックス設定を行う。
+      tasks:
+        - "[ ] QdrantのDockerイメージを取得またはビルド (`layer:infrastructure`)"
+        - "[ ] Docker Compose等でQdrantコンテナを起動する設定 (`layer:infrastructure`)"
+        - "[ ] 永続ボリュームの設定 (`layer:infrastructure`)"
+        - "[ ] 基本的なコレクション（例: `documents`, `qa_pairs`）の作成と初期インデックス設定（例: HNSW） (`layer:adapter-search`)"
+        - "[ ] DjangoアプリケーションからQdrantへの接続確認 (`layer:adapter-search`)"
+        - "[ ] （TDD）基本的な接続・操作テスト (`type:test`, `layer:adapter-search`)"
+      acceptance_criteria:
+        - Qdrantコンテナが正常に起動し、永続化が設定されていること。
+        - DjangoアプリケーションからQdrantに接続し、コレクション操作（作成、情報取得）が可能であること。
+        - 簡単なベクトル登録・検索テストが成功すること。
+      related_requirements: [TASK-VEC-02]
+      dependencies: [TASK-INFRA-04] # Depends on Docker setup
+      milestone: "MVP Pipeline" # Or MVP Foundation
+      labels: [type:technical-task, chore, layer:infrastructure, layer:adapter-search, epic:EPIC-ARCH-NFR, MVP, priority:high]
+    - id: ISSUE-028
+      title: "[TechnicalTask] ライブラリ全文検索基盤実装 (TASK-SEARCH-01)"
+      description: |
+        技術タスク TASK-SEARCH-01 を実施する。ライブラリの全文検索機能を実装するための技術（例: PostgreSQLの全文検索機能、Elasticsearch等）を選定・導入する。
+      tasks:
+        - "[ ] 全文検索技術の選定（PostgreSQL FTS vs Elasticsearch等、性能・運用負荷・既存スタック考慮） (`layer:architecture`)"
+        - "[ ] **(選択肢A: PostgreSQL FTSの場合)**"
+        - "    - [ ] `tsvector` カラムをDocumentモデル（または関連テーブル）に追加するマイグレーション (`layer:adapter-db`)"
+        - "    - [ ] テキスト抽出時に `tsvector` を更新するトリガーまたはシグナルハンドラ実装 (`layer:adapter-db`)"
+        - "    - [ ] GINインデックス作成 (`layer:adapter-db`)"
+        - "    - [ ] Django ORMまたはRaw SQLで全文検索クエリを実行するリポジトリ/サービス実装 (`layer:adapter-db`, `layer:usecase`)"
+        - "[ ] **(選択肢B: Elasticsearchの場合)**"
+        - "    - [ ] Elasticsearchクラスタのセットアップ（Docker Compose等） (`layer:infrastructure`)"
+        - "    - [ ] DjangoとElasticsearchを連携させるライブラリ（`elasticsearch-dsl`等）導入・設定 (`layer:adapter-search`)"
+        - "    - [ ] ドキュメントデータ（テキスト内容含む）をElasticsearchにインデックスする処理（非同期推奨） (`layer:adapter-search`, `layer:usecase`)"
+        - "    - [ ] Elasticsearchへの検索クエリ実行と結果取得処理の実装 (`layer:adapter-search`)"
+        - "[ ] （TDD）全文検索機能の結合テスト作成 (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 選択された技術に基づき、ライブラリ内のドキュメントコンテンツに対するキーワード検索が可能になること。
+        - 検索応答時間が目標値を満たすこと。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-SEARCH-01, FR-LIB-002]
+      dependencies: []
+      milestone: "MVP Library & Search"
+      labels: [type:technical-task, feature:library, layer:adapter-search, layer:infrastructure, layer:architecture, epic:EPIC-LIBRARY, MVP, priority:medium, TDD, needs-discussion]
+    - id: ISSUE-029
+      title: "[TechnicalTask] ユーザ設定DB保存アーキテクチャ設計・実装 (TASK-CONFIG-ARCH-01)"
+      description: |
+        技術タスク TASK-CONFIG-ARCH-01 を実施する。ユーザ毎設定をDBに保存するアーキテクチャを設計し、関連するドメインモデル、リポジトリ、マイグレーションを実装する。
+      tasks:
+        - "[ ] `UserSettings` 値オブジェクトまたはエンティティの設計（格納する設定項目を考慮） (`layer:domain`, `DDD`)"
+        - "[ ] `UserAccount` 集約との関連付け、または独立した集約としての検討 (`layer:domain`, `DDD`)"
+        - "[ ] `UserSettingsRepository` インターフェース定義 (`layer:usecase`)"
+        - "[ ] PostgreSQL用リポジトリ実装とDjangoモデル、マイグレーション作成 (`layer:adapter-db`)"
+        - "[ ] （TDD）ドメインモデル、リポジトリ実装のテスト作成 (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザ毎の設定情報をDBに保存・取得できること。
+        - モデル設計が拡張性を考慮していること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-CONFIG-ARCH-01]
+      dependencies: [TASK-ARCH-01]
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, architecture, layer:domain, layer:usecase, layer:adapter-db, epic:EPIC-FOUNDATION, epic:EPIC-SETTINGS, MVP, priority:medium, TDD, DDD]
+    - id: ISSUE-030
+      title: "[TechnicalTask] 基本Webセキュリティ対策実装 (TASK-SEC-001)"
+      description: |
+        技術タスク TASK-SEC-001 を実施する。パスワードハッシュ化（bcrypt）の実装と、基本的なWebセキュリティ対策（CSRF, XSS等）をDjangoフレームワークの機能を用いて設定・確認する。
+      tasks:
+        - "[ ] Djangoのパスワードハッシュ化設定確認（デフォルトでPBKDF2SHA256、必要ならBcrypt等に変更） (`layer:infrastructure`, `layer:domain`)"
+        - "[ ] DjangoのCSRFミドルウェアが有効になっていることを確認 (`layer:infrastructure`)"
+        - "[ ] テンプレートでのXSS対策（自動エスケープが有効であることの確認、必要な箇所での`safe`フィルタ不使用） (`layer:adapter-ui`)"
+        - "[ ] Djangoのセキュリティミドルウェア（`SecurityMiddleware`等）の適切な設定（HTTPSリダイレクト、HSTS、クリックジャッキング対策等） (`layer:infrastructure`)"
+        - "[ ] DEBUGモードが本番環境でFalseになっていることの確認 (`layer:infrastructure`)"
+        - "[ ] シークレットキーが安全に管理されていることの確認（環境変数、KMS等） (`layer:infrastructure`)"
+      acceptance_criteria:
+        - パスワードがDBに平文で保存されていないこと。
+        - 主要なフォームでCSRFトークンが使用されていること。
+        - ユーザ入力が適切にエスケープされ、XSS脆弱性が存在しないこと（基本的なチェック）。
+        - 推奨されるセキュリティヘッダーが設定されていること。
+      related_requirements: [TASK-SEC-001, NFR(Security)]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, security, chore, layer:infrastructure, layer:adapter-ui, layer:domain, epic:EPIC-FOUNDATION, epic:EPIC-ARCH-NFR, MVP, priority:high]
+    - id: ISSUE-031
+      title: "[TechnicalTask] 暫定利用規約・プライバシーポリシー準備 (TASK-LEGAL-01)"
+      description: |
+        技術タスク TASK-LEGAL-01 を実施する。暫定的な利用規約とプライバシーポリシーのテンプレートを準備し、同意取得機能に組み込む。正式リリース前に弁護士レビューが必要であることを関係者にリマインドする。
+      tasks:
+        - "[ ] 一般的なWebサービス向けの利用規約・プライバシーポリシーのテンプレートを調査・選定。"
+        - "[ ] DeepReadのサービス内容に合わせてテンプレートを修正（**特にAI学習への不使用、ユーザ責任等を反映**）。"
+        - "[ ] 修正した内容を静的ファイルまたはDB等に格納し、UIから表示できるようにする。"
+        - "[ ] 弁護士レビューが必要な旨をドキュメント化し、関係者（PO等）に共有。"
+      acceptance_criteria:
+        - 暫定的な利用規約とプライバシーポリシーがシステムに組み込まれ、ユーザが参照可能であること。
+        - AI学習への不使用ポリシーが明記されていること。
+        - 弁護士レビューの必要性が関係者に認識されていること。
+      related_requirements: [TASK-LEGAL-01, FR-LEGAL-001]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, legal, documentation, epic:EPIC-FOUNDATION, MVP, priority:low]
+    - id: ISSUE-032
+      title: "[TechnicalTask] テスト基盤セットアップとCI/CD連携 (TASK-TEST-01)"
+      description: |
+        技術タスク TASK-TEST-01 を実施する。ユニットテスト、結合テスト、E2Eテストの実行環境を構築し、CI/CDパイプラインに組み込む。
+      tasks:
+        - "[ ] テストフレームワーク(pytest)と関連ライブラリ(pytest-django等)の導入・設定。"
+        - "[ ] E2Eテストツール(Playwright/Selenium)の導入・設定（必要であれば）。"
+        - "[ ] テスト実行用スクリプト/コマンド準備。"
+        - "[ ] CI/CDサービス（例: GitHub Actions）の設定ファイル作成。"
+        - "[ ] CI/CDパイプラインで各テスト（Unit, Integration, E2E）を自動実行するジョブ設定。"
+        - "[ ] テストカバレッジ計測ツールの導入・設定（任意）。"
+      acceptance_criteria:
+        - ローカルおよびCI環境でユニットテスト、結合テスト、E2Eテストが実行できること。
+        - CI/CDパイプラインでテストが自動実行され、結果がレポートされること。
+      related_requirements: [TASK-TEST-01]
+      dependencies: [TASK-ARCH-01] # TASK-ARCH-01 is ISSUE-020
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, chore, layer:infrastructure, layer:development-process, epic:EPIC-ARCH-NFR, MVP, priority:medium, TDD]
+    - id: ISSUE-033
+      title: "[TechnicalTask] メール送信設定 (TASK-INFRA-01)"
+      description: |
+        技術タスク TASK-INFRA-01 を実施する。パスワードリセットメール送信のための設定を行う。
+      tasks:
+        - "[ ] メール送信方法の決定（SMTPサーバ or 外部サービス[SendGrid等]）。"
+        - "[ ] DjangoのEmailBackend設定 (`settings.py`)。"
+        - "[ ] 認証情報（ユーザ名、パスワード、APIキー）の安全な設定（環境変数、KMS等）。"
+        - "[ ] テストメール送信による動作確認。"
+      acceptance_criteria:
+        - Djangoアプリケーションからテストメールが正常に送信されること。
+        - 認証情報が安全に管理されていること。
+      related_requirements: [TASK-INFRA-01, US-AUTH-003]
+      dependencies: [TASK-SEC-002] # TASK-SEC-002 is ISSUE-042
+      milestone: "MVP Foundation" # Or subsequent
+      labels: [type:technical-task, chore, layer:infrastructure, layer:adapter-notification, epic:EPIC-FOUNDATION, priority:low]
+    - id: ISSUE-034
+      title: "[TechnicalTask] バッチ処理スケジューラ設定 (TASK-INFRA-02)"
+      description: |
+        技術タスク TASK-INFRA-02 を実施する。Q&A改善バッチ処理を定期実行するためのスケジューラを設定する。
+      tasks:
+        - "[ ] スケジューリング基盤（Celery Beat, Django-Q scheduler, Cron等）の選定と導入。"
+        - "[ ] バッチ処理タスクの登録と実行頻度（ユーザ設定反映）の設定。"
+        - "[ ] スケジューラプロセスの起動・監視設定（Docker Compose, Supervisor等）。"
+      acceptance_criteria:
+        - バッチ処理が設定された頻度で自動実行されること。
+        - スケジューラプロセスが安定稼働すること。
+      related_requirements: [TASK-INFRA-02, US-IMPROVE-001]
+      dependencies: [ISSUE-047, US-SETTINGS-001] # Depends on batch implementation (ISSUE-047) and user settings (ISSUE-048)
+      milestone: "MVP Core QA"
+      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-FEEDBACK-LOOP, MVP, priority:medium]
+    - id: ISSUE-035
+      title: "[TechnicalTask] 非同期処理基盤設定 (TASK-INFRA-03)"
+      description: |
+        技術タスク TASK-INFRA-03 を実施する。PDF解析パイプラインを非同期で実行するための基盤を設定する。
+      tasks:
+        - "[ ] 非同期タスクキュー（Celery + Redis/RabbitMQ, Django-Q等）の選定と導入。"
+        - "[ ] タスクワーカプロセスの設定（同時実行数、リソース制限等）。"
+        - "[ ] タスクキューとワーカの起動・監視設定（Docker Compose, Supervisor等）。"
+      acceptance_criteria:
+        - Djangoアプリケーションからタスクキューにジョブを投入できること。
+        - タスクワーカがキューからジョブを取得し、実行できること。
+        - キューとワーカプロセスが安定稼働すること。
+      related_requirements: [TASK-INFRA-03, TASK-PIPE-01]
+      dependencies: []
+      milestone: "MVP Pipeline" # Or MVP Foundation
+      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:high]
+    - id: ISSUE-036
+      title: "[TechnicalTask] Poppler依存解決 (TASK-INFRA-04)"
+      description: |
+        技術タスク TASK-INFRA-04 を実施する。`pdf2image` が依存するPopplerをDocker環境にインストールし、利用可能にする。
+      tasks:
+        - "[ ] Dockerfileに必要なパッケージ（`poppler-utils`等）のインストールコマンドを追加。"
+        - "[ ] Dockerイメージをビルドし、`pdf2image` がPopplerを見つけられることを確認。"
+      acceptance_criteria:
+        - Dockerコンテナ内で`pdf2image`が正常に動作すること。
+      related_requirements: [TASK-INFRA-04, TASK-PDF-01]
+      dependencies: []
+      milestone: "MVP Pipeline" # Or MVP Foundation
+      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:low]
+    - id: ISSUE-037
+      title: "[TechnicalTask] ロギング設定 (TASK-LOG-01)"
+      description: |
+        技術タスク TASK-LOG-01 を実施する。詳細かつ構造化されたログを出力するための設定を行う。
+      tasks:
+        - "[ ] ロギングライブラリ（Python標準`logging`, structlog等）の選定と導入。"
+        - "[ ] Djangoの`settings.py`でのロガー、ハンドラー、フォーマッター設定。"
+        - "[ ] ログレベル（DEBUG, INFO, WARNING, ERROR）の適切な設定。"
+        - "[ ] ログ出力先（コンソール、ファイル、外部ログサービス等）の設定。"
+        - "[ ] 主要な処理箇所でのログ出力コード追加。"
+      acceptance_criteria:
+        - アプリケーションの動作状況やエラー情報が、設定したレベル・形式・出力先でログ記録されること。
+        - 不具合発生時に、ログから原因追跡に必要な情報が得られること。
+      related_requirements: [TASK-LOG-01, NFR(Maintainability)]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, chore, layer:infrastructure, layer:application-wide, epic:EPIC-ARCH-NFR, MVP, priority:medium]
+    - id: ISSUE-038
+      title: "[Spike] フロントエンドフレームワーク技術選定 (TASK-FRONTEND-01)"
+      description: |
+        技術タスク TASK-FRONTEND-01 を実施する。React, Vue, Svelte, HTMX等の候補について、調査報告に基づき最終評価を行い、DeepReadプロジェクトで使用するフレームワークを決定する。
+      tasks: # Renamed from 実施タスク
+        - "[ ] 各候補のプロトタイピング（小規模な機能実装）による開発体験・生産性の比較検証（任意）。"
+        - "[ ] チームメンバーのスキルセットと学習意欲の再確認。"
+        - "[ ] Django/Tailwind CSSとの連携に関する詳細な検証。"
+        - "[ ] パフォーマンス要件（特にUI応答性）と各FWの特性のマッチング評価。"
+        - "[ ] 長期的なメンテナンス性、コミュニティサポート、将来性の評価。"
+        - "[ ] チームでの議論と合意形成。"
+      acceptance_criteria:
+        - 各候補の比較評価結果が文書化されていること。
+        - チームとして使用するフロントエンドフレームワークが決定され、その理由が明確になっていること。
+      related_requirements: [TASK-FRONTEND-01]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:spike, architecture, layer:adapter-ui, epic:EPIC-ARCH-NFR, priority:high, needs-discussion]
+    - id: ISSUE-039
+      title: "[TechnicalTask] アクセシビリティ(WCAG AA)対応 (TASK-ACCESSIBILITY-01)"
+      description: |
+        技術タスク TASK-ACCESSIBILITY-01 を実施する。WCAG 2.1 Level AA達成を目標とし、フロントエンド設計・実装・テストを行う。
+      tasks:
+        - "[ ] WCAG 2.1 AA達成基準の学習とチーム内共有。"
+        - "[ ] UI設計レビュー時にアクセシビリティ観点でのチェックを行うプロセス確立。"
+        - "[ ] 主要画面・コンポーネントに対する具体的な要件実装（キーボードナビゲーション、適切なARIA属性、コントラスト比確保、代替テキスト設定など）。"
+        - "[ ] アクセシビリティ評価ツール（Axe, Lighthouse等）を用いたテスト実施。"
+        - "[ ] スクリーンリーダーでの動作確認（可能であれば）。"
+      acceptance_criteria:
+        - 主要な画面・機能がWCAG 2.1 Level AAの主要な達成基準を満たしていること（評価ツールやチェックリストで確認）。
+        - キーボードのみでの基本的な操作が可能であること。
+      related_requirements: [TASK-ACCESSIBILITY-01, NFR(UI/UX)]
+      dependencies: [TASK-FRONTEND-01] # TASK-FRONTEND-01 is ISSUE-038
+      milestone: "(Continuous task, start from MVP)"
+      labels: [type:technical-task, accessibility, layer:adapter-ui, epic:EPIC-ARCH-NFR, priority:medium]
+    - id: ISSUE-040
+      title: "[TechnicalTask] Poppler(GPL)ライセンス影響確認 (TASK-LEGAL-02)"
+      description: |
+        技術タスク TASK-LEGAL-02 を実施する。PopplerのGPLライセンスがDeepReadの配布・運用（SaaS提供等）に与える影響について、法務担当者または専門家と確認する。
+      tasks:
+        - "[ ] DeepReadの想定される配布・提供形態を明確化。"
+        - "[ ] Popplerとのリンク方法（動的/静的）を確認。"
+        - "[ ] 法務担当者/専門家に上記情報を提供し、GPLライセンスの遵守要件（ソースコード開示義務等）とリスクについて見解を求める。"
+        - "[ ] 確認結果と推奨される対応策（例: 代替ライブラリ検討、法的見解に基づく利用）を文書化し、チームに共有。"
+      acceptance_criteria:
+        - Poppler(GPL)利用に関する法的リスクと遵守要件が明確になっていること。
+        - チームとして取るべき対応策が決定されていること。
+      related_requirements: [TASK-LEGAL-02, TASK-PDF-01]
+      dependencies: [TASK-LEGAL-01] # TASK-LEGAL-01 is ISSUE-031
+      milestone: "MVP Foundation" # Early execution recommended
+      labels: [type:technical-task, legal, layer:architecture, epic:EPIC-ARCH-NFR, priority:high, needs-discussion]
+    - id: ISSUE-041
+      title: "[TechnicalTask] 性能テスト計画・実施体制構築 (TASK-PERF-TEST-01)"
+      description: |
+        技術タスク TASK-PERF-TEST-01 を実施する。主要な非機能要件（性能）に対するテスト計画を作成し、実施・評価する体制を構築する。
+      tasks:
+        - "[ ] 性能目標値（PDF解析、AI抽出、Q&A応答、ライブラリ検索）の再確認と測定方法の定義。"
+        - "[ ] 性能テストシナリオ（通常時、ピーク時負荷）の作成。"
+        - "[ ] テスト環境の準備（本番環境に近い構成）。"
+        - "[ ] 負荷テストツールの選定と導入（例: Locust, k6）。"
+        - "[ ] テスト実施と結果分析、ボトルネック特定。"
+        - "[ ] 定期的な性能テスト実施プロセスの計画。"
+      acceptance_criteria:
+        - 性能テスト計画が文書化されていること。
+        - 選択したツールで基本的な負荷テストが実行できること。
+        - 初期ターゲットに対する性能測定結果が得られていること。
+      related_requirements: [TASK-PERF-TEST-01, NFR(Performance)]
+      dependencies: [TASK-ARCH-01] # TASK-ARCH-01 is ISSUE-020
+      milestone: "(Continuous task, start planning in MVP)"
+      labels: [type:technical-task, testing, layer:infrastructure, epic:EPIC-ARCH-NFR, priority:medium]
+    - id: ISSUE-042
+      title: "[TechnicalTask] APIキー等機密情報の安全な保存・利用実装 (TASK-SEC-002)"
+      description: |
+        技術タスク TASK-SEC-002 を実施する。ユーザが設定する外部APIキー等の機密情報を、ALE+外部KMS(推奨)を用いてDBに安全に保存・利用する機能を実装する。
+      tasks:
+        - "[ ] 暗号化ライブラリ (`cryptography` 等) の導入 (`layer:infrastructure`)"
+        - "[ ] 外部KMS (AWS/GCP Secret Manager等) のセットアップとキー保管 (`layer:infrastructure`)"
+        - "[ ] Django起動時にKMSから暗号化キーを取得する処理 (`layer:infrastructure`, `layer:usecase`)"
+        - "[ ] 機密情報用カスタムモデルフィールド (`EncryptedCharField` 等) の実装 (`layer:adapter-db`, `layer:domain`)"
+        - "[ ] 設定保存/取得ユースケースでの暗号化/復号処理組み込み (`layer:usecase`)"
+        - "[ ] （TDD）暗号化/復号処理、キー取得処理の単体・結合テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - APIキーがDBに暗号化されて保存されること。
+        - アプリケーションは実行時にKMSからキーを取得し、APIキーを復号して利用できること。
+        - KMSへのアクセス権限が適切に設定されていること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-SEC-002, US-SETTINGS-001]
+      dependencies: [TASK-CONFIG-ARCH-01, TASK-INFRA-KMS] # KMS Setup task needs to be defined if using external KMS
+      milestone: "MVP Foundation" # Or MVP Release before launch
+      labels: [type:technical-task, security, layer:usecase, layer:domain, layer:adapter-db, layer:adapter-infrastructure, epic:EPIC-FOUNDATION, epic:EPIC-SETTINGS, MVP, priority:high, TDD]
+    - id: ISSUE-043
+      title: "[UserStory] 横断Q&A機能の実装 (US-QA-002)"
+      description: |
+        ユーザーストーリー US-QA-002 を実装する。複数ドキュメントを選択し、それらに関連する過去QAを検索して応答する。
+      tasks:
+        - "[ ] ライブラリUIで複数ドキュメント選択を可能にする (`layer:adapter-ui`)"
+        - "[ ] 複数ドキュメント選択状態でのQ&Aインターフェース実装 (`layer:adapter-ui`)"
+        - "[ ] `AskQuestionAcrossDocuments` ユースケース（Interactor）実装 (`layer:usecase`)"
+        - "    - 選択されたドキュメントIDリストを受け取る"
+        - "    - 検索対象を複数ドキュメントに関連する過去QAに限定してRAGパイプラインを呼び出す"
+        - "    - 結果に出典ドキュメント情報を含める"
+        - "[ ] （TDD）ユースケース、関連ロジックの単体・結合テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザが複数ドキュメントを選択して質問すると、関連する過去QAに基づいた回答が（出典情報付きで）表示されること。
+        - 選択ドキュメント数上限がユーザ設定に従うこと。
+        - 関連するテストが成功すること。
+      related_requirements: [US-QA-002]
+      dependencies: [US-QA-001, US-LIB-001, US-SETTINGS-001] # US-QA-001 is ISSUE-019, US-LIB-001 is ISSUE-013/014, US-SETTINGS-001 is ISSUE-048
+      milestone: "Milestone: QA Enhancements" # Post-MVP
+      labels: [type:user-story, feature:qa, layer:adapter-ui, layer:usecase, epic:EPIC-QA-CORE, priority:medium, TDD]
+    - id: ISSUE-044
+      title: "[UserStory] テキスト抽出機能の実装 (US-EXTRACT-001)"
+      description: |
+        ユーザーストーリー US-EXTRACT-001 を実装する。指定ページ範囲のテキストを抽出・表示する。
+      tasks:
+        - "[ ] ドキュメント表示UIにページ範囲指定と抽出ボタンを配置 (`layer:adapter-ui`)"
+        - "[ ] `ExtractText` ユースケース（Interactor）実装（指定範囲の`ContentElement`[TextChunk]を取得・連結） (`layer:usecase`)"
+        - "[ ] 抽出結果を表示するUIコンポーネント実装（コピー機能付き） (`layer:adapter-ui`)"
+        - "[ ] （TDD）ユースケースの単体テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザがページ範囲を指定して抽出を実行すると、該当範囲のテキストが表示され、コピーできること。
+        - 関連するテストが成功すること。
+      related_requirements: [US-EXTRACT-001]
+      dependencies: [US-PIPE-001] # US-PIPE-001 is ISSUE-011/012/021
+      milestone: "Milestone: Utilities (Extract/Summarize)" # Post-MVP
+      labels: [type:user-story, feature:extract-summ, layer:adapter-ui, layer:usecase, layer:domain, epic:EPIC-UTILITIES, priority:low, TDD]
+    - id: ISSUE-045
+      title: "[UserStory] テキスト要約機能の実装 (US-SUMM-001)"
+      description: |
+        ユーザーストーリー US-SUMM-001 を実装する。指定対象（全体、範囲、抽出テキスト）の要約をAIで生成・表示する。
+      tasks:
+        - "[ ] 要約指示UI（対象選択、実行ボタン）の実装 (`layer:adapter-ui`)"
+        - "[ ] `SummarizeText` ユースケース（Interactor）実装（対象テキスト取得、RAGパイプライン呼び出し） (`layer:usecase`)"
+        - "[ ] RAGパイプラインでの要約用プロンプト設定 (`layer:usecase`, `layer:adapter-ai`)"
+        - "[ ] 要約結果表示UIコンポーネント実装 (`layer:adapter-ui`)"
+        - "[ ] （TDD）ユースケースの単体テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザが要約を指示すると、AIが生成した要約が（目標時間内に、進捗表示付きで）表示されること。
+        - 関連するテストが成功すること。
+      related_requirements: [US-SUMM-001]
+      dependencies: [US-PIPE-001, US-EXTRACT-001, TASK-AI-01] # US-PIPE-001 is ISSUE-011/012/021, US-EXTRACT-001 is ISSUE-044, TASK-AI-01 is ISSUE-023
+      milestone: "Milestone: Utilities (Extract/Summarize)" # Post-MVP
+      labels: [type:user-story, feature:extract-summ, layer:adapter-ui, layer:usecase, layer:domain, layer:adapter-ai, epic:EPIC-UTILITIES, priority:medium, TDD]
+    - id: ISSUE-046
+      title: "[UserStory] AI応答へのフィードバック機能（タグ・コメント）の実装 (US-FEEDBACK-001拡張)"
+      description: |
+        ユーザーストーリー US-FEEDBACK-001 の拡張として、タグ付け（自由入力）とコメント入力機能を実装する。
+      tasks:
+        - "[ ] AI応答表示箇所にタグ入力欄とコメント入力欄を追加 (`layer:adapter-ui`)"
+        - "[ ] フィードバック送信時にタグとコメントもバックエンドに送信する処理 (`layer:adapter-ui`)"
+        - "[ ] `RecordFeedback` ユースケースを拡張し、タグとコメントも保存できるようにする (`layer:usecase`)"
+        - "[ ] `FeedbackRecord` 値オブジェクト（または関連モデル）にタグ・コメント用フィールド追加 (`layer:domain`)"
+        - "[ ] DBスキーマ変更とアダプタ更新 (`layer:adapter-db`)"
+        - "[ ] （TDD）関連ロジックのテスト更新 (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザがAI応答にタグとコメントを入力し、送信できること。
+        - 送信されたタグとコメントがDBに正しく記録されること。
+        - 関連するテストが成功すること。
+      related_requirements: [US-FEEDBACK-001]
+      dependencies: [US-QA-001, ISSUE-FEEDBACK-MVP] # US-QA-001 is ISSUE-019, ISSUE-FEEDBACK-MVP needs to be defined
+      milestone: "Milestone: Feedback & Improvement Enhancements" # Post-MVP
+      labels: [type:user-story, feature:feedback, layer:adapter-ui, layer:usecase, layer:domain, layer:adapter-db, epic:EPIC-FEEDBACK-LOOP, priority:low, TDD]
+    - id: ISSUE-047
+      title: "[UserStory] バッチQ&A改善処理の実装 (US-IMPROVE-001)"
+      description: |
+        ユーザーストーリー US-IMPROVE-001 を実装する。新規質問に対し、バッチ処理で文書ベースの回答を生成し、Q&Aデータセットに追加する。
+      tasks:
+        - "[ ] 新規質問（未回答）を特定するロジック (`layer:usecase`, `layer:adapter-db`)"
+        - "[ ] 各質問に関連するドキュメントチャンクを検索するロジック（ベクトル検索） (`layer:usecase` -> `adapter-search`)"
+        - "[ ] RAGパイプラインを呼び出し、文書ベースの回答を生成する処理 (`layer:usecase` -> `adapter-ai`)"
+        - "[ ] 生成されたQ&Aペアをベクトル化し、DBとベクトルDBに保存する処理 (`layer:usecase` -> `adapter-ai`, `adapter-search`, `adapter-db`)"
+        - "[ ] バッチ処理のスケジューリング実行 (`layer:infrastructure`) - **Depends on: `TASK-INFRA-02`**"
+        - "[ ] バッチ処理の実行ログ記録 (`layer:usecase`, `layer:infrastructure`)"
+        - "[ ] （TDD）バッチ処理全体の主要ロジックのテスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 設定された頻度でバッチ処理が実行されること。
+        - 新規質問に対して回答が生成され、Q&Aデータセットに追加されること。
+        - 処理結果（成功、失敗、件数）がログに記録されること。
+        - 関連するテストが成功すること。
+      related_requirements: [US-IMPROVE-001]
+      dependencies: [US-PIPE-001, US-QA-001, TASK-AI-01, TASK-VEC-01, TASK-INFRA-02] # US-PIPE-001 is ISSUE-011/012/021, US-QA-001 is ISSUE-019, TASK-AI-01 is ISSUE-023, TASK-VEC-01 is ISSUE-026, TASK-INFRA-02 is ISSUE-034
+      milestone: "MVP Core QA" # Basic functionality
+      labels: [type:user-story, feature:feedback, layer:usecase, layer:domain, layer:adapter-ai, layer:adapter-search, layer:adapter-db, layer:infrastructure, epic:EPIC-FEEDBACK-LOOP, MVP, priority:medium, TDD]
+    - id: ISSUE-048
+      title: "[UserStory] 設定画面UIの実装 (US-SETTINGS-001)"
+      description: |
+        ユーザーストーリー US-SETTINGS-001 のための設定画面UIを実装する。ユーザ固有のパラメータを表示・編集できるようにする。
+      tasks:
+        - "[ ] 設定ページのHTMLテンプレート/コンポーネント作成 (`layer:adapter-ui`)"
+        - "[ ] ユーザの現在設定値をバックエンドから取得して表示する処理 (`layer:adapter-ui` -> `usecase`)"
+        - "[ ] 各設定項目（APIキー、ファイル上限等、MVPで決定する項目）の入力フォーム実装 (`layer:adapter-ui`)"
+        - "[ ] 保存ボタン押下時に設定変更ユースケースを呼び出す処理 (`layer:adapter-ui` -> `usecase`)"
+        - "[ ] 結果に応じた画面表示（成功・エラーメッセージ） (`layer:adapter-ui`)"
+        - "[ ] （TDD）UIコンポーネントテスト（可能であれば） (`type:test`)"
+      acceptance_criteria:
+        - ユーザが設定ページを開くと、現在の設定値が表示されること。
+        - ユーザが設定値を変更し保存すると、成功メッセージが表示され、設定がバックエンドに反映されること。
+        - APIキーはマスキング表示されること。
+        - 不正な入力値（例: 数値でない上限値）に対してエラーが表示されること。
+      related_requirements: [US-SETTINGS-001]
+      dependencies: [TASK-CONFIG-ARCH-01, TASK-SEC-002] # TASK-CONFIG-ARCH-01 is ISSUE-029, TASK-SEC-002 is ISSUE-042
+      milestone: "MVP Foundation" # Or MVP Release
+      labels: [type:user-story, feature:settings, layer:adapter-ui, epic:EPIC-SETTINGS, MVP, priority:medium]

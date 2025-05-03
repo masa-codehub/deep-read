@@ -1,0 +1,513 @@
+agile_requirements:
+  project_name: DeepRead
+  version: 2.0 # Updated based on ReqDef v5.0 Final
+  date: 2025-05-03
+
+  epics:
+    - id: EPIC-FOUNDATION
+      name: 基本認証、法的同意、設定基盤
+    - id: EPIC-PIPELINE
+      name: PDFアップロード、ページ画像化、AI情報抽出、ベクトル化パイプライン
+    - id: EPIC-LIBRARY
+      name: パーソナルライブラリ管理（表示、検索、タグ付け）
+    - id: EPIC-QA-CORE
+      name: 単一/複数文書Q&A機能（類似QA検索・要約、RAG基盤）
+    - id: EPIC-UTILITIES
+      name: テキスト抽出・要約ユーティリティ機能
+    - id: EPIC-FEEDBACK-LOOP
+      name: ユーザフィードバック収集とバッチ改善処理
+    - id: EPIC-SETTINGS
+      name: 設定機能
+    - id: EPIC-ARCH-NFR
+      name: アーキテクチャ定義、非機能要件対応、技術基盤構築
+
+  user_stories:
+    - id: US-AUTH-001
+      story: |
+        初めてDeepReadを使うユーザ として、メールアドレスとパスワードで安全にアカウント登録したい。
+        それは、自分のライブラリをパーソナルな空間として利用するためだ。
+      acceptance_criteria:
+        - サインアップページにメールアドレス、パスワード、パスワード確認の入力フィールドが表示される。
+        - 有効なメールアドレス形式、最低限のパスワード強度（例: 8文字以上）がクライアントサイド/サーバーサイドで検証される。
+        - パスワードとパスワード確認が一致しない場合、エラーが表示される。
+        - 既に登録済みのメールアドレスを入力した場合、エラーが表示される。
+        - 有効な情報を入力し登録ボタンを押すと、アカウントが作成され、パスワードはハッシュ化されて保存される。
+        - 登録後、自動的にログイン状態となり、ライブラリ画面にリダイレクトされる。
+      references: [FR-AUTH-001, UC-001]
+      related_epic: EPIC-FOUNDATION
+      layers: [Adapter-UI, UseCase, Domain (UserAccount), Adapter-DB]
+      size_estimate: "SP: 3"
+      dependencies: [TASK-SEC-001]
+      notes: MVP対象。
+    - id: US-AUTH-002
+      story: |
+        登録済みのユーザ として、メールアドレスとパスワードでシステムにログインしたい。
+        それは、自分のライブラリにアクセスするためだ。
+      acceptance_criteria:
+        - ログインページにメールアドレスとパスワードの入力フィールド、ログインボタンが表示される。
+        - 登録済みのメールアドレスと正しいパスワードを入力してログインボタンを押すと、認証が成功し、ライブラリ画面にリダイレクトされる。
+        - メールアドレスが存在しない、またはパスワードが間違っている場合、エラーメッセージが表示される。
+        - ログイン状態はセッション等で維持される。
+      references: [FR-AUTH-002]
+      related_epic: EPIC-FOUNDATION
+      layers: [Adapter-UI, UseCase, Domain (UserAccount), Adapter-DB]
+      size_estimate: "SP: 2"
+      dependencies: [US-AUTH-001]
+      notes: MVP対象。
+    - id: US-AUTH-003
+      story: |
+        パスワードを忘れたユーザ として、メールで指示を受け取りパスワードを再設定したい。
+        それは、アカウントへのアクセスを回復するためだ。
+      acceptance_criteria:
+        - ログインページに「パスワードをお忘れですか？」リンクが表示される。
+        - リンクをクリックすると、メールアドレス入力フォームが表示される。
+        - 登録済みのメールアドレスを入力して送信すると、パスワード再設定用のリンクが記載されたメールが送信される。
+        - メール内のリンクをクリックすると、新しいパスワードを設定するページが表示される。
+        - 新しいパスワード（強度チェックあり）を入力し設定すると、パスワードが更新され、ログインページにリダイレクトされる。
+        - 再設定リンクには有効期限が設定されている。
+      references: [FR-AUTH-003]
+      related_epic: EPIC-FOUNDATION
+      layers: [Adapter-UI, UseCase, Domain (UserAccount), Adapter-DB, Infrastructure (メール送信)]
+      size_estimate: "SP: 5"
+      dependencies: [US-AUTH-001, TASK-INFRA-01]
+      notes:
+    - id: US-LEGAL-001
+      story: |
+        DeepReadを利用するユーザ として、サービス利用前に利用規約とプライバシーポリシーを確認し、同意したい。
+        それは、サービスの利用条件とデータの扱い（AI学習への不使用を含む）について理解し、納得して利用するためだ。
+      acceptance_criteria:
+        - 新規登録プロセス中に、利用規約とプライバシーポリシーへのリンクが表示され、同意チェックボックスが表示される。
+        - 同意チェックボックスをチェックしないと、アカウント登録が完了しない。
+        - 利用規約・プライバシーポリシーが更新された場合、ログイン時に更新通知と再同意要求が表示される。
+        - ユーザの同意状況（同意したバージョン、日時）がシステムに記録される。
+        - 利用規約・プライバシーポリシーの内容には、ユーザコンテンツをAIモデル学習には利用しない旨が明記されている（暫定内容でも）。
+      references: [FR-LEGAL-001, FR-LEGAL-002, FR-DATA-MGMT-002, UC-001]
+      related_epic: EPIC-FOUNDATION
+      layers: [Adapter-UI, UseCase, Domain (UserAccount), Adapter-DB]
+      size_estimate: "SP: 3"
+      dependencies: [US-AUTH-001, TASK-LEGAL-01]
+      notes: MVP対象。規約内容は暫定だがAI学習不使用は明記。
+    - id: US-UPLOAD-001
+      story: |
+        DeepReadのユーザ として、自分のコンピュータからPDFドキュメントをシステムに簡単に追加したい。
+        それは、後でシステム上でその内容を活用するためだ。
+      acceptance_criteria:
+        - ライブラリ画面に「アップロード」ボタンが表示される。
+        - ボタンをクリックすると、OS標準のファイル選択ダイアログが表示され、PDFファイルを選択できる。
+        - ユーザ設定のファイルサイズ/ページ数上限内のPDFを選択してアップロードを実行すると、アップロード処理が開始される。
+        - 'アップロード中は進捗が表示される（例: %表示）。'
+        - ユーザ設定上限を超えるファイルを指定すると、「ファイルサイズ(またはページ数)が上限を超えています」というエラーメッセージが表示され、アップロードされない。
+        - PDF以外のファイルを選択しようとしても選択できない、またはアップロード時にエラーとなる。
+        - アップロードが成功すると、バックエンドの解析処理が非同期でトリガーされる。
+      references: [FR-UPLOAD-001, UC-002]
+      related_epic: EPIC-PIPELINE
+      layers: [Adapter-UI, UseCase, Infrastructure (ファイルストレージ)]
+      size_estimate: "SP: 3"
+      dependencies: [US-AUTH-002, US-SETTINGS-001]
+      notes: MVP対象。パラメータ設定は初期値。
+    - id: US-PIPE-001
+      story: |
+        DeepReadのユーザ として、アップロードしたPDFがバックグラウンドで自動的に解析され、
+        内容が抽出・準備されることを知りたい。
+        それは、いつからドキュメントを活用できるか見通しを立てるためだ。
+      acceptance_criteria:
+        - PDFアップロード後、ライブラリ画面の一覧に該当ドキュメントが「処理中」として表示される。
+        - 解析処理の各段階の進捗が分かるような表示（MVPでは簡易表示でも可）が提供される。
+        - 全ての解析処理が正常に完了すると、ドキュメントのステータスが「準備完了」に更新される。
+        - 解析処理中にエラーが発生した場合、ステータスが「エラー」となり、ユーザはエラーが発生したことを認識できる。
+      references: [FR-UPLOAD-002, FR-UPLOAD-003, UC-002]
+      related_epic: EPIC-PIPELINE
+      layers: [Adapter-UI, UseCase, Domain (Document), Adapter-DB, Infrastructure (非同期処理基盤)]
+      size_estimate: "SP: 5"
+      dependencies: [US-UPLOAD-001, TASK-PIPE-01]
+      notes: MVP対象。
+    - id: US-LIB-001
+      story: |
+        DeepReadのユーザ として、アップロードしたドキュメントをライブラリで一覧表示したい。
+        それは、自分が管理しているドキュメントを俯瞰し、目的のドキュメントを見つけやすくするためだ。
+      acceptance_criteria:
+        - ライブラリ画面を開くと、自分がアップロードしたドキュメントの一覧が表示される。
+        - 各ドキュメントについて、サムネイル、タイトル、ファイル名、最終更新日時、ステータスが表示される。
+        - 一覧表示とサムネイル表示を切り替えることができる。
+        - ドキュメント数が多い場合に備え、ページネーションまたは無限スクロールが実装されている。
+      references: [FR-LIB-001]
+      related_epic: EPIC-LIBRARY
+      layers: [Adapter-UI, UseCase, Domain (Library, Document), Adapter-DB]
+      size_estimate: "SP: 3"
+      dependencies: [US-AUTH-002, US-PIPE-001]
+      notes: MVP対象。パーソナルライブラリ機能の中核。
+    - id: US-LIB-002
+      story: |
+        DeepReadのユーザ として、ライブラリ内のドキュメントをキーワードで検索したい。
+        それは、大量のドキュメントの中から目的のものを素早く見つけるためだ。
+      acceptance_criteria:
+        - ライブラリ画面に検索ボックスが表示される。
+        - キーワードを入力して検索を実行すると、タイトル、ファイル名、抽出されたテキスト内容、PDFメタデータにキーワードが含まれるドキュメントが一覧表示される。
+        - 検索結果は関連度順（または更新日時順など、選択可能）に表示される。
+        - 検索応答時間は目標値（例: V秒以内）を満たす。
+      references: [FR-LIB-002]
+      related_epic: EPIC-LIBRARY
+      layers: [Adapter-UI, UseCase, Domain (Library, Document), Adapter-Search (全文検索エンジン?), Adapter-DB]
+      size_estimate: "SP: 5"
+      dependencies: [US-LIB-001, TASK-SEARCH-01]
+      notes: MVP対象。ライブラリ活用性の基盤。
+    - id: US-LIB-003
+      story: |
+        DeepReadのユーザ として、ライブラリ内のドキュメントにタグを付けて整理したい。
+        それは、後で関連するドキュメントをグループ化して見つけやすくするためだ。
+      acceptance_criteria:
+        - ライブラリの一覧表示またはドキュメント詳細画面で、ドキュメントに任意のタグ（文字列）を追加できる。
+        - 1つのドキュメントに複数のタグを付与できる。
+        - 付与されたタグは表示され、削除もできる。
+        - ライブラリ画面で、特定のタグが付与されたドキュメントをフィルタリング表示できる。
+      references: [FR-LIB-003]
+      related_epic: EPIC-LIBRARY
+      layers: [Adapter-UI, UseCase, Domain (Document, Tag?), Adapter-DB]
+      size_estimate: "SP: 3"
+      dependencies: [US-LIB-001]
+      notes: MVP対象。ユーザによる情報整理を支援。
+    - id: US-QA-001
+      story: |
+        DeepReadのユーザ として、特定のドキュメントを開き、その内容について自然言語で質問したい。
+        それは、ドキュメント全体を読まなくても、知りたい情報をピンポイントで得られるようにするためだ。
+      priority: High # 最優先
+      acceptance_criteria:
+        - ドキュメント表示画面に、チャット形式の質問入力欄と回答表示エリアが表示される。
+        - 質問を入力して送信すると、システムは（主に類似QAを検索・要約して）回答を生成し、表示する。
+        - 回答には、信頼性の高い出典情報（例: 類似QAへの参照等）が可能な範囲で付与される。
+        - 質問と回答の履歴がチャットエリアに表示される。
+        - 応答時間は目標値（例: 10秒以内）を満たし、処理中は進捗が表示される。
+        - 類似QAが見つからない場合、「現時点では回答できません...」等のメッセージが表示される。(MVP後検討)
+      references: [FR-QA-001, FR-QA-002, FR-QA-003, UC-003]
+      related_epic: EPIC-QA-CORE
+      layers: [Adapter-UI, UseCase (RAG), Domain (UserInteraction, QApair), Adapter-AI, Adapter-Search (VectorDB)]
+      size_estimate: "SP: 8"
+      dependencies: [US-PIPE-001, TASK-AI-01, TASK-VEC-01, TASK-BATCH-01]
+      notes: MVP対象。コア機能であり差別化要因。高品質な応答を目指す。
+    - id: US-QA-002
+      story: |
+        DeepReadのユーザ として、ライブラリから複数のドキュメントを選択し、
+        それら全体の内容について横断的に質問したい。
+        それは、複数の情報源を比較・統合して、より深い洞察を得るためだ。 [推測]
+      acceptance_criteria:
+        - ライブラリ画面で、複数のドキュメントを選択できるUI（チェックボックス等）が提供される。
+        - 複数ドキュメント選択後、「選択文書について質問」等のアクションが可能になる。
+        - 質問を入力して送信すると、システムは選択されたドキュメント群に関連する過去QAを検索し、応答を生成・表示する。
+        - 一度に選択できるドキュメント数の上限は、ユーザ毎の設定に従う（初期値1）。
+        - 回答には、可能な範囲で出典情報が付与される。
+      references: [FR-QA-004, FR-QA-005, UC-004]
+      related_epic: EPIC-QA-CORE
+      layers: [Adapter-UI, UseCase (RAG), Domain (UserInteraction, QApair), Adapter-AI, Adapter-Search (VectorDB)]
+      size_estimate: "SP: 5"
+      dependencies: [US-QA-001, US-LIB-001, US-SETTINGS-001]
+      notes: 複数文書横断検索機能（差別化要因）。
+    - id: US-EXTRACT-001
+      story: |
+        DeepReadのユーザ として、開いているドキュメントの特定のページ範囲を指定して、
+        その部分のテキストだけを抽出したい。
+        それは、レポート作成や引用のために必要なテキストを簡単にコピーできるようにするためだ。 [推測]
+      acceptance_criteria:
+        - ドキュメント表示画面で、ページ範囲（開始ページ、終了ページ）を指定してテキスト抽出を実行する機能がある。
+        - 実行すると、指定されたページ範囲から抽出されたテキストデータが連結されて表示される。
+        - 表示されたテキストはコピー可能である。
+      references: [FR-EXTRACT-001, UC-005]
+      related_epic: EPIC-UTILITIES
+      layers: [Adapter-UI, UseCase, Domain (Document, Page, ContentElement), Adapter-DB]
+      size_estimate: "SP: 2"
+      dependencies: [US-PIPE-001]
+      notes:
+    - id: US-SUMM-001
+      story: |
+        DeepReadのユーザ として、ドキュメント全体や指定した部分、あるいは抽出したテキストの要約を
+        AIに作成させたい。それは、長文の内容を短時間で把握するためだ。
+      acceptance_criteria:
+        - ドキュメント表示画面やテキスト抽出結果表示画面で、AIによる要約を指示する機能がある。
+        - 要約対象（全体、ページ範囲、抽出テキスト）を指定できる。
+        - 実行すると、AIが（必要に応じてRAGに基づき）要約を生成し、表示する。
+        - 応答時間は目標値（例: 10秒以内）を満たし、処理中は進捗が表示される。
+      references: [FR-SUMM-001, UC-005]
+      related_epic: EPIC-UTILITIES
+      layers: [Adapter-UI, UseCase (RAG), Domain (UserInteraction, SummarizationRequest), Adapter-AI, Adapter-Search (VectorDB)]
+      size_estimate: "SP: 5"
+      dependencies: [US-PIPE-001, US-EXTRACT-001, TASK-AI-01]
+      notes:
+    - id: US-FEEDBACK-001
+      story: |
+        DeepReadのユーザ として、AIが生成した回答に対して、評価やタグ、コメントでフィードバックを送りたい。
+        それは、システムの精度向上に貢献し、将来より良い回答を得られるようにするためだ。 [推測]
+      acceptance_criteria:
+        - AIの回答表示箇所に、Good/Badのような評価ボタンが表示される。
+        - 回答に対して、自由入力形式のタグ付けとコメント入力欄が提供される（任意入力）。
+        - フィードバックを送信すると、システム内部に関連するQ&A履歴と紐付けて記録される。
+      references: [FR-FEEDBACK-001, UC-006]
+      related_epic: EPIC-FEEDBACK-LOOP
+      layers: [Adapter-UI, UseCase, Domain (UserInteraction, FeedbackRecord), Adapter-DB]
+      size_estimate: "SP: 3"
+      dependencies: [US-QA-001]
+      notes: MVP対象はGood/Badのみ。タグ・コメントは優先度低。
+    - id: US-IMPROVE-001
+      story: |
+        DeepReadのプロダクトチーム [推測] として、ユーザから寄せられた新規質問に対して、
+        システムが自動的に回答を生成し、将来の類似質問に備えたい。
+        それは、システムの対応範囲を継続的に拡大し、ユーザ体験を向上させるためだ。
+      acceptance_criteria:
+        - システムに記録された新規質問（まだ類似QAがないもの）を対象とするバッチ処理が、ユーザ設定の頻度で実行される。
+        - バッチ処理は、各新規質問に関連するドキュメントチャンクを検索し、RAGに基づいて回答を生成する。
+        - 生成された質問と回答のペア（Q&Aペア）が、ベクトル埋め込みと共にQ&Aデータセットに追加される。
+        - バッチ処理の実行結果（成功、失敗、処理件数など）がログに記録される。
+      references: [FR-IMPROVE-001]
+      related_epic: EPIC-FEEDBACK-LOOP
+      layers: [UseCase (Batch), Domain (UserInteraction, QApair), Adapter-AI, Adapter-Search (VectorDB), Adapter-DB, Infrastructure (スケジューラ)]
+      size_estimate: "SP: 8"
+      dependencies: [US-PIPE-001, US-QA-001, TASK-AI-01, TASK-VEC-01, TASK-INFRA-02]
+      notes: MVP対象（基本機能）。システムの自己改善ループのコア。
+    - id: US-SETTINGS-001
+      story: |
+        DeepReadのユーザ として、自分のAPIキーやファイル制限、バッチ処理頻度などの設定を変更したい。
+        それは、自分の利用状況やコスト感覚に合わせてシステムの動作を最適化するためだ。 [推測]
+      acceptance_criteria:
+        - 設定ページに、ユーザが変更可能なパラメータ（項目はMVP開発中に決定）が表示され、編集・保存できる。
+        - 保存された設定値は、以降のシステムの挙動（例: アップロード制限、バッチ頻度）に正しく反映される。
+        - APIキー等の機密情報は適切にマスキングされて表示され、安全に保存される（DB保存、ALE+外部KMS推奨）。
+        - 設定値には妥当なデフォルト値が設定されている。
+      references: [FR-CONFIG-001, UC-007]
+      related_epic: [EPIC-FOUNDATION, EPIC-SETTINGS]
+      layers: [Adapter-UI, UseCase, Domain (UserAccount, UserSettings), Adapter-DB]
+      size_estimate: "SP: 5"
+      dependencies: [US-AUTH-002, TASK-CONFIG-ARCH-01, TASK-SEC-002] # TASK-SEC-002追加
+      notes: MVP対象（基本項目）。
+
+  technical_tasks:
+    - id: TASK-ARCH-01
+      description: |
+        クリーンアーキテクチャに基づき、システムの全体的なレイヤー構造
+        （UI, UseCase, Domain, Adapters, Infrastructure）を設計・定義し、
+        依存関係ルールを確立する。
+      references: [NFR (Maintainability/Extensibility)]
+      related_epic: EPIC-ARCH-NFR
+      layers: [All]
+      size_estimate: "SP: 5"
+      dependencies: []
+      notes: プロジェクト初期の最重要タスクの一つ。
+    - id: TASK-PIPE-01
+      description: |
+        PDFアップロード後の非同期処理パイプライン（ページ画像化 → AI情報抽出 → 構造化 → ベクトル化）
+        を構築する。各ステップの成功/失敗ハンドリング、リトライ戦略、進捗管理メカニズムを含む。
+      references: [UC-002, FR-UPLOAD-002]
+      related_epic: EPIC-PIPELINE
+      layers: [UseCase, Infrastructure (非同期処理基盤, キューイング), Adapter-AI, Adapter-Search (VectorDB)]
+      size_estimate: "SP: 8"
+      dependencies: [TASK-PDF-01, TASK-AI-02, TASK-VEC-01, TASK-INFRA-03]
+      notes: MVP対象。[分割案あり]
+    - id: TASK-PDF-01
+      description: |
+        PDFページ画像化ライブラリ（例: pdf2image + Poppler）を導入し、
+        調整可能な解像度でPDFをページ画像に変換する機能を実装・テストする。
+        **PopplerのGPLライセンス影響についてTASK-LEGAL-02の結果を考慮する。**
+      references: [FR-PDFPROC-001]
+      related_epic: EPIC-PIPELINE
+      layers: [Adapter-Infrastructure]
+      size_estimate: "SP: 3"
+      dependencies: [TASK-INFRA-04, TASK-LEGAL-02] # TASK-LEGAL-02追加
+      notes: MVP対象。解像度はテスト後に決定。ライセンス注意。
+    - id: TASK-AI-01
+      description: |
+        RAGアーキテクチャのコアロジック（類似QA/文書チャンク検索 + コンテキスト付きプロンプト生成 + AI応答生成）
+        を実装する。Langchain等のフレームワーク利用を前提とする。
+      references: [FR-QA-002, FR-SUMM-001, FR-IMPROVE-001]
+      related_epic: [EPIC-QA-CORE, EPIC-UTILITIES, EPIC-FEEDBACK-LOOP]
+      layers: [UseCase, Adapter-AI, Adapter-Search (VectorDB)]
+      size_estimate: "SP: 8"
+      dependencies: [TASK-VEC-01, TASK-AI-03]
+      notes: MVP対象。システムの核。
+    - id: TASK-AI-02
+      description: |
+        ページ画像から情報（テキスト、表、図説明）を抽出するために、**Gemini 1.5 Flash**を利用する
+        AI連携を実装する（Langchain使用）。
+      references: [FR-AICONV-001]
+      related_epic: [EPIC-PIPELINE, EPIC-AI-CORE]
+      layers: [Adapter-AI]
+      size_estimate: "SP: 5"
+      dependencies: [TASK-AI-03]
+      notes: MVP対象。将来的なChatGPT等への切り替えも考慮。
+    - id: TASK-AI-03
+      description: |
+        外部生成AI API（初期は**Google Gemini 1.5 Flash**）との連携インターフェース
+        （APIキー管理含む）を実装する。モデル切り替え（Langchain利用）を考慮した設計とする。
+      references: [NFR (Security), Constraints (Technology Stack)]
+      related_epic: EPIC-AI-CORE
+      layers: [Adapter-AI, Infrastructure]
+      size_estimate: "SP: 3"
+      dependencies: [US-SETTINGS-001]
+      notes: MVP対象。
+    - id: TASK-VEC-01
+      description: |
+        テキストチャンク（段落単位基本）とQAデータのベクトル埋め込み生成（API利用）および
+        ベクトルDB（**Qdrant推奨**）への登録・検索機能を実装する。チャンク分割ロジック含む。
+      references: [FR-AICONV-003, NFR (Performance)]
+      related_epic: [EPIC-PIPELINE, EPIC-QA-CORE]
+      layers: [Adapter-Search (VectorDB), Adapter-AI (Embedding), Infrastructure]
+      size_estimate: "SP: 8"
+      dependencies: [TASK-VEC-02] # 選定タスクへの依存に変更
+      notes: MVP対象。[分割案あり]
+    - id: TASK-VEC-02
+      description: |
+        ベクトルDBとして**Qdrant (Self-Hosted) を選定**し、導入準備（Dockerイメージ、基本設定）を行う。
+        （比較評価は完了、選定結果を反映）
+      references: [Constraints (Technology Stack), Survey Report Sec. 4]
+      related_epic: EPIC-ARCH-NFR
+      layers: [Infrastructure, Architecture]
+      size_estimate: "SP: 2" # 評価から導入準備へ変更
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-SEARCH-01
+      description: |
+        ライブラリの全文検索機能を実装するための技術（例: PostgreSQLの全文検索機能、Elasticsearch等）
+        を選定・導入する。
+      references: [FR-LIB-002]
+      related_epic: EPIC-LIBRARY
+      layers: [Adapter-Search, Infrastructure]
+      size_estimate: "SP: 5"
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-CONFIG-ARCH-01
+      description: |
+        ユーザ毎設定の永続化方式として**DB保存を実装**する。具体的なスキーマ設計を行う。
+        **(機密情報の安全な保存はTASK-SEC-002で対応)**
+      references: [NFR (Security), Constraints (User Config)]
+      related_epic: [EPIC-FOUNDATION, EPIC-SETTINGS]
+      layers: [Architecture, Domain (UserAccount, UserSettings), Adapter-DB]
+      size_estimate: "SP: 2" # 実装スコープを明確化
+      dependencies: []
+      notes: MVP対象。ローカルファイル案は破棄。
+    - id: TASK-SEC-001
+      description: |
+        パスワードハッシュ化（bcrypt）の実装と、基本的なWebセキュリティ対策（CSRF, XSS等）を
+        Djangoフレームワークの機能を用いて設定・確認する。
+      references: [NFR (Security)]
+      related_epic: [EPIC-FOUNDATION, EPIC-ARCH-NFR]
+      layers: [Adapter-UI, UseCase, Infrastructure]
+      size_estimate: "SP: 2"
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-LEGAL-01
+      description: |
+        暫定的な利用規約とプライバシーポリシーのテンプレートを準備し、同意取得機能に組み込む。
+        正式リリース前に弁護士レビューが必要であることを関係者にリマインドする。
+      references: [FR-LEGAL-001, Constraints (Legal Review)]
+      related_epic: EPIC-FOUNDATION
+      layers: [Legal]
+      size_estimate: "SP: 1"
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-TEST-01
+      description: |
+        TDD実践のためのテストフレームワーク（pytest）とインテグレーション/E2Eテストの仕組み
+        （例: pytest-django, Playwright/Selenium）をセットアップする。
+        CI/CDパイプラインでのテスト自動実行を設定する。
+      references: [NFR (Testability)]
+      related_epic: EPIC-ARCH-NFR
+      layers: [Infrastructure (CI/CD), Development Process]
+      size_estimate: "SP: 5"
+      dependencies: []
+      notes:
+    - id: TASK-INFRA-01
+      description: |
+        メール送信機能（パスワードリセット用）のためのインフラ設定
+        （例: DjangoのEmailBackend設定 + SMTPサーバ or SendGrid等連携）を行う。
+      references: [UC-001] # UC-003
+      related_epic: EPIC-FOUNDATION
+      layers: [Infrastructure, Adapter-Notification]
+      size_estimate: "SP: 2"
+      dependencies: []
+      notes:
+    - id: TASK-INFRA-02
+      description: |
+        バッチ処理（Q&Aデータセット改善）を実行するためのスケジューリング基盤
+        （例: Celery Beat, Django-Q scheduler, Cron）を選定・設定する。
+      references: [FR-IMPROVE-001]
+      related_epic: EPIC-FEEDBACK-LOOP
+      layers: [Infrastructure]
+      size_estimate: "SP: 3"
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-INFRA-03
+      description: |
+        非同期処理（PDF解析パイプライン）を実行するための基盤
+        （例: Celery + Redis/RabbitMQ, Django-Q）を選定・設定する。
+      references: [FR-UPLOAD-002]
+      related_epic: EPIC-PIPELINE
+      layers: [Infrastructure]
+      size_estimate: "SP: 5"
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-INFRA-04
+      description: |
+        Docker環境でPoppler（pdf2imageの依存ライブラリ）をセットアップ・利用可能にする。
+      references: [Constraints (Technology Stack)]
+      related_epic: EPIC-PIPELINE
+      layers: [Infrastructure]
+      size_estimate: "SP: 1"
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-LOG-01
+      description: |
+        原因特定可能な詳細ログを出力するためのロギング設定
+        （構造化ログライブラリ導入、ログレベル設定、出力先設定）を行う。
+      references: [NFR (Maintainability)]
+      related_epic: EPIC-ARCH-NFR
+      layers: [Infrastructure, Application-wide]
+      size_estimate: "SP: 2"
+      dependencies: []
+      notes: MVP対象。
+    - id: TASK-FRONTEND-01 # 新規追加
+      description: |
+        フロントエンドフレームワーク（React, Vue, Svelte, HTMX等）を、
+        チームのスキルセット、Django/Tailwind連携、パフォーマンス、将来性を考慮して技術選定する。
+      references: [Constraints (Technology Stack), Survey Report Sec. 5]
+      related_epic: EPIC-ARCH-NFR
+      layers: [Architecture, Adapter-UI]
+      size_estimate: "SP: 2"
+      dependencies: []
+      notes: MVP開発開始前に決定が必要。
+    - id: TASK-ACCESSIBILITY-01 # 新規追加
+      description: |
+        WebアクセシビリティガイドラインWCAG 2.1 Level AA達成を目標とし、
+        主要な要件（キーボード操作、スクリーンリーダー対応、コントラスト比、代替テキスト等）を
+        フロントエンド設計・実装に組み込む。アクセシビリティテストを計画する。
+      references: [NFR (UI/UX), Survey Report Sec. 7]
+      related_epic: EPIC-ARCH-NFR
+      layers: [Adapter-UI, Development Process]
+      size_estimate: "SP: 5"
+      dependencies: [TASK-FRONTEND-01]
+      notes: MVPから継続的に対応が必要。
+    - id: TASK-LEGAL-02 # 新規追加
+      description: |
+        PDF画像化に使用するPopplerライブラリのGPLライセンスが、DeepReadの配布・運用形態に
+        与える影響について、法務担当者または専門家と確認し、リスクと対策を明確にする。
+      references: [Constraints (Technology Stack), Survey Report Sec. 9]
+      related_epic: EPIC-ARCH-NFR
+      layers: [Legal, Architecture]
+      size_estimate: "SP: 1"
+      dependencies: []
+      notes: 早期の確認が必要。
+    - id: TASK-PERF-TEST-01 # 新規追加
+      description: |
+        主要な性能目標（PDF解析、AI抽出、Q&A応答、ライブラリ検索）に対する
+        性能テスト計画を作成し、PoCまたは開発中に実施・評価する体制を構築する。
+      references: [NFR (Performance), Survey Report Sec. 2]
+      related_epic: EPIC-ARCH-NFR
+      layers: [Testing, Infrastructure]
+      size_estimate: "SP: 3"
+      dependencies: [TASK-ARCH-01] # (テスト戦略の一部として)
+      notes:
+    - id: TASK-SEC-002 # 新規追加 (TASK-CONFIG-ARCH-01から分離)
+      description: |
+        ユーザ毎のAPIキー等の機密情報を安全にDBへ保存・利用するため、
+        アプリケーションレベル暗号化(ALE) + 外部KMS(推奨)によるキー管理の仕組みを実装・テストする。
+      references: [NFR (Security), Survey Report Sec. 6]
+      related_epic: EPIC-FOUNDATION, EPIC-SETTINGS
+      layers: [UseCase, Domain, Adapter-DB, Adapter-Infrastructure (KMS)]
+      size_estimate: "SP: 5"
+      dependencies: [TASK-CONFIG-ARCH-01]
+      notes: MVP対象。
