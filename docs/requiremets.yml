@@ -1,0 +1,539 @@
+requirement_definition:
+  version: 5.0 (Final) # Updated based on Survey Report Sections 6-9
+  project_name: DeepRead
+  date: 2025-05-03 # Current date
+
+  # 1. 概要と背景
+  overview_background:
+    purpose: |
+      ユーザが所有する多数のPDF化された書籍や資料（以下、ドキュメント）を効率的に管理し、
+      その内容を深く理解・活用することを支援するインテリジェントなパーソナルライブラリシステム
+      「DeepRead」を開発する。競合との差別化要因として、高度なPDF解析能力、
+      パーソナルライブラリとしての管理・横断検索機能、高品質な応答を目指す。
+    background: |
+      多くの研究者、専門家、学習者は、大量のPDFドキュメントを保有しているが、
+      読書時間の制約や情報検索の困難さに直面している。既存のPDF対話ツールや
+      汎用AIは存在するが、個人の知識ベースとして多数のドキュメントを統合的に管理・活用し、
+      複雑な文書からも高精度な情報を引き出すニーズには十分に応えられていない。
+    problem_to_solve:
+      - PDFドキュメントの読書・内容把握にかかる時間と労力の削減。
+      - 多数のドキュメントの中から必要な情報へのアクセス性の向上。
+      - ドキュメント横断的な知識の連携・活用促進。
+      - 増加し続けるデジタルドキュメントの効率的な管理。
+      - 既存ツールでは不十分な、複雑なPDFの解析とライブラリとしての活用。
+
+  # 2. システム化の目的とゴール
+  goals:
+    business_objectives:
+      - ユーザの知識生産性向上に貢献し、特定分野（研究、専門業務、学習）におけるリーダー的ツールとしての地位を確立する。
+      - 「インテリジェントなパーソナルPDFライブラリ」としての独自価値を提供し、競合との差別化を図る。
+      - 有料プラン等による持続可能な収益モデルを構築する。
+    success_criteria: # 具体的KPIは別途定義が必要
+      - "特定タスク（例: 関連情報の検索、要約作成）にかかる時間が平均X%削減される。"
+      - "ユーザあたりの管理ドキュメント数が平均Y件に達する。"
+      - "有料プラン転換率Z%を達成する。"
+      - "ユーザ満足度スコア（NPS等）で目標値を達成する。"
+      - "競合と比較した場合の特定機能（例: 横断検索、複雑な表抽出）における優位性指標（別途定義）。"
+
+  # 3. スコープ定義
+  scope:
+    in_scope:
+      - ユーザアカウント管理（メール/パスワード認証）、認証、認可。
+      - 利用規約・プライバシーポリシーの提示と同意管理（内容は暫定、**AI学習不使用等を明記**）。
+      - ユーザによるPDFドキュメントのアップロード機能（パラメータ設定可能）。
+      - PDFページ画像化機能。
+      - ページ画像からの情報抽出機能（生成AI利用、**高度な解析能力を追求**）。
+      - 抽出データの整形・構造化機能。
+      - テキストデータのベクトル埋め込み生成機能（ドキュメントチャンク、Q&Aデータ）。
+      - **パーソナルライブラリ管理機能（一覧、検索、タグ付け）※差別化要因**
+      - 単一ドキュメントQ&A機能（類似Q&A検索・要約、**高品質な応答と出典表示**）。
+      - **複数ドキュメント横断的Q&A機能（類似Q&A検索・要約、出典表示付き）※差別化要因**
+      - テキスト抽出機能（ページ範囲指定）。
+      - テキスト要約機能（RAGベース）。
+      - AI応答に対するユーザフィードバック収集機能。
+      - システム改善のためのデータ蓄積・管理（**AIモデル学習には利用しない**）。
+      - バッチ処理による新規質問への回答生成とQ&Aデータセット拡充機能。
+      - 設定ページ（ユーザ毎設定、MVP開発中に項目決定）。
+      - **Webアクセシビリティ対応 (WCAG 2.1 Level AA目標)**
+    out_of_scope:
+      - 章構造認識機能およびUIからの編集機能。
+      - ユーザによるデータ削除機能。(MVP外)
+      - PDF以外のファイル形式サポート。
+      - PDF編集・アノテーション機能。
+      - ユーザ間共有・共同編集機能。
+      - AIモデルファインチューニング機能。
+      - 外部サービス（Zotero, Mendeley等）連携。
+      - オフライン利用機能。
+      - 高度な監視ダッシュボード、コスト管理機能。
+      - OAuth等ソーシャルログイン。(初期)
+      - フォルダ階層によるライブラリ整理機能。(初期)
+      - リアルタイム文書ベース新規回答生成。(初期)
+      - エラー発生時の詳細なユーザ通知UI。(初期)
+    mvp_scope: # MVP (Minimum Viable Product) スコープ案
+      - ユーザアカウント管理（メール/パスワード認証）
+      - 利用規約・プライバシーポリシー同意機能（内容は暫定）
+      - PDFアップロード機能（パラメータ設定は初期値）
+      - PDFページ画像化と基本情報抽出（テキスト、ベクトル生成）
+      - ライブラリ管理（一覧表示、基本検索、タグ付け）
+      - 単一ドキュメントQ&A（類似QA検索・要約）
+      - AI応答評価（Good/Bad）
+      - 設定ページ（基本項目のみ、開発中に決定）
+      - Q&A改善バッチ（基本機能）
+
+  # 4. 主要なステークホルダーと役割
+  stakeholders:
+    user:
+      name: ユーザ
+      role: システム主要利用者（研究者、専門家、学習者）。PDF提供、機能利用、フィードバック提供。
+      ddd_consideration: ドキュメント活用に関するドメイン知識が最重要。ユビキタス言語形成の中心。
+    development_team:
+      name: 開発チーム
+      role: システムの設計、開発、テスト、デプロイメント。
+      ddd_consideration: ユーザのドメイン知識を理解しモデルに反映。ユビキタス言語を使用。
+    product_owner_manager:
+      name: プロダクトオーナー/マネージャー
+      role: 要件定義、優先順位付け、開発プロセス管理、ステークホルダー調整。
+    operations_team:
+      name: 運用チーム（将来的に）
+      role: システム監視、保守、インフラ管理、障害対応。
+    legal_advisor:
+      name: 法務担当者/弁護士
+      role: 利用規約、プライバシーポリシーレビュー、著作権等（特にAI関連）に関する法的アドバイス提供。
+      ddd_consideration: 法的要件という制約のあるドメイン知識を提供。
+    external_service_providers:
+      name: 外部サービスプロバイダー
+      role: 生成AI API、ベクトルDBサービス等の提供者。
+
+  # 5. ユースケース定義
+  # Clean Architecture観点：以下はアプリケーション固有のビジネスルール (Use Cases/Interactors レイヤー)
+  use_cases:
+    UC-001:
+      name: 新規ユーザが利用を開始する
+      actor: 未登録ユーザ
+      preconditions: なし
+      postconditions: ユーザアカウントが作成され、利用規約・プライバシーポリシーに同意済みとなり、ログイン状態になる。
+      basic_flow:
+        - アクターがサインアップページにアクセスする。
+        - アクターが必要情報（メールアドレス、パスワード等）を入力する。
+        - アクターが利用規約とプライバシーポリシーを確認し、同意チェックボックスをオンにする。
+        - アクターが登録ボタンを押す。
+        - システムは入力値を検証し、アカウントを作成し、同意状況を記録する。
+        - システムはアクターを自動ログインさせ、ライブラリ画面を表示する。
+      alternative_flows:
+        - メールアドレス重複エラー
+        - パスワード強度不足エラー
+        - 同意チェックなしエラー
+    UC-002:
+      name: ユーザがPDFドキュメントをアップロードし解析する
+      actor: ログイン済みユーザ
+      preconditions: ユーザがライブラリ画面を表示している。
+      postconditions: 指定されたPDFがシステムにアップロードされ、解析処理が開始（または完了）し、ライブラリに追加される。
+      basic_flow:
+        - アクターがアップロードボタンをクリックする。
+        - アクターがローカルからPDFファイルを選択する。
+        - アクターがアップロードを実行する。
+        - システムはファイルを受け取り、アップロード処理を行う。
+        - システムはPDFの各ページを画像に変換する処理を非同期で開始する。
+        - システムは生成された各ページ画像に対し、生成AIを用いて情報抽出を行う処理を非同期で開始する。
+        - システムは抽出された情報を構造化し、ベクトル埋め込みを生成する。
+        - システムはライブラリにドキュメントを（処理中ステータスで）表示し、進捗を通知する。
+        - 全ページの解析完了後、システムはドキュメントのステータスを更新する。
+      alternative_flows:
+        - ファイルサイズ/ページ数超過エラー (ユーザ設定値に基づく)
+        - 非対応ファイル形式エラー
+        - アップロード中断
+        - ページ画像化失敗エラー
+        - AI情報抽出失敗エラー (APIエラー含む)
+    UC-003:
+      name: ユーザが単一ドキュメントの内容について質問する
+      actor: ログイン済みユーザ
+      preconditions: ユーザが特定のドキュメントを開き、チャットインターフェースが表示されている。
+      postconditions: システムがユーザの質問に対し、主に類似Q&Aに基づいて生成された回答（出典情報付き）を表示する。
+      basic_flow:
+        - アクターがチャット入力欄に質問を入力する。
+        - アクターが送信ボタンを押す。
+        - システムは質問を受け取り、処理中の進捗を表示する。
+        - システムは質問に類似する過去のQ&Aデータセットをベクトル検索等で特定する (Retrieve)。
+        - システムは特定された類似Q&Aの回答群を生成AIに渡し、要約・統合して回答を生成する (Generate)。
+        - システムは生成された回答と出典情報（類似Q&Aへの参照等）を整形し、チャット画面に表示する。
+        - システムはQ&A履歴を保存する。
+      alternative_flows:
+        - 類似Q&Aが見つからない場合、「現時点では回答できません...」等のメッセージを表示。
+        - AIが回答を生成できない場合 (APIエラー含む)。
+        - タイムアウト。
+    UC-004:
+      name: ユーザが複数ドキュメントを横断して質問する
+      actor: ログイン済みユーザ
+      preconditions: ユーザがライブラリ画面で複数のドキュメント（ユーザ設定上限数まで）を選択している。
+      postconditions: システムがユーザの質問に対し、主に選択されたドキュメント群に関連する類似Q&Aに基づいて生成された回答（出典情報付き）を表示する。
+      basic_flow: # UC-003 と同様のフローだが、検索対象が広がる
+        - アクターが複数ドキュメント選択後、「選択した文書について質問」等のアクションを実行する。
+        - (以降、UC-003 のフローに準じ、検索対象を複数文書関連のQAデータセットとする)
+      alternative_flows: # UC-003 と同様
+    UC-005:
+      name: ユーザがテキストを抽出・要約する
+      actor: ログイン済みユーザ
+      preconditions: ユーザが特定のドキュメントを開いている（または複数選択している）。
+      postconditions: 指定された範囲のテキスト抽出結果、またはその要約結果が表示される。
+      basic_flow: # 要約の場合
+        - アクターが抽出・要約したい範囲（ページ範囲指定）を指定し、要約アクションを実行する。
+        - システムは指定範囲のテキストを取得する。
+        - システムは必要に応じて関連コンテキスト（類似QA等）を検索する。
+        - システムはテキスト（＋コンテキスト）を生成AIに渡し、要約生成を指示する。
+        - システムは生成された要約結果を表示する。
+      alternative_flows:
+        - 指定範囲が無効
+        - テキスト取得失敗
+        - AI要約失敗 (APIエラー含む)
+    UC-006:
+      name: ユーザがAIの応答を評価する
+      actor: ログイン済みユーザ
+      preconditions: システムがAIの応答を表示している。
+      postconditions: ユーザの評価（Good/Bad、タグ、コメント）がシステムに記録される。
+      basic_flow:
+        - アクターが表示されたAI応答に対して、評価ボタン、タグ入力、コメント入力を行う。
+        - アクターがフィードバックを送信する。
+        - システムはその評価を該当するQ&A履歴に関連付けて記録する。
+      alternative_flows: なし
+    UC-007:
+      name: ユーザがシステム設定を変更する
+      actor: ログイン済みユーザ
+      preconditions: ユーザが設定ページを表示している。
+      postconditions: ユーザが行った設定変更がユーザ固有の設定として保存され、以降のシステム動作に反映される。
+      basic_flow:
+        - アクターが設定ページを開く。
+        - アクターが変更したい設定項目（例: バッチ処理頻度、APIキー）を編集/選択する。
+        - アクターが保存ボタンを押す。
+        - システムは設定値を検証し、ユーザ設定として保存する（DBまたはローカルファイル）。
+        - システムは保存完了メッセージを表示する。
+      alternative_flows:
+        - 不正な値が入力された場合のエラー表示。
+        - APIキー検証失敗エラー（もし検証する場合）。
+
+  # 6. ドメインモデル（初期案）
+  # DDD観点：中核となるドメイン概念。ユビキタス言語に基づき、開発中に継続的に洗練。
+  domain_model:
+    aggregates:
+      - name: Library 集約
+        root_entity: Library (ID, UserID)
+        entities:
+          - Document (ID, Title, OriginalFileName, Status, UploadedAt, ...)
+        value_objects:
+          - LibrarySettings # (ユーザ毎設定の一部をここに含む可能性)
+        responsibilities: ユーザごとのドキュメントコレクション管理、追加・削除、検索起点。
+      - name: Document 集約
+        root_entity: Document
+        entities:
+          - Page (ID, PageNumber, ImageReference)
+        value_objects:
+          - ContentElement (Type[TextChunk, StructuredTable, ImageDescription], Content, SourceLocation)
+          - EmbeddingVector (VectorData, ModelInfo)
+          - DocumentMetadata (Author, Subject, Keywords)
+        responsibilities: 単一ドキュメントの内容管理、解析状態管理。
+      - name: UserInteraction 集約
+        root_entity: UserInteractionLog (ID, UserID, Timestamp, Type)
+        entities:
+          - QASession (ID, AssociatedDocuments[], StartTime)
+        value_objects:
+          - QApair (QuestionText, AnswerText, ContextSnippets[], SourceReferences[], Feedback)
+          - SummarizationRequest (TargetScope, ResultText, SourceReferences[])
+          - FeedbackRecord (TargetInteractionID, Rating[Good/Bad], Tags[], Comment)
+        responsibilities: ユーザインタラクション履歴、Q&A、要約、フィードバック記録。
+      - name: UserAccount 集約
+        root_entity: User (ID, Email, HashedPassword, ...)
+        value_objects:
+          - TermsAgreement (Version, AgreedAt)
+          - UserSettings (UserID, MaxFileSize, MaxPages, MaxCrossSearchDocs, BatchFrequency, ApiKey[Encrypted?], ...) # (または別集約)
+        responsibilities: ユーザ認証情報、プロファイル、利用規約同意状況、ユーザ設定管理。
+    domain_events:
+      - UserRegistered
+      - DocumentUploaded
+      - DocumentProcessingStarted
+      - PageImageGenerated
+      - PageProcessed # (AI抽出完了)
+      - DocumentReady
+      - DocumentProcessingFailed
+      - QuestionAsked
+      - AnswerGenerated
+      - FeedbackReceived
+      - TermsAgreed
+      - UserSettingsChanged
+    ubiquitous_language: # (用語集と一部重複)
+      - ユーザ (User)
+      - ドキュメント (Document)
+      - ライブラリ (Library)
+      - ページ (Page)
+      - コンテンツ要素 (ContentElement)
+      - テキストチャンク (Text Chunk)
+      - 画像説明 (Image Description)
+      - 構造化テーブル (Structured Table)
+      - ベクトル埋め込み (Vector Embedding)
+      - 質問 (Question)
+      - 回答 (Answer)
+      - 要約 (Summary)
+      - RAG (Retrieval-Augmented Generation)
+      - コンテキスト (Context)
+      - 出典 (Source Reference)
+      - フィードバック (Feedback)
+      - タグ (Tag)
+      - 利用規約 (Terms of Service / ToS)
+      - プライバシーポリシー (Privacy Policy)
+      - 同意 (Agreement)
+      - 横断検索 (Cross-Document Search)
+      - バッチ処理 (Batch Processing)
+      - 設定 (Settings)
+      - パラメータ (Parameter)
+      - APIキー (API Key)
+
+  # 7. 機能要件
+  # TDD観点：各機能要件はテスト可能な記述を目指す。
+  functional_requirements:
+    AUTH:
+      FR-AUTH-001:
+        description: ユーザはメールアドレスとパスワードでアカウント登録できること。
+      FR-AUTH-002:
+        description: 登録済みユーザはメールアドレスとパスワードでログインできること。
+      FR-AUTH-003:
+        description: パスワード再設定機能を提供すること。
+    LEGAL:
+      FR-LEGAL-001:
+        description: |
+          新規登録時および利用規約・プライバシーポリシー更新時に、暫定的な内容を提示し
+          ユーザから同意を得ること。同意なしではサービス利用不可とすること。
+          **利用規約には、ユーザコンテンツをAIモデル学習に利用しない旨を明記すること。**
+          (内容はリリース前に弁護士によるレビュー必須)
+      FR-LEGAL-002:
+        description: ユーザの同意状況（バージョン、日時）を記録・管理すること。
+    UPLOAD:
+      FR-UPLOAD-001:
+        description: |
+          ユーザはローカルからPDFファイルをアップロードできること。
+          ファイルサイズ上限、ページ数上限はユーザ毎のパラメータとして設定可能とすること
+          （初期暫定値: 100MB, 100ページ）。
+      FR-UPLOAD-002:
+        description: |
+          アップロードされたPDFに対して、非同期でページ画像化とAIによる情報抽出処理を開始すること。
+          処理中はユーザに進捗状況がわかるように表示すること。
+      FR-UPLOAD-003:
+        description: 解析処理のステータス（処理中、完了、エラー）をユーザに表示すること。
+    PDFPROC:
+      FR-PDFPROC-001:
+        description: アップロードされたPDFの各ページを画像ファイル形式に変換すること。（解像度はテストに基づき調整）
+    AICONV:
+      FR-AICONV-001:
+        description: |
+          各ページ画像に対し、選択された生成AI（ChatGPT/Gemini、Langchain経由で切り替え想定）を呼び出し、
+          テキスト要素、表要素、図要素を識別・抽出し、それぞれテキストデータ、構造化データ、
+          テキスト説明として言語化すること。
+      FR-AICONV-002:
+        description: |
+          抽出したテキストデータを段落単位を基本としてチャンクに分割すること。
+          （具体的な分割方法、オーバーラップ等は設定ファイルで調整可能とする）
+      FR-AICONV-003:
+        description: |
+          分割されたテキストチャンク、および過去のQ&Aデータセット（質問と回答）に対して、
+          ベクトル埋め込みを生成し、ベクトルDBに保存すること。
+    LIB: # 差別化要因として再強調
+      FR-LIB-001:
+        description: ユーザは自身のライブラリ内のドキュメントを一覧表示（サムネイル、リスト形式切り替え可）できること。
+        note: パーソナルライブラリ機能の中核。
+      FR-LIB-002:
+        description: ユーザはドキュメントをタイトル、ファイル名、内容（全文検索）、メタデータで検索できること。
+        note: ライブラリ活用性の基盤。
+      FR-LIB-003:
+        description: ユーザはドキュメントをタグ付けによって整理できること。
+        note: ユーザによる情報整理を支援。
+    QA: # 差別化要因として再強調
+      FR-QA-001:
+        description: ユーザが開いている単一ドキュメントに対して、チャット形式で質問できること。
+        note: 基本的な対話機能。
+      FR-QA-002:
+        description: |
+          システムは質問応答時、主に過去のQ&Aデータセットから類似検索を行い、
+          見つかった回答を要約・統合して応答すること。
+          プロンプトは設定ファイルから読み込み、調整可能とすること。
+          **高品質な応答生成を目指す。**
+      FR-QA-003:
+        description: AIの回答には、根拠となった類似Q&Aへの参照等（可能な範囲で）の**信頼性の高い出典情報**を付与すること。
+      FR-QA-004:
+        description: |
+          ユーザはライブラリから複数のドキュメントを選択し、それら全体に関連する過去のQ&Aデータセットを検索し、
+          応答できること。一度に選択可能な最大ドキュメント数はユーザ毎のパラメータとして設定可能とすること（初期値: 1）。
+          note: **複数文書横断検索機能（差別化要因）。**
+      FR-QA-005:
+        description: 横断検索の回答においても、出典情報（類似Q&Aへの参照等）を明示すること。
+    EXTRACT:
+      FR-EXTRACT-001:
+        description: ユーザは指定したページ範囲に基づいて、ドキュメントからテキストデータを抽出できること。
+    SUMM:
+      FR-SUMM-001:
+        description: |
+          ユーザはドキュメント全体、指定範囲、または抽出テキストに対して、
+          AIによる要約を指示できること（RAGに基づく）。
+    FEEDBACK:
+      FR-FEEDBACK-001:
+        description: |
+          ユーザはAIの各応答に対して、評価（例: Good/Bad）、タグ付け（自由入力形式）、
+          コメントをフィードバックできること。（重要度は低い）
+    IMPROVE:
+      FR-IMPROVE-001:
+        description: |
+          システムは、記録された新規質問（類似QAがなかったもの）に対し、バッチ処理で
+          関連ドキュメントチャンクを検索し、RAGに基づき回答を生成し、
+          新たなQ&Aペアとしてデータセットに追加すること。
+          実行頻度（毎日/毎週/毎月/なし）はユーザ毎に設定可能とすること（初期値: 毎日）。
+    CONFIG:
+      FR-CONFIG-001:
+        description: |
+          ユーザは設定ページで、自身のパラメータ（ファイルサイズ上限、ページ数上限、横断検索上限数、
+          バッチ処理頻度、APIキー等、項目はMVP開発中に決定）を表示・変更できること。(MVP対象)
+    DATA_MGMT:
+      FR-DATA-MGMT-001:
+        description: （MVP外）ユーザは自身のデータを個別に削除できること。
+      FR-DATA-MGMT-002: # 新規追加
+        description: **ユーザがアップロードしたコンテンツ及びその派生物（抽出テキスト、ベクトル等）は、外部のAIモデル学習には利用しない。**
+
+  # 8. 非機能要件
+  non_functional_requirements:
+    performance: # 目標値と根拠を反映
+      pdf_page_imaging_time: "平均 0.5秒/ページ (300 dpi、標準文書想定、要実測検証)"
+      ai_information_extraction_time: "平均 3-5秒/ページ (Gemini 1.5 Flash、標準品質画像、要実測検証)"
+      qa_response_time: "10秒以内 (90パーセンタイル)、平均5秒以内目標 (類似QA検索・要約)。進捗表示必須。"
+      library_search_response_time: "2秒以内 (95パーセンタイル、文書1000件時)"
+      ui_responsiveness: "0.5秒以内 (主要操作)"
+      scalability_note: "初期ユーザ数は少ないが、将来的なユーザ数増加を妨げないスケーラブルな設計を考慮。"
+      image_resolution_note: "ページ画像化解像度は、AI認識精度、処理速度、コストを考慮しテストを通じて決定・調整。"
+    availability: # 目標値と根拠を反映
+      uptime_target: "99.5% (内部目標)"
+      rto_target: "4時間 (内部目標)"
+      rpo_target: "1時間 (内部目標)"
+    security: # APIキー保存方式を反映
+      authentication: "メール/パスワード認証（必須）。パスワードハッシュ化（Bcrypt等）。"
+      authorization: "ユーザは自身のデータにのみアクセス可能。"
+      data_protection: "保管時（DB, ファイル）および転送時（TLS）のデータ暗号化。"
+      api_key_management: "**外部APIキーはユーザ毎に設定・DBに保存。アプリケーションレベル暗号化(ALE)と外部シークレットマネージャによるキー管理を推奨。**"
+      vulnerability_mitigation: "OWASP Top 10等の対策、定期的な脆弱性診断検討。"
+      future_auth_note: "将来的なOAuth等の認証方式追加を妨げない設計。"
+    maintainability_extensibility: # Clean Architecture/DDD観点
+      architecture: "レイヤードアーキテクチャ（例: クリーンアーキテクチャ）を採用し、関心事を分離。"
+      dependency_rule: "依存性の方向を内部（ドメイン）から外部（インフラ）へ向け、フレームワーク等への依存を低減。"
+      domain_centric: "ドメインモデルをシステムの中心に据え、ビジネスロジックをドメイン層にカプセル化。"
+      bounded_contexts: "主要ドメインごとの境界づけられたコンテキストを意識し、疎結合な設計を目指す（マイクロサービス化も将来検討）。"
+      infrastructure_as_code: "IaCの導入検討。"
+      logging: "**ログは不具合発生時に原因特定が可能なレベルで詳細に記録すること（構造化ログ推奨）。**"
+      coding_standards: "コードの可読性、一貫性を保つためのコーディング規約策定。"
+      prompt_configurability: "**AI呼び出し部分のプロンプトは設定ファイルから読み込み、容易に変更・調整可能とすること。**"
+      parameter_configurability: "**ファイルサイズ上限等のパラメータは設定ファイルまたはDBで管理し、ハードコーディングしないこと。**"
+      future_folder_note: "ライブラリ整理機能について、将来的なフォルダ階層導入を考慮したデータ構造・設計。"
+    testability: # TDD観点
+      tdd_recommendation: "TDD（テスト駆動開発）の実践を推奨。"
+      unit_test_coverage: "高いユニットテストカバレッジ目標（例: ドメイン層 90%以上）。"
+      integration_e2e_tests: "主要ユースケースに対するインテグレーションテスト、E2Eテストの実装。"
+      test_automation: "テスト自動化パイプラインの構築 (CI/CD)。"
+      mocking_stubbing: "外部API連携部分はモック/スタブを利用したテストを容易にする設計。"
+    ui_ux: # アクセシビリティ要件を追加
+      responsive_design: "主要デスクトップブラウザ対応。"
+      design_consistency: "一貫性のあるデザインシステム（初期は暫定）。"
+      accessibility: "**WCAG 2.1 Level AA を目標とする。** 主要要件として、キーボード操作性、スクリーンリーダー対応、十分なコントラスト比、代替テキスト提供（画像説明活用）、フォーム要素の適切なラベル付けなどを満たすこと。"
+      progress_feedback: "長時間処理箇所での進捗表示。"
+      iterative_improvement: "初期リリースでは暫定的なデザインとし、ユーザフィードバックに基づきイテレーティブに改善。"
+    operation:
+      monitoring: "**標準的な監視項目（リソース使用率、エラーレート、API応答時間等）を設定。** 障害通知・対応プロセスは別途定義。"
+      external_api_cost: "**外部APIのコスト管理はユーザ責任とし、システムはコスト監視・制限機能を提供しない。**"
+
+  # 9. 受け入れ基準（Acceptance Criteria）
+  # TDD観点：具体的なテストケース作成の基盤
+  acceptance_criteria:
+    AC-UPLOAD-002-01:
+      description: |
+        ユーザが標準的なレイアウトの10ページのPDFをアップロードした場合、(目標時間内で)解析が完了し
+        （ページ画像化、AI情報抽出、ベクトル生成含む）、ライブラリ上で「準備完了」ステータスになること。
+    AC-UPLOAD-002-02:
+      description: |
+        ユーザがPDFをアップロード後、ライブラリ上で該当ドキュメントに「処理中」などのステータスが表示され、
+        解析完了後に「準備完了」に更新されること。
+    AC-QA-002-01:
+      description: |
+        ユーザが質問を入力し送信した場合、(目標時間内で) 類似する過去のQ&Aに基づいた回答が表示され、
+        可能な範囲で出典情報が付与されていること。（類似QAがない場合はその旨が表示されること）
+    AC-QA-002-02:
+      description: |
+        ユーザが質問を送信後、AIが回答を生成するまでの間、「関連情報を検索中...」「回答を生成中...」
+        のような進捗を示すメッセージが表示されること。
+    AC-QA-004-01:
+      description: |
+        ユーザがライブラリから設定上限数のドキュメントを選択し、質問を送信した場合、(目標時間内で)
+        選択文書全体に関連する類似過去QAに基づいた回答が表示され、可能な範囲で出典情報が付与されていること。
+    AC-LIB-002-01:
+      description: |
+        ユーザがライブラリ検索窓にキーワードを入力した場合、(目標時間内で) 該当するドキュメント
+        （タイトル、内容、メタデータに一致）がリスト表示されること（ドキュメント100件時）。
+    AC-FEEDBACK-001-01:
+      description: |
+        ユーザがAI応答下の「Good」ボタンをクリックし、タグやコメントを入力して送信した場合、
+        その評価、タグ、コメントがシステム内部のQ&A履歴に正しく記録されること。
+    AC-LEGAL-001-01:
+      description: |
+        未同意のユーザがログインした場合、利用規約・プライバシーポリシー画面が表示され、
+        同意しない限り他の機能を利用できないこと。同意後、通常利用が可能になること。
+    AC-CONFIG-001-01:
+      description: |
+        ユーザが設定ページで自身のバッチ処理頻度を「毎週」に変更し保存した場合、
+        システムがそのユーザの設定を記録し、以降のバッチ処理が毎週実行されること（確認方法は別途定義）。
+    AC-IMPROVE-001-01:
+      description: |
+        新規質問が記録された後、設定された頻度でバッチ処理が実行され、
+        該当質問に対する回答が生成されQ&Aデータセットに追加されること（確認方法は別途定義）。
+
+  # 10. 用語集
+  # DDD観点：プロジェクト内で共有されるユビキタス言語
+  glossary:
+    DeepRead: 本システムの名称。
+    ユーザ (User): 本システムの利用者。アカウントを持つ個人。
+    ドキュメント (Document): ユーザがアップロードしたPDFファイルおよびその解析結果の集合体。
+    ライブラリ (Library): 特定のユーザに紐づく、ドキュメントのコレクション。パーソナルナレッジベース。
+    ページ (Page): ドキュメントを構成する個々のページとその解析データ。
+    コンテンツ要素 (Content Element): ページ内の意味のある情報の単位（テキスト断片、画像説明、構造化テーブル）。
+    テキストチャンク (Text Chunk): AI処理のために分割されたテキストの断片（段落単位など）。
+    画像説明 (Image Description): ページ内の図や画像の内容を説明するテキスト。
+    構造化テーブル (Structured Table): ページ内の表を構造化データ（JSON/CSV等）として表現したもの。
+    ベクトル埋め込み (Vector Embedding): テキストの意味内容を表す高次元数値ベクトル。類似検索に利用。
+    RAG (Retrieval-Augmented Generation): 外部知識を検索(Retrieve)し、それをコンテキストとしてAIに応答を生成(Generate)させるアーキテクチャ。
+    コンテキスト (Context): RAGにおいて、AIに応答生成の根拠として与えられる、検索されたドキュメントの関連箇所や類似QA。
+    出典 (Source Reference): AIの応答や要約の根拠となった情報源（類似QA、ドキュメント箇所など）。
+    Q&Aペア (QA pair): ユーザの質問と、それに対するAIの回答、および関連情報（出典、評価など）のセット。
+    横断検索 (Cross-Document Search): 複数のドキュメントを対象として行う検索やQ&A。
+    フィードバック (Feedback): AIの応答に対するユーザからの評価（Good/Bad、タグ、コメント）。
+    タグ (Tag): ドキュメント整理やフィードバックに使われるラベル。
+    利用規約 (Terms of Service / ToS): サービス利用に関する規約。
+    プライバシーポリシー (Privacy Policy): 個人情報やデータの取り扱いに関する方針。
+    同意 (Agreement): 利用規約等への同意。
+    バッチ処理 (Batch Processing): 定期的にまとめて実行される処理（例: 新規質問への回答生成）。
+    設定 (Settings): システムやユーザの動作を制御するパラメータ。
+    パラメータ (Parameter): 設定項目。
+    APIキー (API Key): 外部APIサービスを利用するための認証情報。
+    チャンク分割 (Chunking): テキストをAI処理しやすい単位に分割すること。
+
+  # 11. 制約条件・前提条件
+  constraints_prerequisites:
+    technology_stack:
+      backend: "Python 3.13, Django"
+      frontend: "Tailwind CSS (暫定), JavaScript/TypeScript (フレームワーク未定、要選定)"
+      database: "PostgreSQL"
+      pdf_libs: "ページ画像化ライブラリ (例: pdf2image [Poppler依存、**GPLライセンス注意**]), メタデータ抽出ライブラリ (例: PyMuPDF [AGPL-3.0])"
+      generative_ai_api: "**初期は Google Gemini 1.5 Flash。** Langchain利用により他モデル（ChatGPT等）への切り替えも考慮。"
+      frameworks: "Langchain (AI連携・モデル切り替え)"
+      embedding_api: "OpenAI Embeddings API等 (候補)"
+      vector_db: "**Qdrant (Self-Hosted) を推奨**。FAISS, Elasticsearch, Pinecone, Vespa等も候補。"
+      infrastructure: "Dockerコンテナ環境"
+    development_language: "Python, JavaScript/TypeScript"
+    target_browsers: "Chrome, Firefox, Safari, Edge の最新安定版"
+    legal_review: "**利用規約・プライバシーポリシーは、リリース前に弁護士によるレビューを受けることが必須。特にAIと著作権に関する最新動向を踏まえること。**"
+    poc: "**必須ではないが、リスクに応じて実施。**"
+    ai_model_training: "**ユーザコンテンツ及びその派生物はAIモデル学習には一切利用しない。**"
+    external_api_cost: "**ユーザ責任。APIキーはユーザ毎に設定。**"
+    configuration_files:
+      system_config: "**システム共通設定（プロンプト、チャンク分割方法等）は設定ファイルで管理。**"
+      user_config: "**ユーザ毎設定（APIキー、パラメータ等）はDBで管理（ALE + 外部キー管理推奨）。**"
+    budget_timeline: "(未定、別途定義が必要)"
+    team_structure: "(未定、別途定義が必要)"
