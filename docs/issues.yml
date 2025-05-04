@@ -1,7 +1,7 @@
 github_issues:
   project_name: DeepRead
   version: 1.0 # Based on Agile Requirements List v2.0
-  date: 2025-05-03
+  date: 2025-05-04
 
   proposed_milestones:
     - "MVP Foundation"
@@ -441,18 +441,18 @@ github_issues:
       description: |
         技術タスク TASK-ARCH-01 を実施する。システムのレイヤー構造、主要コンポーネント、依存関係ルールを文書化し、チームで共有する。
       tasks:
-        - "[ ] レイヤー（Domain, UseCase, Adapters[UI, DB, Search, AI, etc.], Infrastructure）の責務定義。"
-        - "[ ] 主要ドメインモデルと集約の図示（初期案）。"
-        - "[ ] 主要ユースケースとInteractorのリストアップ。"
-        - "[ ] レイヤー間のインターフェース（リポジトリ、ゲートウェイ）定義方針。"
-        - "[ ] 依存関係の方向性ルール（例: Domainは他レイヤーに依存しない）の明確化。"
-        - "[ ] 設計ドキュメント作成（例: Markdown, 図ツール）。"
+        - "[x] レイヤー（Domain, UseCase, Adapters[UI, DB, Search, AI, etc.], Infrastructure）の責務定義。"
+        - "[x] 主要ドメインモデルと集約の図示（初期案）。"
+        - "[x] 主要ユースケースとInteractorのリストアップ。"
+        - "[x] レイヤー間のインターフェース（リポジトリ、ゲートウェイ）定義方針。"
+        - "[x] 依存関係の方向性ルール（例: Domainは他レイヤーに依存しない）の明確化。"
+        - "[x] 設計ドキュメント作成（例: Markdown, 図ツール）。"
       acceptance_criteria:
         - アーキテクチャ設計が文書化され、チームメンバーが理解・合意していること。
       related_requirements: [TASK-ARCH-01]
       dependencies: []
       milestone: "MVP Foundation"
-      labels: [type:technical-task, architecture, layer:architecture, epic:EPIC-ARCH-NFR, MVP, priority:high, CleanArchitecture, DDD]
+      labels: [type:technical-task, architecture, layer:architecture, epic:EPIC-ARCH-NFR, MVP, priority:high, CleanArchitecture, DDD, status:done]
     - id: ISSUE-021
       title: "[TechnicalTask] PDF解析パイプラインの実装 (TASK-PIPE-01)"
       description: |
