@@ -146,7 +146,7 @@ graph TD
 * **Gatewayパターン:** 外部サービス（AI、検索、通知、ファイルストレージ、非同期キュー等）へのアクセスを抽象化するために使用します。
     * `AIGateway`, `SearchGateway`, `NotificationGateway`, `FileStorageGateway`, `AsyncTaskQueueGateway` などのインターフェースを **UseCase層** で定義します。
     * これらのインターフェースの具象クラスを **Adapters層** の各サブレイヤー（Adapter-AI, Adapter-Search, Adapter-Notification, Adapter-Infrastructure）で実装します。
-    * UseCase Interactorはインターフェースに依存し、具象クラスのインスタンスを受け取ります。
+    * UseCase Interactorはインターフェースに依存し、具象クラスのインスタンスを受け取ります。**特に、ライセンス上の制約となりうる外部コンポーネント（例: PDF画像化におけるPoppler）や、将来変更される可能性のある技術については、このパターンを用いて依存性をAdapter層に隔離し、交換を容易にすることが重要です。**
 * **Data Transfer Objects (DTOs):** レイヤー間でデータを渡す際に、ドメインオブジェクトを直接渡さず、シンプルなDTOを使用することを検討します（特にUIとの境界）。
 
 ## 6. 依存関係の方向性ルール
