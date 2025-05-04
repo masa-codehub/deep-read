@@ -1,0 +1,72 @@
+name: app
+type: directory
+children:
+  - name: .build
+    type: directory
+    children:
+      - name: context
+        type: directory
+        children:
+          - name: .env
+            type: file
+      - name: Dockerfile
+        type: file
+      - name: requirements.in
+        type: file
+      - name: repositories.txt
+        type: file
+  - name: app
+    type: directory
+    children:
+      - name: __init__.py
+        type: file
+      - name: asgi.py
+        type: file
+      - name: settings
+        type: directory
+        children:
+          - name: __init__.py
+            type: file
+          - name: base.py
+            type: file
+          - name: development.py
+            type: file
+          - name: production.py
+            type: file
+      - name: settings.py
+        type: file
+      - name: urls.py
+        type: file
+      - name: wsgi.py
+        type: file
+  - name: docs
+    type: directory
+    children:
+      - name: agile_practice.yml
+        type: file
+      - name: architecture_design.md
+        type: file
+      - name: context_diagram.md
+        type: file
+      - name: context_summary.yml
+        type: file
+      - name: issues.yml
+        type: file
+      - name: requiremets.yml
+        type: file
+      - name: folder_structure.json
+        type: file
+      - name: folder_structure.yml
+        type: file
+  - name: .gitignore
+    type: file
+  - name: LICENSE
+    type: file
+  - name: README.md
+    type: file
+  - name: manage.py
+    type: file
+  - name: poetry.lock
+    type: file
+  - name: pyproject.toml
+    type: file

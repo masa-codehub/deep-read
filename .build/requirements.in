@@ -4,6 +4,8 @@
 # アプリケーションの実行に必須のライブラリ
 # pip-compile によって requirements.txt に依存関係も含めて書き出されます
 
+django               # Django フレームワーク
+
 langchain               # LangChainコアフレームワーク (LLMアプリケーション構築用)
 langchain-core
 langchain-community
