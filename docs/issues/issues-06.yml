@@ -1,0 +1,110 @@
+github_issues:
+  project_name: DeepRead
+  version: 1.0
+  date: 2025-05-03
+
+  issues:
+    - id: ISSUE-026
+      title: "[TechnicalTask] ベクトル埋め込み生成とDB登録・検索実装 (TASK-VEC-01)"
+      description: |
+        技術タスク TASK-VEC-01 を実施する。テキストチャンク（段落単位基本）とQAデータのベクトル埋め込み生成（API利用）およびベクトルDB（Qdrant推奨）への登録・検索機能を実装する。チャンク分割ロジック含む。
+      tasks:
+        - "[ ] テキストチャンク分割ロジック実装（段落単位基本、設定ファイルで調整可能） (`layer:usecase`, `layer:domain`) - **Depends on: `TASK-CONFIG-CHUNK`**"
+        - "[ ] 埋め込み生成API（例: OpenAI Embeddings API）呼び出し実装 (`layer:adapter-ai`) - **Depends on: `TASK-EMBEDDING-API`**"
+        - "[ ] Qdrantクライアント設定と接続 (`layer:adapter-search`) - **Depends on: `TASK-VEC-02`**"
+        - "[ ] ベクトルデータと関連メタデータ（ドキュメントID, ページ番号, チャンクID, データ種別[Text/QA]等）をQdrantに登録する処理 (`layer:adapter-search`)"
+        - "[ ] 入力ベクトルに類似するベクトルをQdrantから検索する処理（メタデータフィルタリング含む） (`layer:adapter-search`)"
+        - "[ ] Qdrantへの登録・検索時のエラーハンドリング (`layer:adapter-search`)"
+        - "[ ] （TDD）チャンク分割、埋め込み生成呼び出し、Qdrant登録・検索処理の単体・結合テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - テキストデータが適切にチャンク分割されること。
+        - 各チャンクとQAデータがベクトル化され、メタデータと共にQdrantに登録されること。
+        - 入力ベクトルに対して、類似するベクトル（とメタデータ）がQdrantから検索できること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-VEC-01, FR-AICONV-003, NFR(Performance)]
+      dependencies: [TASK-VEC-02, TASK-EMBEDDING-API, TASK-CONFIG-CHUNK] # TASK-VEC-02 is ISSUE-027, TASK-EMBEDDING-API and TASK-CONFIG-CHUNK need new issues
+      milestone: "MVP Pipeline" # Or MVP Core QA
+      labels: [type:technical-task, feature:pipeline, feature:qa, layer:usecase, layer:domain, layer:adapter-search, layer:adapter-ai, layer:infrastructure, epic:EPIC-PIPELINE, epic:EPIC-QA-CORE, MVP, priority:high, TDD]
+      notes: '[分割案あり] チャンク分割、埋め込み生成、DB登録、DB検索は分割可能。'
+    - id: ISSUE-027
+      title: "[TechnicalTask] QdrantベクトルDB導入と設定 (TASK-VEC-02)"
+      description: |
+        技術タスク TASK-VEC-02 を実施する。選定されたベクトルDBであるQdrant (Self-Hosted) をDocker環境にデプロイし、基本的なコレクション作成、インデックス設定を行う。
+      tasks:
+        - "[ ] QdrantのDockerイメージを取得またはビルド (`layer:infrastructure`)"
+        - "[ ] Docker Compose等でQdrantコンテナを起動する設定 (`layer:infrastructure`)"
+        - "[ ] 永続ボリュームの設定 (`layer:infrastructure`)"
+        - "[ ] 基本的なコレクション（例: `documents`, `qa_pairs`）の作成と初期インデックス設定（例: HNSW） (`layer:adapter-search`)"
+        - "[ ] DjangoアプリケーションからQdrantへの接続確認 (`layer:adapter-search`)"
+        - "[ ] （TDD）基本的な接続・操作テスト (`type:test`, `layer:adapter-search`)"
+      acceptance_criteria:
+        - Qdrantコンテナが正常に起動し、永続化が設定されていること。
+        - DjangoアプリケーションからQdrantに接続し、コレクション操作（作成、情報取得）が可能であること。
+        - 簡単なベクトル登録・検索テストが成功すること。
+      related_requirements: [TASK-VEC-02]
+      dependencies: [TASK-INFRA-04] # Depends on Docker setup
+      milestone: "MVP Pipeline" # Or MVP Foundation
+      labels: [type:technical-task, chore, layer:infrastructure, layer:adapter-search, epic:EPIC-ARCH-NFR, MVP, priority:high]
+    - id: ISSUE-028
+      title: "[TechnicalTask] ライブラリ全文検索基盤実装 (TASK-SEARCH-01)"
+      description: |
+        技術タスク TASK-SEARCH-01 を実施する。ライブラリの全文検索機能を実装するための技術（例: PostgreSQLの全文検索機能、Elasticsearch等）を選定・導入する。
+      tasks:
+        - "[ ] 全文検索技術の選定（PostgreSQL FTS vs Elasticsearch等、性能・運用負荷・既存スタック考慮） (`layer:architecture`)"
+        - "[ ] **(選択肢A: PostgreSQL FTSの場合)**"
+        - "    - [ ] `tsvector` カラムをDocumentモデル（または関連テーブル）に追加するマイグレーション (`layer:adapter-db`)"
+        - "    - [ ] テキスト抽出時に `tsvector` を更新するトリガーまたはシグナルハンドラ実装 (`layer:adapter-db`)"
+        - "    - [ ] GINインデックス作成 (`layer:adapter-db`)"
+        - "    - [ ] Django ORMまたはRaw SQLで全文検索クエリを実行するリポジトリ/サービス実装 (`layer:adapter-db`, `layer:usecase`)"
+        - "[ ] **(選択肢B: Elasticsearchの場合)**"
+        - "    - [ ] Elasticsearchクラスタのセットアップ（Docker Compose等） (`layer:infrastructure`)"
+        - "    - [ ] DjangoとElasticsearchを連携させるライブラリ（`elasticsearch-dsl`等）導入・設定 (`layer:adapter-search`)"
+        - "    - [ ] ドキュメントデータ（テキスト内容含む）をElasticsearchにインデックスする処理（非同期推奨） (`layer:adapter-search`, `layer:usecase`)"
+        - "    - [ ] Elasticsearchへの検索クエリ実行と結果取得処理の実装 (`layer:adapter-search`)"
+        - "[ ] （TDD）全文検索機能の結合テスト作成 (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 選択された技術に基づき、ライブラリ内のドキュメントコンテンツに対するキーワード検索が可能になること。
+        - 検索応答時間が目標値を満たすこと。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-SEARCH-01, FR-LIB-002]
+      dependencies: []
+      milestone: "MVP Library & Search"
+      labels: [type:technical-task, feature:library, layer:adapter-search, layer:infrastructure, layer:architecture, epic:EPIC-LIBRARY, MVP, priority:medium, TDD, needs-discussion]
+    - id: ISSUE-029
+      title: "[TechnicalTask] ユーザ設定DB保存アーキテクチャ設計・実装 (TASK-CONFIG-ARCH-01)"
+      description: |
+        技術タスク TASK-CONFIG-ARCH-01 を実施する。ユーザ毎設定をDBに保存するアーキテクチャを設計し、関連するドメインモデル、リポジトリ、マイグレーションを実装する。
+      tasks:
+        - "[ ] `UserSettings` 値オブジェクトまたはエンティティの設計（格納する設定項目を考慮） (`layer:domain`, `DDD`)"
+        - "[ ] `UserAccount` 集約との関連付け、または独立した集約としての検討 (`layer:domain`, `DDD`)"
+        - "[ ] `UserSettingsRepository` インターフェース定義 (`layer:usecase`)"
+        - "[ ] PostgreSQL用リポジトリ実装とDjangoモデル、マイグレーション作成 (`layer:adapter-db`)"
+        - "[ ] （TDD）ドメインモデル、リポジトリ実装のテスト作成 (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - ユーザ毎の設定情報をDBに保存・取得できること。
+        - モデル設計が拡張性を考慮していること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-CONFIG-ARCH-01]
+      dependencies: [TASK-ARCH-01]
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, architecture, layer:domain, layer:usecase, layer:adapter-db, epic:EPIC-FOUNDATION, epic:EPIC-SETTINGS, MVP, priority:medium, TDD, DDD]
+    - id: ISSUE-030
+      title: "[TechnicalTask] 基本Webセキュリティ対策実装 (TASK-SEC-001)"
+      description: |
+        技術タスク TASK-SEC-001 を実施する。パスワードハッシュ化（bcrypt）の実装と、基本的なWebセキュリティ対策（CSRF, XSS等）をDjangoフレームワークの機能を用いて設定・確認する。
+      tasks:
+        - "[ ] Djangoのパスワードハッシュ化設定確認（デフォルトでPBKDF2SHA256、必要ならBcrypt等に変更） (`layer:infrastructure`, `layer:domain`)"
+        - "[ ] DjangoのCSRFミドルウェアが有効になっていることを確認 (`layer:infrastructure`)"
+        - "[ ] テンプレートでのXSS対策（自動エスケープが有効であることの確認、必要な箇所での`safe`フィルタ不使用） (`layer:adapter-ui`)"
+        - "[ ] Djangoのセキュリティミドルウェア（`SecurityMiddleware`等）の適切な設定（HTTPSリダイレクト、HSTS、クリックジャッキング対策等） (`layer:infrastructure`)"
+        - "[ ] DEBUGモードが本番環境でFalseになっていることの確認 (`layer:infrastructure`)"
+        - "[ ] シークレットキーが安全に管理されていることの確認（環境変数、KMS等） (`layer:infrastructure`)"
+      acceptance_criteria:
+        - パスワードがDBに平文で保存されていないこと。
+        - 主要なフォームでCSRFトークンが使用されていること。
+        - ユーザ入力が適切にエスケープされ、XSS脆弱性が存在しないこと（基本的なチェック）。
+        - 推奨されるセキュリティヘッダーが設定されていること。
+      related_requirements: [TASK-SEC-001, NFR(Security)]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, security, chore, layer:infrastructure, layer:adapter-ui, layer:domain, epic:EPIC-FOUNDATION, epic:EPIC-ARCH-NFR, MVP, priority:high]

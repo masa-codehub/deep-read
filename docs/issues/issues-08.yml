@@ -1,0 +1,87 @@
+github_issues:
+  project_name: DeepRead
+  version: 1.0
+  date: 2025-05-03
+
+  issues:
+    - id: ISSUE-036
+      title: "[TechnicalTask] Poppler依存解決 (TASK-INFRA-04)"
+      description: |
+        技術タスク TASK-INFRA-04 を実施する。`pdf2image` が依存するPopplerをDocker環境にインストールし、利用可能にする。
+      tasks:
+        - "[ ] Dockerfileに必要なパッケージ（`poppler-utils`等）のインストールコマンドを追加。"
+        - "[ ] Dockerイメージをビルドし、`pdf2image` がPopplerを見つけられることを確認。"
+      acceptance_criteria:
+        - Dockerコンテナ内で`pdf2image`が正常に動作すること。
+      related_requirements: [TASK-INFRA-04, TASK-PDF-01]
+      dependencies: []
+      milestone: "MVP Pipeline" # Or MVP Foundation
+      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:low]
+    - id: ISSUE-037
+      title: "[TechnicalTask] ロギング設定 (TASK-LOG-01)"
+      description: |
+        技術タスク TASK-LOG-01 を実施する。詳細かつ構造化されたログを出力するための設定を行う。
+      tasks:
+        - "[ ] ロギングライブラリ（Python標準`logging`, structlog等）の選定と導入。"
+        - "[ ] Djangoの`settings.py`でのロガー、ハンドラー、フォーマッター設定。"
+        - "[ ] ログレベル（DEBUG, INFO, WARNING, ERROR）の適切な設定。"
+        - "[ ] ログ出力先（コンソール、ファイル、外部ログサービス等）の設定。"
+        - "[ ] 主要な処理箇所でのログ出力コード追加。"
+      acceptance_criteria:
+        - アプリケーションの動作状況やエラー情報が、設定したレベル・形式・出力先でログ記録されること。
+        - 不具合発生時に、ログから原因追跡に必要な情報が得られること。
+      related_requirements: [TASK-LOG-01, NFR(Maintainability)]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, chore, layer:infrastructure, layer:application-wide, epic:EPIC-ARCH-NFR, MVP, priority:medium]
+    - id: ISSUE-038
+      title: "[Spike] フロントエンドフレームワーク技術選定 (TASK-FRONTEND-01)"
+      description: |
+        技術タスク TASK-FRONTEND-01 を実施する。React, Vue, Svelte, HTMX等の候補について、調査報告に基づき最終評価を行い、DeepReadプロジェクトで使用するフレームワークを決定する。
+      tasks: # Renamed from 実施タスク
+        - "[ ] 各候補のプロトタイピング（小規模な機能実装）による開発体験・生産性の比較検証（任意）。"
+        - "[ ] チームメンバーのスキルセットと学習意欲の再確認。"
+        - "[ ] Django/Tailwind CSSとの連携に関する詳細な検証。"
+        - "[ ] パフォーマンス要件（特にUI応答性）と各FWの特性のマッチング評価。"
+        - "[ ] 長期的なメンテナンス性、コミュニティサポート、将来性の評価。"
+        - "[ ] チームでの議論と合意形成。"
+      acceptance_criteria:
+        - 各候補の比較評価結果が文書化されていること。
+        - チームとして使用するフロントエンドフレームワークが決定され、その理由が明確になっていること。
+      related_requirements: [TASK-FRONTEND-01]
+      dependencies: []
+      milestone: "MVP Foundation"
+      labels: [type:spike, architecture, layer:adapter-ui, epic:EPIC-ARCH-NFR, priority:high, needs-discussion]
+    - id: ISSUE-039
+      title: "[TechnicalTask] アクセシビリティ(WCAG AA)対応 (TASK-ACCESSIBILITY-01)"
+      description: |
+        技術タスク TASK-ACCESSIBILITY-01 を実施する。WCAG 2.1 Level AA達成を目標とし、フロントエンド設計・実装・テストを行う。
+      tasks:
+        - "[ ] WCAG 2.1 AA達成基準の学習とチーム内共有。"
+        - "[ ] UI設計レビュー時にアクセシビリティ観点でのチェックを行うプロセス確立。"
+        - "[ ] 主要画面・コンポーネントに対する具体的な要件実装（キーボードナビゲーション、適切なARIA属性、コントラスト比確保、代替テキスト設定など）。"
+        - "[ ] アクセシビリティ評価ツール（Axe, Lighthouse等）を用いたテスト実施。"
+        - "[ ] スクリーンリーダーでの動作確認（可能であれば）。"
+      acceptance_criteria:
+        - 主要な画面・機能がWCAG 2.1 Level AAの主要な達成基準を満たしていること（評価ツールやチェックリストで確認）。
+        - キーボードのみでの基本的な操作が可能であること。
+      related_requirements: [TASK-ACCESSIBILITY-01, NFR(UI/UX)]
+      dependencies: [TASK-FRONTEND-01] # TASK-FRONTEND-01 is ISSUE-038
+      milestone: "(Continuous task, start from MVP)"
+      labels: [type:technical-task, accessibility, layer:adapter-ui, epic:EPIC-ARCH-NFR, priority:medium]
+    - id: ISSUE-040
+      title: "[TechnicalTask] Poppler(GPL)ライセンス影響確認 (TASK-LEGAL-02)"
+      description: |
+        技術タスク TASK-LEGAL-02 を実施する。PopplerのGPLライセンスがDeepReadの配布・運用（SaaS提供等）に与える影響について、法務担当者または専門家と確認する。
+      tasks:
+        - "[ ] DeepReadの想定される配布・提供形態を明確化。"
+        - "[ ] Popplerとのリンク方法（動的/静的）を確認。"
+        - "[ ] 法務担当者/専門家に上記情報を提供し、GPLライセンスの遵守要件（ソースコード開示義務等）とリスクについて見解を求める。"
+        - "[ ] 確認結果と推奨される対応策（例: 代替ライブラリ検討、法的見解に基づく利用）を文書化し、チームに共有。"
+      acceptance_criteria:
+        - Poppler(GPL)利用に関する法的リスクと遵守要件が明確になっていること。
+        - チームとして取るべき対応策が決定されていること。
+      related_requirements: [TASK-LEGAL-02, TASK-PDF-01]
+      dependencies: [TASK-LEGAL-01] # TASK-LEGAL-01 is ISSUE-031
+      milestone: "MVP Foundation" # Early execution recommended
+      labels: [type:technical-task, legal, layer:architecture, epic:EPIC-ARCH-NFR, priority:high, needs-discussion]
