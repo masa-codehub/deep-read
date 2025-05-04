@@ -1003,20 +1003,40 @@ github_issues:
       dependencies: [TASK-CONFIG-ARCH-01, TASK-SEC-002] # TASK-CONFIG-ARCH-01 is ISSUE-029, TASK-SEC-002 is ISSUE-042
       milestone: "MVP Foundation" # Or MVP Release
       labels: [type:user-story, feature:settings, layer:adapter-ui, epic:EPIC-SETTINGS, MVP, priority:medium]
-    - id: ISSUE-050 # 仮のID、必要に応じて変更してください
-      title: "[TechnicalTask] Djangoプロジェクト初期セットアップとDocker基本環境構築 (TASK-SETUP-01)"
+    - id: ISSUE-050
+      title: "[TechnicalTask] 完了: Djangoプロジェクト初期セットアップとDocker基本環境構築 (TASK-SETUP-01)"
       description: |
-        DeepRead開発を開始するための基本的なDjangoプロジェクト構造と、
-        Dockerによる開発環境をセットアップする。他の多くのIssueの前提となるため、
-        早期に実施する必要がある。
+        本Issue `ISSUE-050: [TechnicalTask] Djangoプロジェクト初期セットアップとDocker基本環境構築 (TASK-SETUP-01)` は完了とします。
+
+        **議論の経緯と実施内容:**
+
+        1.  他のIssue (`ISSUE-030`等) を進めるにあたり、前提となるDjangoプロジェクトの初期セットアップが未実施であったため、本Issueを起票しました。
+        2.  当初、Poetryを用いたセットアップ手順を検討しましたが、ユーザーの開発スタイル（上位ディレクトリの `docker-compose.yml` で `app/` ディレクトリをコンテナ化し、VS Code Remoteで開発）を考慮し、方針を修正しました。
+        3.  最終的に、以下の手順・方針でセットアップを実施しました。
+            * 依存関係は `requirements.txt` (または `.in` から生成) で管理し、Dockerビルド時に `pip` でインストール。
+            * ローカルで `django-admin startproject app .` を実行しプロジェクト構造を作成。
+            * 設定ファイルを `app/settings/` 以下に分割 (`base.py`, `development.py`, `production.py`)。
+            * ユーザー指定の構成に基づき、`Dockerfile`, `.env` 等を `app/.build/` ディレクトリに配置。
+            * 不要な `app/settings.py` および `poetry.lock` ファイルを削除。
+            * `pyproject.toml` は `pytest` 等のツール設定用に保持。
+        4.  提供された手順に基づきユーザーが環境を構築し、提示された確認方法（`docker-compose build`, `docker-compose up`, ブラウザアクセス, `manage.py check`）を実施しました。
+
+        **完了確認:**
+
+        * ユーザーより、コンテナが正常に起動・動作していること、および初期コードが `deep-read` Gitリポジトリにコミット済みであることが**確認されました**。
+        * これにより、本Issueの全ての受け入れ基準が満たされたと判断し、完了とします。
+
+        **結果:**
+
+        * 基本的なDjango開発環境がDocker上で構築され、今後の開発を進める準備が整いました。
       tasks:
-        - "[ ] Djangoプロジェクトの初期化 (`django-admin startproject deep_read .` 等)"
-        - "[ ] 依存関係管理ツールの設定 (`poetry init` または `requirements.txt` 作成)"
-        - "[ ] 基本的な `settings.py` の構成（開発用/本番用分離を考慮した初期構造）"
-        - "[ ] Djangoアプリケーション用の基本的な `Dockerfile` 作成"
-        - "[ ] 基本的な `docker-compose.yml` 作成（Django開発サーバーを起動できるようにする）"
-        - "[ ] `.gitignore` ファイルの設定"
-        - "[ ] 作成されたファイルをGitリポジトリに初期コミット"
+        - "[x] Djangoプロジェクトの初期化 (`django-admin startproject deep_read .` 等)"
+        - "[x] 依存関係管理ツールの設定 (`poetry init` または `requirements.txt` 作成)"
+        - "[x] 基本的な `settings.py` の構成（開発用/本番用分離を考慮した初期構造）"
+        - "[x] Djangoアプリケーション用の基本的な `Dockerfile` 作成"
+        - "[x] 基本的な `docker-compose.yml` 作成（Django開発サーバーを起動できるようにする）"
+        - "[x] `.gitignore` ファイルの設定"
+        - "[x] 作成されたファイルをGitリポジトリに初期コミット"
       acceptance_criteria:
         - Djangoプロジェクトの基本的なファイル構造が作成されていること。
         - 依存関係（Django等）が指定したツールでインストール可能であること。
@@ -1025,5 +1045,4 @@ github_issues:
       related_requirements: [TASK-SETUP-01, Constraints(Technology Stack), Constraints(Infrastructure)]
       dependencies: [] # このタスク自体に依存するIssueはない想定
       milestone: "MVP Foundation"
-      labels: [type:technical-task, type:chore, layer:infrastructure, epic:EPIC-FOUNDATION, MVP, priority:high]
-      
+      labels: [type:technical-task, type:chore, layer:infrastructure, epic:EPIC-FOUNDATION, MVP, priority:high, status:done]
