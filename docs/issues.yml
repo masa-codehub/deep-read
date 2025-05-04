@@ -782,23 +782,32 @@ github_issues:
       milestone: "MVP Foundation"
       labels: [type:technical-task, chore, layer:infrastructure, layer:application-wide, epic:EPIC-ARCH-NFR, MVP, priority:medium]
     - id: ISSUE-038
-      title: "[Spike] フロントエンドフレームワーク技術選定 (TASK-FRONTEND-01)"
+      title: "[Spike] 完了: フロントエンドフレームワークとしてReactを選定 (TASK-FRONTEND-01)"
       description: |
         技術タスク TASK-FRONTEND-01 を実施する。React, Vue, Svelte, HTMX等の候補について、調査報告に基づき最終評価を行い、DeepReadプロジェクトで使用するフレームワークを決定する。
+
+        **決定事項:** DeepReadプロジェクトのフロントエンドフレームワークとして React を採用しました。
+
+        **選定理由:**
+        1. 巨大なエコシステム: 豊富なライブラリ、ツール、コミュニティサポートを活用できるため。
+        2. 開発者のスキルアップ: 広く使われている技術であるReactを採用することで、開発メンバーのスキル向上にも繋がるため。
+
+        **次のステップ:**
+        今後のフロントエンド（layer:adapter-ui）開発は、Reactを前提として進めます。
       tasks: # Renamed from 実施タスク
-        - "[ ] 各候補のプロトタイピング（小規模な機能実装）による開発体験・生産性の比較検証（任意）。"
-        - "[ ] チームメンバーのスキルセットと学習意欲の再確認。"
-        - "[ ] Django/Tailwind CSSとの連携に関する詳細な検証。"
-        - "[ ] パフォーマンス要件（特にUI応答性）と各FWの特性のマッチング評価。"
-        - "[ ] 長期的なメンテナンス性、コミュニティサポート、将来性の評価。"
-        - "[ ] チームでの議論と合意形成。"
+        - "[x] 各候補のプロトタイピング（小規模な機能実装）による開発体験・生産性の比較検証（任意）。"
+        - "[x] チームメンバーのスキルセットと学習意欲の再確認。"
+        - "[x] Django/Tailwind CSSとの連携に関する詳細な検証。"
+        - "[x] パフォーマンス要件（特にUI応答性）と各FWの特性のマッチング評価。"
+        - "[x] 長期的なメンテナンス性、コミュニティサポート、将来性の評価。"
+        - "[x] チームでの議論と合意形成。"
       acceptance_criteria:
         - 各候補の比較評価結果が文書化されていること。
         - チームとして使用するフロントエンドフレームワークが決定され、その理由が明確になっていること。
       related_requirements: [TASK-FRONTEND-01]
       dependencies: []
       milestone: "MVP Foundation"
-      labels: [type:spike, architecture, layer:adapter-ui, epic:EPIC-ARCH-NFR, priority:high, needs-discussion]
+      labels: [type:spike, architecture, layer:adapter-ui, epic:EPIC-ARCH-NFR, priority:high, status:done]
     - id: ISSUE-039
       title: "[TechnicalTask] アクセシビリティ(WCAG AA)対応 (TASK-ACCESSIBILITY-01)"
       description: |

@@ -518,7 +518,7 @@ requirement_definition:
   constraints_prerequisites:
     technology_stack:
       backend: "Python 3.13, Django"
-      frontend: "Tailwind CSS (暫定), JavaScript/TypeScript (フレームワーク未定、要選定)"
+      frontend: "Tailwind CSS, React (ISSUE-038で決定), JavaScript/TypeScript"
       database: "PostgreSQL"
       pdf_libs: "ページ画像化ライブラリ (例: pdf2image [Poppler依存、**GPLライセンス注意**]), メタデータ抽出ライブラリ (例: PyMuPDF [AGPL-3.0])"
       generative_ai_api: "**初期は Google Gemini 1.5 Flash。** Langchain利用により他モデル（ChatGPT等）への切り替えも考慮。"
