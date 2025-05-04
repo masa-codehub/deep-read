@@ -425,6 +425,7 @@ requirement_definition:
       prompt_configurability: "**AI呼び出し部分のプロンプトは設定ファイルから読み込み、容易に変更・調整可能とすること。**"
       parameter_configurability: "**ファイルサイズ上限等のパラメータは設定ファイルまたはDBで管理し、ハードコーディングしないこと。**"
       future_folder_note: "ライブラリ整理機能について、将来的なフォルダ階層導入を考慮したデータ構造・設計。"
+      dependency_abstraction_for_replaceability: "**特にライセンス上の制約となりうる可能性のある主要な外部依存コンポーネント（例: PDF画像化のPoppler）については、UseCase層で定義されたインターフェースを通じて利用し、将来的な実装の交換可能性を確保する設計とする。**"
     testability: # TDD観点
       tdd_recommendation: "TDD（テスト駆動開発）の実践を推奨。"
       unit_test_coverage: "高いユニットテストカバレッジ目標（例: ドメイン層 90%以上）。"

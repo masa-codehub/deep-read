@@ -483,6 +483,7 @@ github_issues:
       description: |
         技術タスク TASK-PDF-01 を実施する。PDFページ画像化ライブラリ（例: pdf2image + Poppler）を導入し、調整可能な解像度でPDFをページ画像に変換する機能を実装・テストする。PopplerのGPLライセンス影響についてTASK-LEGAL-02の結果を考慮する。
       tasks:
+        - "[ ] UseCase層でPDF画像化のためのインターフェース（例: PdfImageConverterGateway）を定義し、Popplerへの依存をAdapter層にカプセル化する（将来的なライブラリ交換可能性を担保するため）。"
         - "[ ] `pdf2image` ライブラリ（および依存関係にあるPoppler）をプロジェクトに導入・設定する (`layer:infrastructure`) - **Depends on: `TASK-INFRA-04`**"
         - "[ ] 指定されたPDFファイルを受け取り、各ページを指定された解像度（テスト後に決定）で画像ファイル（例: PNG, JPEG）に変換する関数/クラスを実装する (`layer:adapter-infrastructure`)"
         - "[ ] 生成された画像ファイルの保存場所（一時的か永続的か、ストレージ戦略）を決定し実装する (`layer:adapter-infrastructure`)"
