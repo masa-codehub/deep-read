@@ -1,0 +1,171 @@
+github_issues:
+  project_name: DeepRead
+  version: 1.0 # Based on Agile Requirements List v2.0
+  date: 2025-05-03
+
+  proposed_milestones:
+    - "MVP Foundation"
+    - "MVP Pipeline"
+    - "MVP Library & Search"
+    - "MVP Core QA"
+    - "MVP Release"
+    - "Cross-Document QA"
+    - "Utilities (Extract/Summarize)"
+    - "Library Enhancements (Folders, etc.)"
+    - "Feedback & Improvement Enhancements"
+    - "Settings Enhancements"
+    - "NFR Enhancements (Performance, Security)"
+
+  proposed_labels:
+    type:
+      - "type:user-story"
+      - "type:technical-task"
+      - "type:spike"
+      - "type:bug"
+      - "type:chore"
+      - "type:refactoring"
+      - "type:test"
+      - "type:documentation"
+    layer:
+      - "layer:domain"
+      - "layer:usecase"
+      - "layer:adapter-ui"
+      - "layer:adapter-db"
+      - "layer:adapter-search"
+      - "layer:adapter-ai"
+      - "layer:adapter-external"
+      - "layer:adapter-notification"
+      - "layer:infrastructure"
+      - "layer:architecture"
+      - "layer:legal" # Added for legal tasks
+      - "layer:application-wide" # Added for cross-cutting concerns like logging
+      - "layer:development-process" # Added for process-related tasks like CI/CD setup
+      - "layer:testing" # Added for testing specific tasks
+    feature_epic:
+      - "feature:auth"
+      - "feature:pipeline"
+      - "feature:library"
+      - "feature:qa"
+      - "feature:extract-summ"
+      - "feature:feedback"
+      - "feature:settings"
+      - "feature:nfr"
+      - "epic:EPIC-FOUNDATION"
+      - "epic:EPIC-PIPELINE"
+      - "epic:EPIC-LIBRARY"
+      - "epic:EPIC-QA-CORE"
+      - "epic:EPIC-UTILITIES"
+      - "epic:EPIC-FEEDBACK-LOOP"
+      - "epic:EPIC-SETTINGS"
+      - "epic:EPIC-ARCH-NFR"
+    principle:
+      - "TDD"
+      - "DDD"
+      - "CleanArchitecture"
+      - "Accessibility" # Added for accessibility tasks
+    priority:
+      - "priority:high"
+      - "priority:medium"
+      - "priority:low"
+    status:
+      - "status:todo"
+      - "status:in-progress"
+      - "status:review"
+      - "status:done"
+      - "status:blocked"
+      - "status:needs-discussion"
+    other:
+      - "MVP"
+      - "needs-refinement"
+
+  issues:
+    - id: ISSUE-001
+      title: "[UserStory] 新規ユーザ登録機能のバックエンド実装 (US-AUTH-001)"
+      description: |
+        ユーザーストーリー US-AUTH-001 のバックエンド処理を実装する。
+        > 初めてDeepReadを使うユーザ として、メールアドレスとパスワードで安全にアカウント登録したい。それは、自分のライブラリをパーソナルな空間として利用するためだ。
+      tasks:
+        - "[ ] `UserAccount` ドメインエンティティ/集約の定義（`User` ID, Email, HashedPassword等） (`layer:domain`, `DDD`)"
+        - "[ ] `RegisterUser` ユースケース（Interactor）のインターフェースと実装（入力バリデーション、パスワードハッシュ化、ドメインイベント発行） (`layer:usecase`, `CleanArchitecture`)"
+        - "[ ] `UserRepository` インターフェース定義 (`layer:usecase`)"
+        - "[ ] （TDD）`UserAccount` ドメインモデルの単体テスト (`type:test`, `layer:domain`, `TDD`)"
+        - "[ ] （TDD）`RegisterUser` ユースケースの単体テスト (`type:test`, `layer:usecase`, `TDD`)"
+      acceptance_criteria:
+        - サインアップページにメールアドレス、パスワード、パスワード確認の入力フィールドが表示される。 # UI側のACだが参考として
+        - 有効なメールアドレス形式、最低限のパスワード強度（例: 8文字以上）がクライアントサイド/サーバーサイドで検証される。
+        - パスワードとパスワード確認が一致しない場合、エラーが表示される。
+        - 既に登録済みのメールアドレスを入力した場合、エラーが表示される。
+        - 有効な情報を入力し登録ボタンを押すと、アカウントが作成され、パスワードはハッシュ化されて保存される。
+        - 登録後、自動的にログイン状態となり、ライブラリ画面にリダイレクトされる。
+        - 関連する単体テストが全て成功すること。
+      related_requirements: [US-AUTH-001]
+      dependencies: [TASK-SEC-001, TASK-AUTH-DB-ADAPTER, ISSUE-AUTH-UI] # Dependencies refer to other Issue IDs (placeholders for now)
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:domain, layer:usecase, epic:EPIC-FOUNDATION, MVP, priority:high, TDD, DDD]
+    - id: ISSUE-002
+      title: "[TechnicalTask] UserAccount DBアダプタの実装 (US-AUTH-001, US-AUTH-002関連)"
+      description: "`UserRepository` インターフェースを実装し、`UserAccount` 集約をPostgreSQLに永続化するアダプタを作成する。"
+      tasks:
+        - "[ ] Djangoモデル (`User`) の定義とマイグレーション作成 (`layer:adapter-db`)"
+        - "[ ] `UserRepository` のPostgreSQL実装クラス作成 (`layer:adapter-db`)"
+        - "[ ] ユーザ情報の保存、メールアドレスによる検索、IDによる検索処理の実装 (`layer:adapter-db`)"
+        - "[ ] （TDD）リポジトリ実装の結合テスト作成 (`type:test`, `layer:adapter-db`, `TDD`)"
+      acceptance_criteria:
+        - "`UserRepository` インターフェースの仕様を満たすこと。"
+        - "作成したテストがすべて成功すること。"
+      related_requirements: [US-AUTH-001, US-AUTH-002]
+      dependencies: [] # Assumes DB connection is set up
+      milestone: "MVP Foundation"
+      labels: [type:technical-task, chore, layer:adapter-db, epic:EPIC-FOUNDATION, MVP, priority:high, TDD]
+    - id: ISSUE-003
+      title: "[UserStory] ユーザ登録UIの実装 (US-AUTH-001関連)"
+      description: |
+        ユーザーストーリー US-AUTH-001 のためのサインアップ画面UIを実装する。
+        `RegisterUser` ユースケースを呼び出す。
+      tasks:
+        - "[ ] サインアップページのHTMLテンプレート/コンポーネント作成 (`layer:adapter-ui`)"
+        - "[ ] フォーム入力のクライアントサイドバリデーション実装 (`layer:adapter-ui`)"
+        - "[ ] フォーム送信時に `RegisterUser` ユースケースを呼び出すビュー/コントローラ処理実装 (`layer:adapter-ui`)"
+        - "[ ] ユースケース実行結果（成功・エラー）に応じた画面表示（リダイレクト、エラーメッセージ表示）処理実装 (`layer:adapter-ui`)"
+        - "[ ] （TDD）UIコンポーネントのテスト作成（可能であれば） (`type:test`, `layer:adapter-ui`)"
+      acceptance_criteria:
+        - "ユーザが画面から有効な情報を入力し登録ボタンを押下すると、ライブラリ画面にリダイレクトされること。"
+        - "不正な入力（メール形式、パスワード強度、重複メアド等）時には、対応するエラーメッセージが画面に表示されること。"
+      related_requirements: [US-AUTH-001]
+      dependencies: [ISSUE-001] # Depends on backend implementation
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:adapter-ui, epic:EPIC-FOUNDATION, MVP, priority:medium]
+    - id: ISSUE-004
+      title: "[UserStory] ログイン機能のバックエンド実装 (US-AUTH-002)"
+      description: |
+        ユーザーストーリー US-AUTH-002 のバックエンド処理を実装する。
+        > 登録済みのユーザ として、メールアドレスとパスワードでシステムにログインしたい。それは、自分のライブラリにアクセスするためだ。
+      tasks:
+        - "[ ] `LoginUser` ユースケース（Interactor）のインターフェースと実装（認証処理、セッション生成） (`layer:usecase`)"
+        - "[ ] パスワード検証ロジック（ハッシュ比較） (`layer:usecase`, `layer:domain`)"
+        - "[ ] 認証成功時のセッション管理（例: Django session） (`layer:infrastructure`)"
+        - "[ ] （TDD）`LoginUser` ユースケースの単体テスト (`type:test`, `layer:usecase`, `TDD`)"
+      acceptance_criteria:
+        - 登録済みのメールアドレスと正しいパスワードで認証が成功すること。
+        - 認証失敗時にはエラーが返されること。
+        - 認証成功時にはセッションが開始されること。
+        - 関連する単体テストが成功すること。
+      related_requirements: [US-AUTH-002]
+      dependencies: [ISSUE-001, ISSUE-002] # Depends on registration and DB adapter
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:usecase, layer:domain, layer:infrastructure, epic:EPIC-FOUNDATION, MVP, priority:high, TDD]
+    - id: ISSUE-005
+      title: "[UserStory] ログインUIの実装 (US-AUTH-002)"
+      description: ユーザーストーリー US-AUTH-002 のためのログイン画面UIを実装する。`LoginUser` ユースケースを呼び出す。
+      tasks:
+        - "[ ] ログインページのHTMLテンプレート/コンポーネント作成 (`layer:adapter-ui`)"
+        - "[ ] フォーム送信時に `LoginUser` ユースケースを呼び出すAPIリクエスト処理実装 (`layer:adapter-ui`)"
+        - "[ ] API応答（成功・エラー）に応じた画面表示（リダイレクト、エラーメッセージ表示）処理実装 (`layer:adapter-ui`)"
+        - "[ ] （TDD）UIコンポーネントのテスト作成（可能であれば） (`type:test`, `layer:adapter-ui`)"
+      acceptance_criteria:
+        - ユーザが正しい認証情報を入力しログインボタンを押すと、ライブラリ画面にリダイレクトされること。
+        - 不正な認証情報の場合、エラーメッセージが表示されること。
+      related_requirements: [US-AUTH-002]
+      dependencies: [ISSUE-004] # Depends on backend implementation
+      milestone: "MVP Foundation"
+      labels: [type:user-story, feature:auth, layer:adapter-ui, epic:EPIC-FOUNDATION, MVP, priority:medium]

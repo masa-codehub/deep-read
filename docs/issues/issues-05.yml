@@ -1,0 +1,118 @@
+github_issues:
+  project_name: DeepRead
+  version: 1.0
+  date: 2025-05-03
+
+  issues:
+    - id: ISSUE-021
+      title: "[TechnicalTask] PDF解析パイプラインの実装 (TASK-PIPE-01)"
+      description: |
+        技術タスク TASK-PIPE-01 を実装する。非同期キューからPDF解析タスクを受け取り、ページ画像化、AI情報抽出、ベクトル化を実行し、結果をDBに保存、ドキュメントステータスを更新する。
+      tasks:
+        - "[ ] 非同期タスクワーカの設定（例: Celery Worker） (`layer:infrastructure`)"
+        - "[ ] タスク実行ロジック（キューからメッセージ取得、エラーハンドリング、リトライ） (`layer:usecase`)"
+        - "[ ] ページ画像化処理呼び出し (`layer:usecase` -> `adapter-infrastructure`) - **Depends on: `TASK-PDF-01`**"
+        - "[ ] AI情報抽出処理呼び出し (`layer:usecase` -> `adapter-ai`) - **Depends on: `TASK-AI-02`**"
+        - "[ ] 抽出情報の構造化、`ContentElement` 生成 (`layer:usecase`, `layer:domain`)"
+        - "[ ] テキストチャンク分割とベクトル埋め込み生成・保存処理呼び出し (`layer:usecase` -> `adapter-ai`, `adapter-search`) - **Depends on: `TASK-VEC-01`**"
+        - "[ ] 解析結果（Page, ContentElement, Vector等）のDB保存 (`layer:usecase` -> `adapter-db`)"
+        - "[ ] `Document` ステータス更新（Processing -> Ready/Error） (`layer:usecase`, `layer:domain`)"
+        - "[ ] パイプライン全体の進捗状況を更新するメカニズム実装 (`layer:usecase`)"
+        - "[ ] （TDD）各ステップの処理ロジック、エラーハンドリングに関する単体・結合テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 投入されたPDF解析タスクが正常に実行され、解析結果がDBに保存され、ドキュメントステータスが更新されること。
+        - 各ステップでエラーが発生した場合、エラーがログ記録され、ドキュメントステータスがエラーになること。
+        - リトライが適切に行われること（もし実装する場合）。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-PIPE-01]
+      dependencies: [TASK-PDF-01, TASK-AI-02, TASK-VEC-01, TASK-INFRA-03]
+      milestone: "MVP Pipeline"
+      labels: [type:technical-task, feature:pipeline, layer:usecase, layer:domain, layer:adapter-ai, layer:adapter-search, layer:adapter-db, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:high, TDD]
+      notes: '[分割案あり] ステップごとにIssue分割推奨。'
+    - id: ISSUE-022
+      title: "[TechnicalTask] PDFページ画像化実装 (TASK-PDF-01)"
+      description: |
+        技術タスク TASK-PDF-01 を実施する。PDFページ画像化ライブラリ（例: pdf2image + Poppler）を導入し、調整可能な解像度でPDFをページ画像に変換する機能を実装・テストする。PopplerのGPLライセンス影響についてTASK-LEGAL-02の結果を考慮する。
+      tasks:
+        - "[ ] `pdf2image` ライブラリ（および依存関係にあるPoppler）をプロジェクトに導入・設定する (`layer:infrastructure`) - **Depends on: `TASK-INFRA-04`**"
+        - "[ ] 指定されたPDFファイルを受け取り、各ページを指定された解像度（テスト後に決定）で画像ファイル（例: PNG, JPEG）に変換する関数/クラスを実装する (`layer:adapter-infrastructure`)"
+        - "[ ] 生成された画像ファイルの保存場所（一時的か永続的か、ストレージ戦略）を決定し実装する (`layer:adapter-infrastructure`)"
+        - "[ ] エラーハンドリング（例: Popplerが見つからない、PDF破損、メモリ不足）を実装する (`layer:adapter-infrastructure`)"
+        - "[ ] PopplerのGPLライセンスに関する調査結果(TASK-LEGAL-02)を考慮し、必要な対応（例: 動的リンクの確認、ライセンス表示）を行う (`layer:legal`, `layer:infrastructure`)"
+        - "[ ] （TDD）ページ画像化機能の単体テスト・結合テスト（サンプルPDFを使用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 入力されたPDFファイルの全ページが、指定された解像度の画像ファイルとして正常に生成・保存されること。
+        - サポートされていない形式や破損したPDFに対して、適切なエラーが記録または返されること。
+        - ライセンス要件（GPL）が遵守されていること（TASK-LEGAL-02の結果に基づく）。
+        - 関連するテストがすべて成功すること。
+      related_requirements: [TASK-PDF-01, FR-PDFPROC-001]
+      dependencies: [TASK-INFRA-04, TASK-LEGAL-02] # TASK-INFRA-04 is ISSUE-036, TASK-LEGAL-02 is ISSUE-040
+      milestone: "MVP Pipeline"
+      labels: [type:technical-task, feature:pipeline, layer:adapter-infrastructure, layer:legal, epic:EPIC-PIPELINE, MVP, priority:medium, TDD, needs-discussion]
+      notes: ライセンス注意。
+    - id: ISSUE-023
+      title: "[TechnicalTask] RAGコアロジック実装 (TASK-AI-01)"
+      description: |
+        技術タスク TASK-AI-01 を実施する。RAGアーキテクチャのコアロジック（類似QA/文書チャンク検索 + コンテキスト付きプロンプト生成 + AI応答生成）を実装する。Langchain等のフレームワーク利用を前提とする。
+      tasks:
+        - "[ ] Langchainフレームワークの導入と基本設定 (`layer:infrastructure`, `layer:adapter-ai`)"
+        - "[ ] RAGパイプラインの定義:"
+        - "    - [ ] 1. 入力（ユーザ質問、対象ドキュメント/QA範囲）の受け取り"
+        - "    - [ ] 2. 質問に対する関連情報検索（ベクトルDBへのクエリ発行）処理 - **Depends on: `TASK-VEC-01`** (`layer:usecase` -> `adapter-search`)"
+        - "    - [ ] 3. 検索結果（類似QA、文書チャンク）をコンテキストとして整形する処理 (`layer:usecase`)"
+        - "    - [ ] 4. コンテキストと元の質問を組み合わせたプロンプトを生成する処理（プロンプトエンジニアリング含む、設定ファイル利用） (`layer:usecase`)"
+        - "    - [ ] 5. 生成AI APIを呼び出して応答を生成する処理 - **Depends on: `TASK-AI-03`** (`layer:usecase` -> `adapter-ai`)"
+        - "    - [ ] 6. AI応答から最終的な回答と出典情報を抽出・整形する処理 (`layer:usecase`)"
+        - "[ ] Q&A応答、要約、バッチQ&A生成の各ユースケースから上記RAGパイプラインを呼び出すインターフェースを実装 (`layer:usecase`)"
+        - "[ ] （TDD）RAGパイプラインの各ステップおよび全体の結合テスト（モック/スタブを利用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 入力された質問と対象範囲に基づき、ベクトルDBから関連情報が検索されること。
+        - 検索結果をコンテキストとして含んだプロンプトが生成されること。
+        - 生成AI APIが呼び出され、コンテキストに基づいた応答が生成されること。
+        - 応答から最終的な回答と出典情報が抽出・整形されること。
+        - 関連するテストがすべて成功すること。
+      related_requirements: [TASK-AI-01, FR-QA-002, FR-SUMM-001, FR-IMPROVE-001]
+      dependencies: [TASK-VEC-01, TASK-AI-03, TASK-CONFIG-PROMPT] # TASK-VEC-01 is ISSUE-026, TASK-AI-03 is ISSUE-025, TASK-CONFIG-PROMPT needs new issue
+      milestone: "MVP Core QA"
+      labels: [type:technical-task, feature:qa, feature:extract-summ, feature:feedback, layer:usecase, layer:adapter-ai, layer:adapter-search, epic:EPIC-QA-CORE, epic:EPIC-UTILITIES, epic:EPIC-FEEDBACK-LOOP, MVP, priority:high, TDD, RAG]
+    - id: ISSUE-024
+      title: "[TechnicalTask] Gemini 1.5 Flashによる情報抽出実装 (TASK-AI-02)"
+      description: |
+        技術タスク TASK-AI-02 を実施する。ページ画像から情報（テキスト、表、図説明）を抽出するために、Gemini 1.5 Flashを利用するAI連携を実装する（Langchain使用）。
+      tasks:
+        - "[ ] LangchainのGoogle Geminiインテグレーション (`langchain-google-genai`) を設定 (`layer:adapter-ai`)"
+        - "[ ] ページ画像を入力としてGemini 1.5 Flash APIを呼び出す関数/クラスを実装 (`layer:adapter-ai`)"
+        - "[ ] 画像からテキスト、表（構造化データ形式）、図の説明文を抽出させるための適切なプロンプトを作成・設定（設定ファイル管理） (`layer:adapter-ai`, `layer:usecase`)"
+        - "[ ] API応答をパースし、抽出された情報を `ContentElement` オブジェクト等にマッピングする処理 (`layer:adapter-ai` -> `domain`)"
+        - "[ ] API呼び出し時のエラーハンドリング（例: APIエラー、コンテンツフィルタリング） (`layer:adapter-ai`)"
+        - "[ ] （TDD）Gemini API連携部分のテスト（モックAPIを使用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 入力されたページ画像に対してGemini 1.5 Flash APIが呼び出されること。
+        - API応答からテキスト、構造化された表データ、図の説明文が抽出・パースされ、内部データ構造に格納されること。
+        - APIエラー等が適切にハンドリングされること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-AI-02, FR-AICONV-001]
+      dependencies: [TASK-AI-03, TASK-CONFIG-PROMPT] # TASK-AI-03 is ISSUE-025, TASK-CONFIG-PROMPT needs new issue
+      milestone: "MVP Pipeline"
+      labels: [type:technical-task, feature:pipeline, layer:adapter-ai, layer:domain, epic:EPIC-PIPELINE, epic:EPIC-AI-CORE, MVP, priority:high, TDD]
+      notes: 将来的なChatGPT等への切り替えも考慮したインターフェース設計。
+    - id: ISSUE-025
+      title: "[TechnicalTask] 生成AI API連携インターフェース実装 (TASK-AI-03)"
+      description: |
+        技術タスク TASK-AI-03 を実施する。外部生成AI API（初期はGoogle Gemini 1.5 Flash）との連携インターフェース（APIキー管理含む）を実装する。モデル切り替え（Langchain利用）を考慮した設計とする。
+      tasks:
+        - "[ ] LangchainのLLM/ChatModelインターフェースを利用したAPI呼び出しラッパーを作成 (`layer:adapter-ai`)"
+        - "[ ] ユーザ毎のAPIキーを安全に取得し（`TASK-SEC-002` の実装に依存）、APIリクエスト時に利用する仕組み (`layer:adapter-ai`, `layer:usecase`)"
+        - "[ ] 異なるAIプロバイダー（Gemini, OpenAI等）のAPI呼び出しを抽象化するインターフェース設計（Langchain活用） (`layer:adapter-ai`, `CleanArchitecture`)"
+        - "[ ] API呼び出しのタイムアウト設定、リトライ処理（必要な場合）の実装 (`layer:adapter-ai`)"
+        - "[ ] API利用状況の基本的なロギング（呼び出し回数、トークン数など、コスト管理はユーザ責任だが状況把握のため） (`layer:adapter-ai`)"
+        - "[ ] （TDD）API連携ラッパーのテスト（モックサーバー/ライブラリを使用）を作成する (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 指定されたAIモデル（初期はGemini）のAPIを、ユーザ固有のAPIキーを用いて呼び出せること。
+        - API呼び出し時のエラー（認証エラー、タイムアウト等）がハンドリングされること。
+        - Langchain経由でモデル切り替えが容易な設計になっていること。
+        - 関連するテストが成功すること。
+      related_requirements: [TASK-AI-03, NFR(Security), Constraints(Technology Stack)]
+      dependencies: [US-SETTINGS-001, TASK-SEC-002] # US-SETTINGS-001 is ISSUE-048, TASK-SEC-002 is ISSUE-042
+      milestone: "MVP Foundation" # Or MVP Pipeline
+      labels: [type:technical-task, layer:adapter-ai, layer:infrastructure, epic:EPIC-AI-CORE, MVP, priority:medium, TDD, CleanArchitecture]

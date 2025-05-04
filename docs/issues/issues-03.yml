@@ -1,0 +1,96 @@
+github_issues:
+  project_name: DeepRead
+  version: 1.0
+  date: 2025-05-03
+
+  issues:
+    - id: ISSUE-011
+      title: "[UserStory] PDFアップロード機能のバックエンド実装 (US-UPLOAD-001, US-PIPE-001関連)"
+      description: |
+        ユーザーストーリー US-UPLOAD-001, US-PIPE-001 のバックエンド処理を実装する。PDFを受け取り、ファイルストレージに保存し、非同期解析パイプラインをトリガーする。
+      tasks:
+        - "[ ] PDFファイルアップロードを受け付けるAPIエンドポイント/ビュー実装 (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] アップロードファイルのバリデーション（ファイル形式、サイズ、ページ数[ユーザ設定値に基づく]） (`layer:usecase`)"
+        - "[ ] ファイルを永続ストレージ（例: S3, ローカルストレージ）に保存する処理 (`layer:adapter-infrastructure`)"
+        - "[ ] `Document` エンティティを作成し、初期ステータス（例: `Uploaded`）でDBに保存 (`layer:usecase`, `layer:domain`, `layer:adapter-db`)"
+        - "[ ] 非同期処理キュー（Celery等）にPDF解析タスクを投入する処理 (`layer:usecase`, `layer:adapter-infrastructure`)"
+        - "[ ] （TDD）関連するユースケース、ドメインロジックの単体テスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - 制限内のPDFファイルが正常にアップロードされ、ストレージに保存され、DBにドキュメントレコードが作成されること。
+        - 制限外のファイルはエラーとなること。
+        - 非同期解析タスクがキューに投入されること。
+        - 関連する単体テストが成功すること。
+      related_requirements: [US-UPLOAD-001, US-PIPE-001]
+      dependencies: [US-SETTINGS-001, TASK-INFRA-03, TASK-STORAGE-01, ISSUE-LIB-DB-ADAPTER] # Needs User Settings, Async Infra, Storage, Library DB Adapter
+      milestone: "MVP Pipeline"
+      labels: [type:user-story, feature:pipeline, layer:usecase, layer:domain, layer:adapter-infrastructure, layer:adapter-db, epic:EPIC-PIPELINE, MVP, priority:high, TDD]
+    - id: ISSUE-012
+      title: "[UserStory] PDF解析ステータス表示UI (US-PIPE-001)"
+      description: |
+        ユーザーストーリー US-PIPE-001 のためのUIを実装する。ライブラリ画面でドキュメントの解析ステータスと進捗を表示する。
+        > DeepReadのユーザ として、アップロードしたPDFがバックグラウンドで自動的に解析され、内容が抽出・準備されることを知りたい。それは、いつからドキュメントを活用できるか見通しを立てるためだ。
+      tasks:
+        - "[ ] ライブラリ一覧の各ドキュメントにステータス（処理中, 準備完了, エラー）を表示するUI実装 (`layer:adapter-ui`)"
+        - "[ ] 「処理中」の場合、進捗を示す表示（例: 簡易メッセージ、プログレスバー）を実装 (`layer:adapter-ui`)"
+        - "[ ] バックエンドからのステータス更新をポーリングまたはWebSocket等で検知し、UIに反映する仕組み (`layer:adapter-ui`, `layer:infrastructure`)"
+      acceptance_criteria:
+        - アップロード直後のドキュメントは「処理中」と表示されること。
+        - 解析完了後は「準備完了」と表示されること。
+        - 解析エラー時は「エラー」と表示されること。
+        - 処理中の進捗が適切に表示されること（MVPでは簡易でも可）。
+      related_requirements: [US-PIPE-001]
+      dependencies: [ISSUE-011, TASK-PIPE-01] # Depends on backend pipeline status update
+      milestone: "MVP Pipeline"
+      labels: [type:user-story, feature:pipeline, layer:adapter-ui, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:medium]
+    - id: ISSUE-013
+      title: "[UserStory] ライブラリ一覧表示UIの実装 (US-LIB-001)"
+      description: |
+        ユーザーストーリー US-LIB-001 のためのUIを実装する。
+        > DeepReadのユーザ として、アップロードしたドキュメントをライブラリで一覧表示したい。それは、自分が管理しているドキュメントを俯瞰し、目的のドキュメントを見つけやすくするためだ。
+      tasks:
+        - "[ ] ライブラリ画面の基本レイアウト作成 (`layer:adapter-ui`)"
+        - "[ ] ドキュメント一覧を取得するAPI呼び出しと表示処理 (`layer:adapter-ui` -> `usecase`)"
+        - "[ ] 各ドキュメントの情報（サムネイル、タイトル、ファイル名、更新日時、ステータス）表示コンポーネント作成 (`layer:adapter-ui`)"
+        - "[ ] 一覧表示/サムネイル表示切り替え機能 (`layer:adapter-ui`)"
+        - "[ ] ページネーションまたは無限スクロール実装 (`layer:adapter-ui`)"
+      acceptance_criteria:
+        - ログイン後、ライブラリ画面に自身のドキュメント一覧が表示されること。
+        - 表示形式を切り替えられること。
+        - 多数のドキュメントがある場合にページ遷移またはスクロールで続きを読み込めること。
+      related_requirements: [US-LIB-001]
+      dependencies: [ISSUE-004, ISSUE-LIB-BACKEND] # Depends on login and backend for fetching library
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:adapter-ui, epic:EPIC-LIBRARY, MVP, priority:medium]
+    - id: ISSUE-014
+      title: "[UserStory] ライブラリ一覧取得バックエンド実装 (US-LIB-001)"
+      description: ユーザーストーリー US-LIB-001 のためのバックエンドAPIを実装する。ユーザのライブラリ内のドキュメント情報を取得する。
+      tasks:
+        - "[ ] `GetLibraryDocuments` ユースケース（Interactor）のインターフェースと実装（ページネーション、ソート含む） (`layer:usecase`)"
+        - "[ ] `Library` / `Document` 集約、関連リポジトリの利用 (`layer:usecase` -> `domain`, `adapter-db`)"
+        - "[ ] APIエンドポイント（例: `/api/library/documents`）の実装 (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] 応答データのシリアライズ（ドキュメント情報、ページネーション情報） (`layer:adapter-ui` or `layer:usecase`)"
+        - "[ ] （TDD）ユースケース、関連ロジックのテスト (`type:test`, `TDD`)"
+      acceptance_criteria:
+        - APIを呼び出すと、ユーザのライブラリに属するドキュメントのリスト（指定されたページ/件数）が返されること。
+        - ドキュメント情報（ID, タイトル, 更新日時, ステータス等）が含まれること。
+        - 関連するテストが成功すること。
+      related_requirements: [US-LIB-001]
+      dependencies: [ISSUE-002, ISSUE-LIB-DB-ADAPTER] # Depends on User DB and Library DB adapter
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:usecase, layer:domain, layer:adapter-db, epic:EPIC-LIBRARY, MVP, priority:medium, TDD]
+    - id: ISSUE-015
+      title: "[UserStory] ライブラリ検索UIの実装 (US-LIB-002)"
+      description: ユーザーストーリー US-LIB-002 のためのUIを実装する。キーワード入力と検索結果表示を行う。
+      tasks:
+        - "[ ] ライブラリ画面に検索ボックスを配置 (`layer:adapter-ui`)"
+        - "[ ] キーワード入力時にバックエンドの検索APIを呼び出す処理 (`layer:adapter-ui`)"
+        - "[ ] 検索結果（ドキュメントリスト）を一覧表示エリアに反映する処理 (`layer:adapter-ui`)"
+        - "[ ] 検索中のインジケータ表示 (`layer:adapter-ui`)"
+        - "[ ] 検索結果のソート順選択UI（任意） (`layer:adapter-ui`)"
+      acceptance_criteria:
+        - ユーザが検索ボックスにキーワードを入力すると、関連するドキュメントが一覧表示されること。
+        - 検索応答時間は目標値を満たすこと。
+      related_requirements: [US-LIB-002]
+      dependencies: [ISSUE-013, ISSUE-SEARCH-BACKEND] # Depends on list UI and search backend
+      milestone: "MVP Library & Search"
+      labels: [type:user-story, feature:library, layer:adapter-ui, epic:EPIC-LIBRARY, MVP, priority:medium]
