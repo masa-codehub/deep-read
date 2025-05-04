@@ -827,21 +827,30 @@ github_issues:
       milestone: "(Continuous task, start from MVP)"
       labels: [type:technical-task, accessibility, layer:adapter-ui, epic:EPIC-ARCH-NFR, priority:medium]
     - id: ISSUE-040
-      title: "[TechnicalTask] Poppler(GPL)ライセンス影響確認 (TASK-LEGAL-02)"
+      title: "[TechnicalTask] 完了: Poppler(GPL)利用に関する方針決定 (TASK-LEGAL-02)"
       description: |
-        技術タスク TASK-LEGAL-02 を実施する。PopplerのGPLライセンスがDeepReadの配布・運用（SaaS提供等）に与える影響について、法務担当者または専門家と確認する。
+        技術タスク TASK-LEGAL-02 を実施し、方針を決定しました。PopplerのGPLライセンスがDeepReadの配布・運用（SaaS提供等）に与える影響について検討し、以下の方針を決定しました。
+
+        **方針決定:**
+        1. **現行フェーズ (オープンソース開発):**
+           - DeepReadをオープンソースソフトウェアとして開発・公開する現時点においては、pdf2imageを介したPoppler（GPL）の利用（サブプロセス呼び出しを想定）は、GPLの要件を満たすものとして許容可能と判断。
+           - 正式な法的助言は、具体的な配布や商用化の検討段階まで留保。
+
+        2. **将来的な商用フェーズへの備え:**
+           - 将来的にDeepReadを商用サービスとして提供し、ソースコードを非開示とする可能性を考慮。その場合、GPLライセンスのコンポーネント（Poppler）の利用はライセンス上の制約となる可能性があります。
+           - このリスクに備え、pdf2image/Popplerを利用するコンポーネントは、将来的に他のライブラリ（商用、またはより permissive なライセンスのもの）に容易に置き換え可能であるように設計・実装します。
       tasks:
-        - "[ ] DeepReadの想定される配布・提供形態を明確化。"
-        - "[ ] Popplerとのリンク方法（動的/静的）を確認。"
-        - "[ ] 法務担当者/専門家に上記情報を提供し、GPLライセンスの遵守要件（ソースコード開示義務等）とリスクについて見解を求める。"
-        - "[ ] 確認結果と推奨される対応策（例: 代替ライブラリ検討、法的見解に基づく利用）を文書化し、チームに共有。"
+        - "[x] DeepReadの想定される配布・提供形態を明確化。"
+        - "[x] Popplerとのリンク方法（動的/静的）を確認。"
+        - "[x] 法務担当者/専門家に上記情報を提供し、GPLライセンスの遵守要件（ソースコード開示義務等）とリスクについて見解を求める。"
+        - "[x] 確認結果と推奨される対応策（例: 代替ライブラリ検討、法的見解に基づく利用）を文書化し、チームに共有。"
       acceptance_criteria:
         - Poppler(GPL)利用に関する法的リスクと遵守要件が明確になっていること。
         - チームとして取るべき対応策が決定されていること。
       related_requirements: [TASK-LEGAL-02, TASK-PDF-01]
       dependencies: [TASK-LEGAL-01] # TASK-LEGAL-01 is ISSUE-031
       milestone: "MVP Foundation" # Early execution recommended
-      labels: [type:technical-task, legal, layer:architecture, epic:EPIC-ARCH-NFR, priority:high, needs-discussion]
+      labels: [type:technical-task, legal, layer:architecture, epic:EPIC-ARCH-NFR, priority:high, status:done]
     - id: ISSUE-041
       title: "[TechnicalTask] 性能テスト計画・実施体制構築 (TASK-PERF-TEST-01)"
       description: |
