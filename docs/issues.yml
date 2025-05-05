@@ -84,12 +84,36 @@ github_issues:
       description: |
         ユーザーストーリー US-AUTH-001 のバックエンド処理を実装する。
         > 初めてDeepReadを使うユーザ として、メールアドレスとパスワードで安全にアカウント登録したい。それは、自分のライブラリをパーソナルな空間として利用するためだ。
+
+        **目的:**
+        本 Issue は、新規ユーザーがメールアドレスとパスワードで安全にアカウント登録できるためのバックエンド処理 (`RegisterUser` UseCase) を実装することを目的としていました。
+
+        **実施内容:**
+        * `RegisterUserUseCase` インターフェースと関連 DTO (`RegisterUserInputData`, `RegisterUserOutputData`)、カスタム例外クラスを `app/core/usecases.py` に定義しました。
+        * バリデーションロジックをカプセル化するため、`Email` および `Password` 値オブジェクトを `app/domain/value_objects.py` に実装しました。特に `Password` 値オブジェクトでは、Django の `settings.AUTH_PASSWORD_VALIDATORS` を利用するようにし、設定の一元化を図りました。
+        * `RegisterUserInteractor` を `app/usecases/register_user.py` に実装しました。この Interactor は以下の処理を行います。
+            * パスワード一致チェック。
+            * `Email`, `Password` 値オブジェクトによる入力バリデーション。
+            * `UserRepository` を介したメールアドレス重複チェック。
+            * `CustomUser.objects.create_user` によるユーザー作成とパスワードハッシュ化。
+            * レースコンディションを考慮した `IntegrityError` のハンドリング。
+            * 適切なカスタム例外の送出。
+            * 成功時の `RegisterUserOutputData` 返却。
+        * 値オブジェクト (`test_value_objects.py`) および UseCase (`test_register_user.py`) に対する単体テストを TDD で実装し、正常系・異常系を網羅的に検証しました。UseCase のテストでは `UserRepository` をモック化しました。
+
+        **レビュー結果:**
+        * コードレビューを実施し、Clean Architecture の原則に沿った実装であること、値オブジェクトの活用が効果的であること、エラーハンドリングが適切であること、テストが網羅的であることを確認しました。
+        * レビューでの指摘事項（パスワードバリデーションの統合、テストアサーションの追加）はすべて修正されました。
+        * テストはすべて成功しています。
+
+        **クローズ:**
+        上記作業の完了、テストの成功、およびレビュー承認をもって、本 Issue をクローズします。これにより、ユーザー登録機能のバックエンドロジックが実装され、UI 実装 (ISSUE-003) の準備が整いました。（注意: 自動ログイン処理は本 Issue のスコープ外です。）
       tasks:
-        - "[ ] `UserAccount` ドメインエンティティ/集約の定義（`User` ID, Email, HashedPassword等） (`layer:domain`, `DDD`)"
-        - "[ ] `RegisterUser` ユースケース（Interactor）のインターフェースと実装（入力バリデーション、パスワードハッシュ化、ドメインイベント発行） (`layer:usecase`, `CleanArchitecture`)"
-        - "[ ] `UserRepository` インターフェース定義 (`layer:usecase`)"
-        - "[ ] （TDD）`UserAccount` ドメインモデルの単体テスト (`type:test`, `layer:domain`, `TDD`)"
-        - "[ ] （TDD）`RegisterUser` ユースケースの単体テスト (`type:test`, `layer:usecase`, `TDD`)"
+        - "[x] `UserAccount` ドメインエンティティ/集約の定義（`User` ID, Email, HashedPassword等） (`layer:domain`, `DDD`)"
+        - "[x] `RegisterUser` ユースケース（Interactor）のインターフェースと実装（入力バリデーション、パスワードハッシュ化、ドメインイベント発行） (`layer:usecase`, `CleanArchitecture`)"
+        - "[x] `UserRepository` インターフェース定義 (`layer:usecase`)"
+        - "[x] （TDD）`UserAccount` ドメインモデルの単体テスト (`type:test`, `layer:domain`, `TDD`)"
+        - "[x] （TDD）`RegisterUser` ユースケースの単体テスト (`type:test`, `layer:usecase`, `TDD`)"
       acceptance_criteria:
         - サインアップページにメールアドレス、パスワード、パスワード確認の入力フィールドが表示される。 # UI側のACだが参考として
         - 有効なメールアドレス形式、最低限のパスワード強度（例: 8文字以上）がクライアントサイド/サーバーサイドで検証される。
@@ -101,7 +125,7 @@ github_issues:
       related_requirements: [US-AUTH-001]
       dependencies: [TASK-SEC-001, TASK-AUTH-DB-ADAPTER, ISSUE-AUTH-UI] # Dependencies refer to other Issue IDs (placeholders for now)
       milestone: "MVP Foundation"
-      labels: [type:user-story, feature:auth, layer:domain, layer:usecase, epic:EPIC-FOUNDATION, MVP, priority:high, TDD, DDD]
+      labels: [type:user-story, feature:auth, layer:domain, layer:usecase, epic:EPIC-FOUNDATION, MVP, priority:high, TDD, DDD, status:done]
     - id: ISSUE-002
       title: "[TechnicalTask] UserAccount DBアダプタの実装 (US-AUTH-001, US-AUTH-002関連)"
       description: |

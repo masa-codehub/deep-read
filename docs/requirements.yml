@@ -242,6 +242,8 @@ requirement_definition:
       - name: UserAccount 集約
         root_entity: CustomUser (ID, Email, HashedPassword, ...) # Django AbstractBaseUser を継承したカスタムユーザーモデル実装済み
         value_objects:
+          - Email # バリデーションロジックをカプセル化した値オブジェクト実装済み
+          - Password # Django settings.AUTH_PASSWORD_VALIDATORS を利用するバリデーションロジックを実装済み
           - TermsAgreement (Version, AgreedAt)
           - UserSettings (UserID, MaxFileSize, MaxPages, MaxCrossSearchDocs, BatchFrequency, ApiKey[Encrypted?], ...) # (または別集約)
         responsibilities: ユーザ認証情報、プロファイル、利用規約同意状況、ユーザ設定管理。
@@ -250,6 +252,14 @@ requirement_definition:
           UserRepositoryインターフェースは`app/core/repositories.py`に定義済み。
           リポジトリ実装（PostgresUserRepository）は`app/adapters/db/user_repository.py`に実装済み。
           Emailをユーザー名とする設計を採用し、適切なUserManagerも実装。
+          RegisterUserUseCaseインターフェースと関連DTO、例外クラスは`app/core/usecases.py`に定義済み。
+          RegisterUserInteractorは`app/usecases/register_user.py`に実装済みで、以下の機能を提供:
+            - パスワード一致チェック
+            - Email、Password値オブジェクトによる入力バリデーション
+            - UserRepositoryを介したメールアドレス重複チェック
+            - レースコンディションを考慮したIntegrityErrorハンドリング
+            - 適切なカスタム例外の送出
+          値オブジェクトとユースケースに対する単体テストを完備。
           Django ORMを用いて`save`、`find_by_id`、`find_by_email`メソッドを実装。
     domain_events:
       - UserRegistered
