@@ -9,6 +9,53 @@ services:
     working_dir: ${CONTAINER_VOLUME:-/app}
     environment:
       - PROJECT_NAME=${PROJECT_NAME}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-default-key}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-app.settings.development}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
     # command: ["bash", "run.sh"]
+    # command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - ${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}
     stdin_open: true
     tty: true
+    depends_on:
+      - redis
+    restart: always
+
+  redis:
+    image: "redis:7-alpine"
+    container_name: deepread-redis
+    ports:
+      - "127.0.0.1:6379:6379" # localhostからのみアクセス可能に
+    volumes:
+      - ./${REDIS_NAME:-redis_data}:${REDIS_VOLUME:-/data}
+    restart: always
+
+  celery_worker:
+    build:
+      context: ./${PROJECT_NAME}/.build
+      dockerfile: Dockerfile
+    container_name: deepread-celery-worker
+    # 開発用は -P solo、本番検討は -P gevent -c {CPUコア数}
+    command: celery -A app.celery worker -l info -P solo
+    volumes:
+      - ./${PROJECT_NAME}:${CONTAINER_VOLUME:-/app}
+    environment:
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-app.settings.development}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-default-key}
+    stdin_open: true
+    tty: true
+    depends_on:
+      - redis
+      # - deep-read
+    restart: always
+
+volumes:
+  redis_data:
+    driver: local
