@@ -252,6 +252,8 @@ requirement_definition:
           UserRepositoryインターフェースは`app/core/repositories.py`に定義済み。
           リポジトリ実装（PostgresUserRepository）は`app/adapters/db/user_repository.py`に実装済み。
           Emailをユーザー名とする設計を採用し、適切なUserManagerも実装。
+          
+          **ユーザー登録機能:**
           RegisterUserUseCaseインターフェースと関連DTO、例外クラスは`app/core/usecases.py`に定義済み。
           RegisterUserInteractorは`app/usecases/register_user.py`に実装済みで、以下の機能を提供:
             - パスワード一致チェック
@@ -259,6 +261,20 @@ requirement_definition:
             - UserRepositoryを介したメールアドレス重複チェック
             - レースコンディションを考慮したIntegrityErrorハンドリング
             - 適切なカスタム例外の送出
+          
+          **ログイン認証機能:**
+          LoginUserUseCaseインターフェースと関連DTO (LoginUserInputData, LoginUserOutputData)、
+          カスタム例外クラス (AuthenticationError) を`app/core/usecases.py`に定義済み。
+          LoginUserInteractorを`app/usecases/login_user.py`に実装済みで、以下の機能を提供:
+            - Email値オブジェクトによるメール形式バリデーション
+            - django.contrib.auth.authenticate関数を利用したユーザー認証
+            - 認証失敗時（ユーザーなし、パスワード違い、非アクティブ）の例外送出
+            - 認証成功時に必要な情報（ユーザーID、メールアドレスなど）を返却
+          
+          **備考:**
+          セッション管理（login()関数の呼び出しなど）はUseCaseの責務外とし、
+          呼び出し元のController/View層で行う方針。
+          
           値オブジェクトとユースケースに対する単体テストを完備。
           Django ORMを用いて`save`、`find_by_id`、`find_by_email`メソッドを実装。
     domain_events:
