@@ -15,6 +15,10 @@ services:
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      - DATABASE_URL=${PG_ENDPOINT:-postgres://postgres:postgres@db:5432/deepread}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - QDRANT_HOST=${QDRANT_HOST:-qdrant}
+      - QDRANT_PORT=${QDRANT_PORT:-6333}
     # command: ["bash", "run.sh"]
     # command: python manage.py runserver 0.0.0.0:8000
     ports:
@@ -23,15 +27,39 @@ services:
     tty: true
     depends_on:
       - redis
+      - postgres
+      - qdrant
     restart: always
 
+  postgres:
+    build:
+      context: ./${POSTGRESQL}/.build
+      dockerfile: Dockerfile
+      args:
+        - PGPORT=${PG_PORT:-5432}
+    image: ${POSTGRESQL}_image
+    volumes:
+      - postgres_volume:${PG_VOLUME:-/var/lib/postgresql/data}
+      - ./${POSTGRESQL}/init:/init
+    working_dir: ${PG_VOLUME:-/var/lib/postgresql/data}
+    restart: always
+    environment:
+      - POSTGRES_HOST=${PG_HOST:-postgres}
+      - POSTGRES_DB=${PG_DB:-my_db}
+      - POSTGRES_USER=${PG_USER:-my_id}
+      - POSTGRES_PASSWORD=${PG_PASSWORD:-my_password}
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - PGPORT=${PG_PORT:-5432}
+      # - LOGGING_LEVEL=DEBUG
+    ports:
+      - ${PG_PORT:-5432}:${PG_PORT:-5432}
   redis:
     image: "redis:7-alpine"
     container_name: deepread-redis
     ports:
       - "127.0.0.1:6379:6379" # localhostからのみアクセス可能に
     volumes:
-      - ./${REDIS_NAME:-redis_data}:${REDIS_VOLUME:-/data}
+      - redis_data:${REDIS_VOLUME:-/data}
     restart: always
 
   celery_worker:
@@ -45,17 +73,37 @@ services:
       - ./${PROJECT_NAME}:${CONTAINER_VOLUME:-/app}
     environment:
       - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-app.settings.development}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-default-key}
       - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-default-key}
+      - DATABASE_URL=${PG_ENDPOINT:-postgres://postgres:postgres@db:5432/deepread}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - QDRANT_HOST=${QDRANT_HOST:-qdrant}
+      - QDRANT_PORT=${QDRANT_PORT:-6333}
     stdin_open: true
     tty: true
     depends_on:
       - redis
-      # - deep-read
+      - qdrant
+      - postgres
+    restart: always
+    
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: deepread-qdrant
+    ports:
+      # gRPC ポート (クライアント接続用) - ホストのローカルホストにのみ公開
+      - "127.0.0.1:6333:6333"
+      # REST API ポート (デバッグやUI用) - ホストのローカルホストにのみ公開
+      - "127.0.0.1:6334:6334"
+    volumes:
+      # 名前付きボリュームをマウントしてデータを永続化
+      - qdrant_storage:${QDRANT_VOLUME:-/qdrant/storage}
     restart: always
 
 volumes:
+  postgres_volume:
   redis_data:
+  qdrant_storage:
     driver: local

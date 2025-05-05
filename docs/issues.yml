@@ -654,13 +654,40 @@ github_issues:
       title: "[TechnicalTask] QdrantベクトルDB導入と設定 (TASK-VEC-02)"
       description: |
         技術タスク TASK-VEC-02 を実施する。選定されたベクトルDBであるQdrant (Self-Hosted) をDocker環境にデプロイし、基本的なコレクション作成、インデックス設定を行う。
+
+        **目的:**
+        本 Issue は、プロジェクトで使用するベクトルデータベースとして Qdrant (Self-Hosted 版) を Docker 環境に導入し、基本的な設定（コンテナ起動、永続化、コレクション作成、接続確認）を行うことを目的としていました。
+
+        **実施内容:**
+        * **Docker Compose 設定:**
+            * `docker-compose.yml` に Qdrant の公式イメージ (`qdrant/qdrant`) を使用する `qdrant` サービスを追加しました。
+            * ポートマッピング (`6333`, `6334` を `127.0.0.1` に限定公開) と、データ永続化のための名前付きボリューム (`qdrant_storage`) を設定しました。
+            * 関連サービス (`deep-read`, `celery_worker`) に Qdrant 接続用の環境変数と `depends_on` を追加しました。
+        * **依存関係:** `qdrant-client` ライブラリをプロジェクトに追加しました (`pyproject.toml` 更新)。
+        * **Django 設定:**
+            * `settings.py` (`base.py`, `production.py`) に Qdrant 接続情報 (`QDRANT_HOST`, `QDRANT_PORT`) およびコレクション名 (`QDRANT_COLLECTION_DOCUMENTS`, `QDRANT_COLLECTION_QA`)、ベクトル次元数 (`QDRANT_VECTOR_SIZE`) を追加し、環境変数で上書き可能にしました。
+        * **初期化処理:**
+            * `app/adapters/search/qdrant_manager.py` に Qdrant クライアントを取得する関数と、必要なコレクション (`documents`, `qa_pairs`) が存在しない場合に冪等に作成する `ensure_collections_exist` 関数を実装しました。ベクトル次元数は設定ファイルから読み込むように修正しました。
+            * `app/adapters/search/apps.py` の `AppConfig.ready()` メソッドで `ensure_collections_exist` を呼び出し、Django 起動時にコレクションが初期化されるようにしました。起動時エラーは警告ログを出力するように修正しました。
+        * **テスト:**
+            * `app/tests/adapters/search/test_qdrant_manager.py` に結合テストを追加しました。
+            * Qdrant サービスへの接続確認、コレクション作成確認、および基本的なベクトル登録 (`upsert`) と検索 (`retrieve`, `scroll` (フィルタ付き), `query_points`) が成功することを確認しました。
+            * Qdrant が利用できない場合にテストをスキップする仕組みも導入しました。
+
+        **レビュー結果:**
+        * コードレビューを実施し、Docker Compose 設定、Qdrant 接続・管理ロジック、結合テストが適切に実装されていることを確認しました。
+        * レビューでの指摘事項（`QDRANT_HOST` のデフォルト値修正、`AppConfig.ready` のエラーハンドリング改善、ベクトル次元数の設定化など）はすべて対応済みです。
+        * テストはすべて成功しています。
+
+        **クローズ:**
+        上記作業により、Qdrant ベクトルデータベースの基本的な導入と設定が完了し、Issue の受け入れ基準をすべて満たしたため、本 Issue をクローズします。これにより、ベクトル埋め込みの保存・検索機能 (ISSUE-026 / TASK-VEC-01) の実装に進む準備が整いました。
       tasks:
-        - "[ ] QdrantのDockerイメージを取得またはビルド (`layer:infrastructure`)"
-        - "[ ] Docker Compose等でQdrantコンテナを起動する設定 (`layer:infrastructure`)"
-        - "[ ] 永続ボリュームの設定 (`layer:infrastructure`)"
-        - "[ ] 基本的なコレクション（例: `documents`, `qa_pairs`）の作成と初期インデックス設定（例: HNSW） (`layer:adapter-search`)"
-        - "[ ] DjangoアプリケーションからQdrantへの接続確認 (`layer:adapter-search`)"
-        - "[ ] （TDD）基本的な接続・操作テスト (`type:test`, `layer:adapter-search`)"
+        - "[x] QdrantのDockerイメージを取得またはビルド (`layer:infrastructure`)"
+        - "[x] Docker Compose等でQdrantコンテナを起動する設定 (`layer:infrastructure`)"
+        - "[x] 永続ボリュームの設定 (`layer:infrastructure`)"
+        - "[x] 基本的なコレクション（例: `documents`, `qa_pairs`）の作成と初期インデックス設定（例: HNSW） (`layer:adapter-search`)"
+        - "[x] DjangoアプリケーションからQdrantへの接続確認 (`layer:adapter-search`)"
+        - "[x] （TDD）基本的な接続・操作テスト (`type:test`, `layer:adapter-search`)"
       acceptance_criteria:
         - Qdrantコンテナが正常に起動し、永続化が設定されていること。
         - DjangoアプリケーションからQdrantに接続し、コレクション操作（作成、情報取得）が可能であること。
@@ -668,7 +695,7 @@ github_issues:
       related_requirements: [TASK-VEC-02]
       dependencies: [TASK-INFRA-04] # Depends on Docker setup
       milestone: "MVP Pipeline" # Or MVP Foundation
-      labels: [type:technical-task, chore, layer:infrastructure, layer:adapter-search, epic:EPIC-ARCH-NFR, MVP, priority:high]
+      labels: [type:technical-task, chore, layer:infrastructure, layer:adapter-search, epic:EPIC-ARCH-NFR, MVP, priority:high, status:done]
     - id: ISSUE-028
       title: "[TechnicalTask] ライブラリ全文検索基盤実装 (TASK-SEARCH-01)"
       description: |
@@ -852,11 +879,44 @@ github_issues:
     - id: ISSUE-035
       title: "[TechnicalTask] 非同期処理基盤設定 (TASK-INFRA-03)"
       description: |
-        技術タスク TASK-INFRA-03 を実施する。PDF解析パイプラインを非同期で実行するための基盤を設定する。
+        技術タスク TASK-INFRA-03 を実施する。PDF解析パイプライン (TASK-PIPE-01) などの時間のかかる処理を非同期で実行するための基盤として、Celery と Redis を導入・設定する。
+
+        **目的:**
+        本 Issue は、PDF 解析パイプライン (TASK-PIPE-01) などの時間のかかる処理を非同期で実行するための基盤として、Celery と Redis を導入・設定することを目的としていました。
+
+        **実施内容:**
+        * **ライブラリ導入:** `celery` および `redis` (Python クライアント) をプロジェクト依存関係に追加しました。
+        * **Celery 設定:**
+            * `app/celery.py` を作成し、Celery アプリケーションインスタンス (`app = Celery('deepread')`) を定義しました。
+            * Django 設定 (`settings.py`) を Celery 設定ソースとして読み込み (`app.config_from_object`)、タスクの自動検出 (`app.autodiscover_tasks`) を有効にしました。
+            * `app/settings/base.py` に Celery 関連設定 (`CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND` 等) を追加し、環境変数から設定を読み込めるようにしました。
+        * **Docker Compose 設定:**
+            * `docker-compose.yml` に `redis` サービス (永続ボリューム付き) と `celery_worker` サービスを追加しました。
+            * `celery_worker` は Django アプリケーションと同じイメージを使用し、`celery -A app.celery worker` コマンドで起動するように設定しました。必要な環境変数も渡しています。
+        * **動作確認タスクとテスト:**
+            * 動作確認とリトライテストのためのサンプルタスク `add` を `app/tasks.py` に作成しました。
+            * `CELERY_TASK_ALWAYS_EAGER=True` を利用した結合テスト (`app/tests/test_celery_integration.py`) を追加し、タスク投入と同期実行（正常系およびリトライ含む）が成功することを確認しました。
+
+        **発生した問題と解決策:**
+        * 開発中に、Devcontainer 環境で `deep-read` (Web) サービスにアクセスすると `celery_worker` コンテナが "Warm shutdown" で停止してしまう問題が発生しました。
+        * 原因を調査した結果、`docker-compose.yml` の `celery_worker` サービスに設定されていた `depends_on: - deep-read` が影響している可能性が高いと判断されました。Celery Worker が Web アプリのプロセス自体に依存する必要は通常なく、この設定が Devcontainer のコンテナライフサイクル管理と干渉していたと考えられます。
+        * **`celery_worker` の `depends_on` から `deep-read` を削除したところ、問題は解消しました。**
+
+        **最終確認:**
+        * `depends_on` 修正後、`docker-compose up` でサービスを起動し、Django シェルからテストタスク (`add.delay()`) を投入し、`celery_worker` のログでタスクが非同期で受信・実行・完了（およびエラー発生時のリトライ）されることを手動で確認しました。
+        * 自動テストも引き続き成功しています。
+
+        **クローズ:**
+        上記作業により、Celery + Redis を用いた基本的な非同期処理基盤が設定され、以下の受け入れ基準を満たしたことを確認しました。
+        * Django アプリケーションからタスクキューにジョブを投入できること。
+        * タスクワーカがキューからジョブを取得し、実行できること。
+        * (基本的な)キューとワーカプロセスが連携して動作すること。
+
+        安定稼働については今後の継続的な監視が必要ですが、非同期処理基盤の初期設定としては完了と判断し、本 Issue をクローズします。
       tasks:
-        - "[ ] 非同期タスクキュー（Celery + Redis/RabbitMQ, Django-Q等）の選定と導入。"
-        - "[ ] タスクワーカプロセスの設定（同時実行数、リソース制限等）。"
-        - "[ ] タスクキューとワーカの起動・監視設定（Docker Compose, Supervisor等）。"
+        - "[x] 非同期タスクキュー（Celery + Redis/RabbitMQ, Django-Q等）の選定と導入。"
+        - "[x] タスクワーカプロセスの設定（同時実行数、リソース制限等）。"
+        - "[x] タスクキューとワーカの起動・監視設定（Docker Compose, Supervisor等）。"
       acceptance_criteria:
         - Djangoアプリケーションからタスクキューにジョブを投入できること。
         - タスクワーカがキューからジョブを取得し、実行できること。
@@ -864,7 +924,7 @@ github_issues:
       related_requirements: [TASK-INFRA-03, TASK-PIPE-01]
       dependencies: []
       milestone: "MVP Pipeline" # Or MVP Foundation
-      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:high]
+      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:high, status:done]
     - id: ISSUE-036
       title: "[TechnicalTask] Poppler依存解決 (TASK-INFRA-04)"
       description: |
@@ -1140,6 +1200,40 @@ github_issues:
       dependencies: [TASK-CONFIG-ARCH-01, TASK-SEC-002] # TASK-CONFIG-ARCH-01 is ISSUE-029, TASK-SEC-002 is ISSUE-042
       milestone: "MVP Foundation" # Or MVP Release
       labels: [type:user-story, feature:settings, layer:adapter-ui, epic:EPIC-SETTINGS, MVP, priority:medium]
+    - id: ISSUE-049
+      title: "[TechnicalTask] テストコードカバレッジを80%以上に向上 (TASK-TEST-COVERAGE-01)"
+      description: |
+        これまでの開発で、認証バックエンド (ISSUE-001, ISSUE-004)、ユーザーリポジトリ (ISSUE-002)、シークレット管理 (ISSUE-042)、非同期処理基盤 (ISSUE-035)、ベクトル DB 基盤 (ISSUE-027) など、いくつかの基本的な機能と基盤が実装されました。
+        これらの実装には単体テストや結合テストが含まれていますが、プロジェクト全体のコード品質と保守性をさらに向上させるため、テストコードのカバレッジを測定し、目標値である **80%以上** を達成するための見直しとテストコードの追加を行います。
+      tasks:
+        - "[ ] **カバレッジ測定ツールの設定:** `pytest-cov` を開発依存関係に追加し、pytest実行時にレポート生成する設定を追加 (例: `pyproject.toml`, CIスクリプト)。"
+        - "[ ] **現状のカバレッジ測定:** テストを実行し、カバレッジレポート (`term-missing`, `html` など) を生成して未テスト箇所を特定。"
+        - "[ ] **テストケースの追加・修正:** カバレッジレポートに基づき、特に重要ロジック (UseCase, Domain) や複雑な分岐を中心にテストを追加。"
+        - "[ ] **既存テストのリファクタリング (任意):** カバレッジ向上の過程で、既存テストの可読性や保守性を改善。"
+        - "[ ] **全テストの成功確認:** 追加・修正を含め、全テストがPASSすることを確認。"
+        - "[ ] **カバレッジ目標達成の確認:** カバレッジレポートで全体のカバレッジが80%以上であることを確認。"
+        - "[ ] **(推奨) CI/CD への組み込み:** CI/CD パイプラインにカバレッジ測定・レポートステップを追加。"
+      related_requirements:
+        - NFR(Testability) # requirements.yml に対応する項目があれば
+      related_issues:
+        # カバレッジ対象となるコードが実装された主要なIssue
+        - ISSUE-001
+        - ISSUE-002
+        - ISSUE-004
+        - ISSUE-027
+        - ISSUE-035
+        - ISSUE-042
+        # 他にも関連するIssueがあれば追加
+      acceptance_criteria:
+        - "[ ] コードカバレッジ測定ツール (`pytest-cov`) が設定され、カバレッジレポートが生成可能であること。"
+        - "[ ] 生成されたレポートにおいて、テスト対象コード全体のカバレッジが 80% 以上であること。"
+        - "[ ] 以前はテストされていなかった重要なロジックや分岐が、新たに追加されたテストによってカバーされていること。"
+        - "[ ] 追加・修正されたテストを含め、すべての自動テストが成功すること (`pytest` および `python manage.py test`)。"
+      labels:
+        - type:technical-task
+        - type:test
+        - layer:testing
+        - priority:medium # 優先度はプロジェクトに応じて調整
     - id: ISSUE-050
       title: "[TechnicalTask] 完了: Djangoプロジェクト初期セットアップとDocker基本環境構築 (TASK-SETUP-01)"
       description: |

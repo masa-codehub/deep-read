@@ -22,6 +22,9 @@ langchain-google-genai  # LangChain用 Google Generative AI (Gemini) 連携ラ�
 pydantic-settings       # Pydanticを利用した設定管理 (環境変数/.env読み込み, 型検証)
 python-dotenv           # .env ファイルから環境変数を読み込む (pydantic-settingsが内部で利用)
 
+# ベクトルデータベース
+qdrant-client>=1.7.0    # Qdrant ベクトルデータベースクライアント
+
 
 # --- Development Dependencies ---
 # 開発時にのみ使用するツール (テスト, Lint, Format, 依存関係管理等)
