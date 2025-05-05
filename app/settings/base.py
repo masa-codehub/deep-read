@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'app',  # プロジェクト自体のアプリケーション（モデル定義など）
 ]
 
+# カスタムユーザーモデルの設定
+AUTH_USER_MODEL = 'app.CustomUser'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'csp.middleware.CSPMiddleware',  # CSPミドルウェアを追加

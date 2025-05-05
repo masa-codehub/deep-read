@@ -20,9 +20,8 @@ class SecretManagementIntegrationTest(TestCase):
 
     def setUp(self):
         """テスト前の準備"""
-        # テスト用ユーザーの作成
+        # テスト用ユーザーの作成 (usernameパラメータを削除)
         self.user = User.objects.create_user(
-            username='testuser',
             email='test@example.com',
             password='password123'
         )
@@ -64,9 +63,11 @@ class SecretManagementIntegrationTest(TestCase):
 
     def test_cross_user_api_key_isolation(self):
         """異なるユーザー間でAPIキーが分離されていることを検証"""
-        # 2人のユーザーを追加作成
-        user1 = User.objects.create_user(username='user1', password='pass1')
-        user2 = User.objects.create_user(username='user2', password='pass2')
+        # 2人のユーザーを追加作成 (usernameパラメータを削除)
+        user1 = User.objects.create_user(
+            email='user1@example.com', password='pass1')
+        user2 = User.objects.create_user(
+            email='user2@example.com', password='pass2')
 
         # それぞれのユーザーに異なるAPIキーを保存
         api_key1 = "sk-user1-api-key"

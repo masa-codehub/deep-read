@@ -18,16 +18,15 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-minversion = "7.0" # pytestの最小バージョン指定 (例)
-addopts = "-ra -q" # pytest実行時のデフォルトオプション (例)
-testpaths = [      # テストファイルを探すディレクトリ (例)
+minversion = "7.0" # pytestの最小バージョン指定
+addopts = "-ra -q" # pytest実行時のデフォルトオプション
+testpaths = [      # テストファイルを探すディレクトリ
     "tests",
-    # "integration",
+    "app/tests",   # アプリケーションのテストディレクトリを追加
 ]
-python_files = "test_*.py *_test.py tests.py" # テストファイルのパターン
-python_classes = "Test*"                      # テストクラスのパターン
-python_functions = "test_*"                   # テスト関数のパターン
+python_files = "test_*.py"  # pytest.iniとpyproject.tomlの設定をマージ
+python_classes = "Test*"    # テストクラスのパターン
+python_functions = "test_*" # テスト関数のパターン
 
-# Django設定を使う場合の設定 (例)
-django_find_project = "true" # 自動で Django プロジェクトを探す
-DJANGO_SETTINGS_MODULE = "app.settings.development" # テスト時に使う設定ファイル
+# pytest-django用の設定
+DJANGO_SETTINGS_MODULE = "app.settings.base"  # Django設定モジュール

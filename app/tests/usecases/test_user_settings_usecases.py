@@ -45,9 +45,8 @@ class UserSettingsUseCasesTest(TestCase):
 
     def setUp(self):
         """テスト前の準備"""
-        # テスト用ユーザーの作成
+        # テスト用ユーザーの作成（usernameパラメータを削除）
         self.user = User.objects.create_user(
-            username='testuser',
             email='test@example.com',
             password='password123'
         )

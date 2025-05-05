@@ -104,19 +104,40 @@ github_issues:
       labels: [type:user-story, feature:auth, layer:domain, layer:usecase, epic:EPIC-FOUNDATION, MVP, priority:high, TDD, DDD]
     - id: ISSUE-002
       title: "[TechnicalTask] UserAccount DBアダプタの実装 (US-AUTH-001, US-AUTH-002関連)"
-      description: "`UserRepository` インターフェースを実装し、`UserAccount` 集約をPostgreSQLに永続化するアダプタを作成する。"
+      description: |
+        技術タスク `UserRepository` インターフェースを実装し、`UserAccount` 集約をPostgreSQLに永続化するアダプタを作成する。
+
+        **目的:**
+        本 Issue は、UseCase 層で定義される `UserRepository` インターフェースを実装し、`UserAccount` 集約（ユーザー情報）を PostgreSQL に永続化するアダプターを作成することを目的としていました。
+
+        **実施内容:**
+        * Django の `AbstractBaseUser` を継承したカスタムユーザーモデル `CustomUser` を `app/models/user.py` に定義しました。Email をユーザー名とし、適切な `UserManager` も実装しました。
+        * `settings.AUTH_USER_MODEL` を `app.CustomUser` に設定しました。
+        * `UserRepository` インターフェースを `app/core/repositories.py` に定義しました。
+        * `PostgresUserRepository` を `app/adapters/db/user_repository.py` に作成し、`UserRepository` インターフェースを Django ORM を用いて実装しました (`save`, `find_by_id`, `find_by_email`)。
+        * `PostgresUserRepository` に対する結合テスト (`app/tests/adapters/db/test_user_repository.py`) を作成し、主要な機能（保存、更新、ID検索、Email検索、大文字小文字区別なし検索、存在しない場合の挙動など）を検証しました。
+        * 関連するモデル (`UserSettings`) やテストコードにおけるユーザーモデル参照を `CustomUser` に更新しました。
+        * マイグレーションファイルを作成・適用しました。
+
+        **レビュー結果:**
+        * コードレビューを実施し、Clean Architecture の原則に沿った実装であること、カスタムユーザーモデルやリポジトリの実装が適切であること、テストが網羅的であることを確認しました。
+        * レビューでの指摘事項（インターフェースの型ヒント）は修正されました。
+        * テストはすべて成功しています。
+
+        **クローズ:**
+        上記作業の完了、テストの成功、およびレビュー承認をもって、本 Issue をクローズします。これにより、ユーザー認証機能のバックエンド実装（ISSUE-001, ISSUE-004）に必要なデータ永続化の基盤が整いました。
       tasks:
-        - "[ ] Djangoモデル (`User`) の定義とマイグレーション作成 (`layer:adapter-db`)"
-        - "[ ] `UserRepository` のPostgreSQL実装クラス作成 (`layer:adapter-db`)"
-        - "[ ] ユーザ情報の保存、メールアドレスによる検索、IDによる検索処理の実装 (`layer:adapter-db`)"
-        - "[ ] （TDD）リポジトリ実装の結合テスト作成 (`type:test`, `layer:adapter-db`, `TDD`)"
+        - "[x] Djangoモデル (`User`) の定義とマイグレーション作成 (`layer:adapter-db`)"
+        - "[x] `UserRepository` のPostgreSQL実装クラス作成 (`layer:adapter-db`)"
+        - "[x] ユーザ情報の保存、メールアドレスによる検索、IDによる検索処理の実装 (`layer:adapter-db`)"
+        - "[x] （TDD）リポジトリ実装の結合テスト作成 (`type:test`, `layer:adapter-db`, `TDD`)"
       acceptance_criteria:
         - "`UserRepository` インターフェースの仕様を満たすこと。"
         - "作成したテストがすべて成功すること。"
       related_requirements: [US-AUTH-001, US-AUTH-002]
       dependencies: [] # Assumes DB connection is set up
       milestone: "MVP Foundation"
-      labels: [type:technical-task, chore, layer:adapter-db, epic:EPIC-FOUNDATION, MVP, priority:high, TDD]
+      labels: [type:technical-task, chore, layer:adapter-db, epic:EPIC-FOUNDATION, MVP, priority:high, TDD, status:done]
     - id: ISSUE-003
       title: "[UserStory] ユーザ登録UIの実装 (US-AUTH-001関連)"
       description: |
@@ -534,7 +555,7 @@ github_issues:
         - "[ ] ページ画像を入力としてGemini 1.5 Flash APIを呼び出す関数/クラスを実装 (`layer:adapter-ai`)"
         - "[ ] 画像からテキスト、表（構造化データ形式）、図の説明文を抽出させるための適切なプロンプトを作成・設定（設定ファイル管理） (`layer:adapter-ai`, `layer:usecase`)"
         - "[ ] API応答をパースし、抽出された情報を `ContentElement` オブジェクト等にマッピングする処理 (`layer:adapter-ai` -> `domain`)"
-        - "[ ] API呼び出し時のエラーハンドリング（例: APIエラー、コンテンツフィルタリング） (`layer:adapter-ai`)"
+        - "[ ] API呼び出し時のエラーハンドリング（例: APIエラー、コンテンツフィルタリング）を実装する (`layer:adapter-ai`)"
         - "[ ] （TDD）Gemini API連携部分のテスト（モックAPIを使用）を作成する (`type:test`, `TDD`)"
       acceptance_criteria:
         - 入力されたページ画像に対してGemini 1.5 Flash APIが呼び出されること。
