@@ -8,6 +8,8 @@ django               # Django フレームワーク
 django-csp         # Django 用の CSP (Content Security Policy) ミドルウェア
 dj-database-url      # Django 用のデータベース URL パーサー
 
+cryptography        # 暗号化ライブラリ (Django Secret Key の生成に使用)
+
 langchain               # LangChainコアフレームワーク (LLMアプリケーション構築用)
 langchain-core
 langchain-community
