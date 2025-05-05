@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from app.models.user import CustomUser
+from app.models.user_settings import UserSettings
 
 
 class UserRepository(ABC):
@@ -53,5 +54,40 @@ class UserRepository(ABC):
 
         Returns:
             ユーザーオブジェクト、存在しない場合はNone
+        """
+        pass
+
+
+class UserSettingsRepository(ABC):
+    """
+    ユーザー設定リポジトリインターフェース
+
+    UserSettingsエンティティをデータストアに永続化するためのインターフェースを定義します。
+    """
+
+    @abstractmethod
+    def get_or_create_for_user(self, user_id: int) -> UserSettings:
+        """
+        指定されたユーザーIDに対応するUserSettingsを取得します。
+        存在しない場合はデフォルト値で新規作成します。
+
+        Args:
+            user_id: 対象ユーザーのID
+
+        Returns:
+            ユーザー設定オブジェクト
+        """
+        pass
+
+    @abstractmethod
+    def save(self, settings: UserSettings) -> UserSettings:
+        """
+        UserSettingsオブジェクトを保存または更新します。
+
+        Args:
+            settings: 保存するユーザー設定オブジェクト
+
+        Returns:
+            保存されたユーザー設定オブジェクト
         """
         pass
