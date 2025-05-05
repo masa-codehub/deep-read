@@ -5,11 +5,8 @@
 APIキーは暗号化してデータベースに保存されます。
 """
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from app.core.db.fields import EncryptedField
-
-
-User = get_user_model()
 
 
 class UserSettings(models.Model):
@@ -20,7 +17,7 @@ class UserSettings(models.Model):
     シークレットはEncryptedFieldを使用して暗号化して保存されます。
     """
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='settings',
         verbose_name='ユーザー'
@@ -48,4 +45,4 @@ class UserSettings(models.Model):
         verbose_name_plural = 'ユーザー設定'
 
     def __str__(self):
-        return f"{self.user.username}の設定"
+        return f"{self.user}の設定"

@@ -240,11 +240,17 @@ requirement_definition:
           - FeedbackRecord (TargetInteractionID, Rating[Good/Bad], Tags[], Comment)
         responsibilities: ユーザインタラクション履歴、Q&A、要約、フィードバック記録。
       - name: UserAccount 集約
-        root_entity: User (ID, Email, HashedPassword, ...)
+        root_entity: CustomUser (ID, Email, HashedPassword, ...) # Django AbstractBaseUser を継承したカスタムユーザーモデル実装済み
         value_objects:
           - TermsAgreement (Version, AgreedAt)
           - UserSettings (UserID, MaxFileSize, MaxPages, MaxCrossSearchDocs, BatchFrequency, ApiKey[Encrypted?], ...) # (または別集約)
         responsibilities: ユーザ認証情報、プロファイル、利用規約同意状況、ユーザ設定管理。
+        implementation_status: |
+          UserAccountドメインエンティティ（カスタムユーザーモデル）は`app/models/user.py`に実装済み。
+          UserRepositoryインターフェースは`app/core/repositories.py`に定義済み。
+          リポジトリ実装（PostgresUserRepository）は`app/adapters/db/user_repository.py`に実装済み。
+          Emailをユーザー名とする設計を採用し、適切なUserManagerも実装。
+          Django ORMを用いて`save`、`find_by_id`、`find_by_email`メソッドを実装。
     domain_events:
       - UserRegistered
       - DocumentUploaded
