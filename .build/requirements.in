@@ -10,6 +10,10 @@ dj-database-url      # Django 用のデータベース URL パーサー
 
 cryptography        # 暗号化ライブラリ (Django Secret Key の生成に使用)
 
+# 非同期処理基盤
+celery>=5.3.0       # 非同期タスクキューフレームワーク
+redis>=4.5.0        # メッセージブローカー用Redisクライアント
+
 langchain               # LangChainコアフレームワーク (LLMアプリケーション構築用)
 langchain-core
 langchain-community

@@ -119,6 +119,35 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ==============================================================================
+# Celery Settings
+# ==============================================================================
+
+# メッセージブローカーのURL (Redis使用)
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+
+# 結果バックエンドのURL (タスク結果や状態を保存する場合)
+CELERY_RESULT_BACKEND = os.environ.get(
+    'CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+
+# 受け入れるコンテンツタイプ
+CELERY_ACCEPT_CONTENT = ['json']
+
+# タスクのシリアライザ
+CELERY_TASK_SERIALIZER = 'json'
+
+# 結果のシリアライザ
+CELERY_RESULT_SERIALIZER = 'json'
+
+# Djangoのタイムゾーンを使用
+CELERY_TIMEZONE = TIME_ZONE
+
+# タスク実行状態をトラッキング
+CELERY_TASK_TRACK_STARTED = True
+
+# 重いタスク用にワーカーが一度に取得するタスク数を1に制限
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+
+# ==============================================================================
 # Content Security Policy (CSP) Settings
 # https://django-csp.readthedocs.io/en/latest/configuration.html
 # ==============================================================================
