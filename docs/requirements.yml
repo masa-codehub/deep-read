@@ -411,7 +411,7 @@ requirement_definition:
       authentication: "メール/パスワード認証（必須）。パスワードハッシュ化（Bcrypt等）。"
       authorization: "ユーザは自身のデータにのみアクセス可能。"
       data_protection: "保管時（DB, ファイル）および転送時（TLS）のデータ暗号化。"
-      api_key_management: "**外部APIキーはユーザ毎に設定・DBに保存。アプリケーションレベル暗号化(ALE)と外部シークレットマネージャによるキー管理を推奨。**"
+      api_key_management: "**外部APIキーはユーザ毎に設定・DBに保存。アプリケーションレベル暗号化(ALE)を採用し、SecurityGatewayインターフェースを通じた実装。暗号化方式はAES-GCM。現在は内部キー生成だが、将来的な外部KMS連携に対応した設計。**"
       vulnerability_mitigation: "OWASP Top 10等の対策、定期的な脆弱性診断検討。"
       content_security_policy: "**`django-csp`による Content Security Policy (CSP) を実装。本番環境では強制モード、開発環境では Report-Only モードを採用。開発環境では React 開発のため必要に応じて policy を緩和し、管理画面を CSP 対象外とする設定を追加。**"
       security_headers: "**`SecurityMiddleware`による基本的なセキュリティヘッダー(X-Frame-Options、X-Content-Type-Options、Referrer-Policy等)を設定。Referrer-Policyは`strict-origin-when-cross-origin`に設定。**"

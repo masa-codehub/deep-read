@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'csp',  # Content Security Policy用のアプリを追加
+    'app',  # プロジェクト自体のアプリケーション（モデル定義など）
 ]
 
 MIDDLEWARE = [
