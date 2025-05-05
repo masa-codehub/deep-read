@@ -413,6 +413,8 @@ requirement_definition:
       data_protection: "保管時（DB, ファイル）および転送時（TLS）のデータ暗号化。"
       api_key_management: "**外部APIキーはユーザ毎に設定・DBに保存。アプリケーションレベル暗号化(ALE)と外部シークレットマネージャによるキー管理を推奨。**"
       vulnerability_mitigation: "OWASP Top 10等の対策、定期的な脆弱性診断検討。"
+      content_security_policy: "**`django-csp`による Content Security Policy (CSP) を実装。本番環境では強制モード、開発環境では Report-Only モードを採用。開発環境では React 開発のため必要に応じて policy を緩和し、管理画面を CSP 対象外とする設定を追加。**"
+      security_headers: "**`SecurityMiddleware`による基本的なセキュリティヘッダー(X-Frame-Options、X-Content-Type-Options、Referrer-Policy等)を設定。Referrer-Policyは`strict-origin-when-cross-origin`に設定。**"
       future_auth_note: "将来的なOAuth等の認証方式追加を妨げない設計。"
     maintainability_extensibility: # Clean Architecture/DDD観点
       architecture: "レイヤードアーキテクチャ（例: クリーンアーキテクチャ）を採用し、関心事を分離。"

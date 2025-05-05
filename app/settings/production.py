@@ -5,6 +5,7 @@ Django settings for app project.
 """
 
 import os
+import sys
 from .base import *  # base.pyの設定を継承
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -28,8 +29,32 @@ try:
         # 例: DATABASE_URL=postgres://user:password@host:port/dbname
     }
 except ImportError:
-    # dj_database_url がインストールされていない場合のフォールバック
-    pass
+    # dj_database_url がインストールされていない場合はエラーログを出力して終了
+    print("Error: dj-database-url package is required in production environment", file=sys.stderr)
+    sys.exit(1)
+
+# 本番環境では CSP の違反をブロックする
+# 新しい形式のCSP設定
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        # base.pyからディレクティブを継承
+        'default-src': ("'none'",),
+        'script-src': ("'self'",),
+        'style-src': ("'self'",),
+        'img-src': ("'self'", "data:"),
+        'font-src': ("'self'",),
+        'connect-src': ("'self'",),
+        'form-action': ("'self'",),
+        'frame-ancestors': ("'none'",),
+        'object-src': ("'none'",),
+        'base-uri': ("'self'",),
+    },
+    'REPORT_ONLY': False,  # 本番環境では実際にブロックする
+    'REPLACE': True,  # 基本設定を上書き
+}
+
+# 古い形式の設定はコメントアウト
+# CSP_REPORT_ONLY = False
 
 # ここに本番環境用のセキュリティ設定を追加
 SESSION_COOKIE_SECURE = True
@@ -38,7 +63,9 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_SSL_REDIRECT = True  # Webサーバー側で処理しない場合
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'  # リファラーポリシーを追加
 
-# 静的ファイル配信 (WhiteNoise などを使用する場合)
+# 静的ファイル配信 (WhiteNoise を使用する場合はコメントを解除)
+# WhiteNoiseを使用する場合は以下の行のコメントアウトを解除し、requirements.txtにwhitenoiseを追加してください
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')  # SecurityMiddleware の次

@@ -34,10 +34,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'csp',  # Content Security Policy用のアプリを追加
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'csp.middleware.CSPMiddleware',  # CSPミドルウェアを追加
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -111,3 +113,60 @@ STATICFILES_DIRS = [
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ==============================================================================
+# Content Security Policy (CSP) Settings
+# https://django-csp.readthedocs.io/en/latest/configuration.html
+# ==============================================================================
+
+# django-csp 4.0以降の新しい設定形式を使用
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        # 基本ポリシー: まずは全てをブロックする
+        'default-src': ("'none'",),
+
+        # スクリプト: 自分自身のドメインからのみ許可
+        'script-src': ("'self'",),
+
+        # スタイルシート: 自分自身のドメインからのみ許可
+        'style-src': ("'self'",),
+
+        # 画像: 自分自身のドメインとdata:スキーム（インライン画像用）を許可
+        'img-src': ("'self'", "data:"),
+
+        # フォント: 自分自身のドメインからのみ許可
+        'font-src': ("'self'",),
+
+        # 接続 (XHR, WebSocket等): 自分自身のドメインへの接続のみ許可
+        'connect-src': ("'self'",),
+
+        # フォーム送信先: 自分自身のドメインのみ許可
+        'form-action': ("'self'",),
+
+        # フレーム埋め込み: 許可しない (X-Frame-Options: DENY相当)
+        'frame-ancestors': ("'none'",),
+
+        # プラグイン (<object>, <embed>, <applet>): 許可しない
+        'object-src': ("'none'",),
+
+        # <base> タグのURI: 自分自身のドメインのみ許可
+        'base-uri': ("'self'",),
+    },
+    # レポートのみモードで実行（違反をブロックせず、報告のみ）
+    'REPORT_ONLY': True,
+    # CSPミドルウェアのデフォルト設定を上書きする - Djangoのドキュメントに従う
+    'REPLACE': True,
+}
+
+# 古い形式の設定は削除または非推奨としてコメントアウト
+# CSP_REPORT_ONLY = True
+# CSP_DEFAULT_SRC = ("'none'",)
+# CSP_SCRIPT_SRC = ("'self'",)
+# CSP_STYLE_SRC = ("'self'",)
+# CSP_IMG_SRC = ("'self'", "data:")
+# CSP_FONT_SRC = ("'self'",)
+# CSP_CONNECT_SRC = ("'self'",)
+# CSP_FORM_ACTION = ("'self'",)
+# CSP_FRAME_ANCESTORS = ("'none'",)
+# CSP_OBJECT_SRC = ("'none'",)
+# CSP_BASE_URI = ("'self'",)

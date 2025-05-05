@@ -5,6 +5,8 @@
 # pip-compile によって requirements.txt に依存関係も含めて書き出されます
 
 django               # Django フレームワーク
+django-csp         # Django 用の CSP (Content Security Policy) ミドルウェア
+dj-database-url      # Django 用のデータベース URL パーサー
 
 langchain               # LangChainコアフレームワーク (LLMアプリケーション構築用)
 langchain-core
