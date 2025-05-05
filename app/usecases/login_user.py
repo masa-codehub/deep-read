@@ -42,18 +42,15 @@ class LoginUserInteractor(LoginUserUseCase):
                 f"無効なメールアドレス形式です: {input_data.email}")
 
         # Djangoの標準認証システムを使用して認証
-        # authenticateはユーザーが存在しない場合やパスワードが不正な場合はNoneを返す
+        # authenticateはユーザーが存在しない場合、パスワードが不正な場合、
+        # または非アクティブユーザーの場合にNoneを返す
         user = authenticate(username=input_data.email,
                             password=input_data.password)
 
         # 認証結果の確認
         if user is None:
-            # ユーザーが存在しないか、パスワードが不正
+            # ユーザーが存在しないか、パスワードが不正か、アカウントが非アクティブ
             raise AuthenticationError("メールアドレスまたはパスワードが正しくありません")
-
-        # ユーザーが非アクティブな場合
-        if not user.is_active:
-            raise AuthenticationError("アカウントが無効です")
 
         # 認証成功、出力データを返す
         return LoginUserOutputData(

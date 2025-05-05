@@ -85,9 +85,8 @@ class TestLoginUserUseCase(unittest.TestCase):
     def test_login_failure_inactive_user(self, mock_authenticate):
         """異常系: アカウントが無効な場合にAuthenticationErrorが発生すること"""
         # モックの設定
-        mock_user = MagicMock()
-        mock_user.is_active = False
-        mock_authenticate.return_value = mock_user
+        # Django authenticateは非アクティブユーザーに対してNoneを返す
+        mock_authenticate.return_value = None
 
         # 実行と検証
         input_data = LoginUserInputData(
