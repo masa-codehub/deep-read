@@ -698,12 +698,32 @@ github_issues:
       title: "[TechnicalTask] ユーザ設定DB保存アーキテクチャ設計・実装 (TASK-CONFIG-ARCH-01)"
       description: |
         技術タスク TASK-CONFIG-ARCH-01 を実施する。ユーザ毎設定をDBに保存するアーキテクチャを設計し、関連するドメインモデル、リポジトリ、マイグレーションを実装する。
+
+        **目的:**
+        本 Issue は、ユーザー毎のアプリケーション設定をデータベースに永続化するためのアーキテクチャ設計と実装を行うことを目的としていました。
+
+        **実施内容:**
+        * 既存の `UserSettings` モデル (`app/models/user_settings.py`) を拡張し、必要な設定フィールド（ファイルサイズ上限、バッチ頻度など）を適切な型、デフォルト値、バリデータと共に定義しました。
+        * `UserSettingsRepository` インターフェースを `app/core/repositories.py` に定義しました (`get_or_create_for_user`, `save`)。
+        * `PostgresUserSettingsRepository` を `app/adapters/db/user_settings_repository.py` に実装しました。
+            * `get_or_create_for_user`: Django ORM の `get_or_create` を使用し、存在しない場合はデフォルト値で作成します。不正な `user_id` に対するエラーハンドリング (`try...except`) も実装しました。
+            * `save`: `@transaction.atomic` で原子性を保証し、`full_clean()` でモデルバリデーションを実行してから保存します。
+        * `PostgresUserSettingsRepository` に対する結合テスト (`app/tests/adapters/db/test_user_settings_repository.py`) を実装し、正常系（新規作成、既存取得、更新）および異常系（存在しないユーザーID指定）の動作を検証しました。
+        * 関連するデータベースマイグレーションを作成・適用しました。
+
+        **レビュー結果:**
+        * コードレビューを実施し、Clean Architecture の原則に沿った実装であること、モデル設計が適切であること、リポジトリの実装が堅牢であること、テストが主要なケースをカバーしていることを確認しました。
+        * レビューでの指摘事項（冗長なクエリの削除、不足していたテストケースの追加）はすべて修正されました。
+        * テストはすべて成功しています。
+
+        **クローズ:**
+        上記作業の完了、テストの成功、およびレビュー承認をもって、本 Issue をクローズします。これにより、ユーザー設定機能に必要なデータ永続化の基盤が整いました。
       tasks:
-        - "[ ] `UserSettings` 値オブジェクトまたはエンティティの設計（格納する設定項目を考慮） (`layer:domain`, `DDD`)"
-        - "[ ] `UserAccount` 集約との関連付け、または独立した集約としての検討 (`layer:domain`, `DDD`)"
-        - "[ ] `UserSettingsRepository` インターフェース定義 (`layer:usecase`)"
-        - "[ ] PostgreSQL用リポジトリ実装とDjangoモデル、マイグレーション作成 (`layer:adapter-db`)"
-        - "[ ] （TDD）ドメインモデル、リポジトリ実装のテスト作成 (`type:test`, `TDD`)"
+        - "[x] `UserSettings` 値オブジェクトまたはエンティティの設計（格納する設定項目を考慮） (`layer:domain`, `DDD`)"
+        - "[x] `UserAccount` 集約との関連付け、または独立した集約としての検討 (`layer:domain`, `DDD`)"
+        - "[x] `UserSettingsRepository` インターフェース定義 (`layer:usecase`)"
+        - "[x] PostgreSQL用リポジトリ実装とDjangoモデル、マイグレーション作成 (`layer:adapter-db`)"
+        - "[x] （TDD）ドメインモデル、リポジトリ実装のテスト作成 (`type:test`, `TDD`)"
       acceptance_criteria:
         - ユーザ毎の設定情報をDBに保存・取得できること。
         - モデル設計が拡張性を考慮していること。
@@ -711,7 +731,7 @@ github_issues:
       related_requirements: [TASK-CONFIG-ARCH-01]
       dependencies: [TASK-ARCH-01]
       milestone: "MVP Foundation"
-      labels: [type:technical-task, architecture, layer:domain, layer:usecase, layer:adapter-db, epic:EPIC-FOUNDATION, epic:EPIC-SETTINGS, MVP, priority:medium, TDD, DDD]
+      labels: [type:technical-task, architecture, layer:domain, layer:usecase, layer:adapter-db, epic:EPIC-FOUNDATION, epic:EPIC-SETTINGS, MVP, priority:medium, TDD, DDD, status:done]
     - id: ISSUE-030
       title: "[TechnicalTask] 基本Webセキュリティ対策実装 (TASK-SEC-001)"
       description: |

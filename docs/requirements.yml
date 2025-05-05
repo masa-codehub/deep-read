@@ -271,12 +271,25 @@ requirement_definition:
             - 認証失敗時（ユーザーなし、パスワード違い、非アクティブ）の例外送出
             - 認証成功時に必要な情報（ユーザーID、メールアドレスなど）を返却
           
+          **ユーザー設定機能:**
+          `UserSettings`モデルを`app/models/user_settings.py`に実装済みで、
+          ファイルサイズ上限、バッチ頻度などを適切な型、デフォルト値、バリデータと共に定義。
+          `UserSettingsRepository`インターフェースを`app/core/repositories.py`に定義済み。
+          リポジトリ実装（PostgresUserSettingsRepository）は`app/adapters/db/user_settings_repository.py`に実装済みで、
+          以下の機能を提供:
+            - get_or_create_for_user: 指定IDのユーザー設定を取得、存在しない場合は作成
+            - save: @transaction.atomicで原子性を保証し、full_clean()でモデルバリデーションを実行
+          
+          **APIキー暗号化機能:**
+          SecurityGatewayインターフェースと実装（CryptoSecurityGateway）により、
+          AES-GCMを使用したアプリケーションレベル暗号化でAPIキーを安全に保存。
+          将来的な外部KMS連携も考慮したファクトリパターンを採用。
+          
           **備考:**
           セッション管理（login()関数の呼び出しなど）はUseCaseの責務外とし、
           呼び出し元のController/View層で行う方針。
           
-          値オブジェクトとユースケースに対する単体テストを完備。
-          Django ORMを用いて`save`、`find_by_id`、`find_by_email`メソッドを実装。
+          値オブジェクト、ユースケース、およびリポジトリに対する単体テスト・結合テストを完備。
     domain_events:
       - UserRegistered
       - DocumentUploaded
