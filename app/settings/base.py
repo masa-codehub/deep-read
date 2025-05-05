@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'csp',  # Content Security Policy用のアプリを追加
     'app',  # プロジェクト自体のアプリケーション（モデル定義など）
+    'app.adapters.search',  # ベクトル検索アダプターアプリケーション
 ]
 
 # カスタムユーザーモデルの設定
@@ -203,3 +204,21 @@ CONTENT_SECURITY_POLICY = {
 # CSP_FRAME_ANCESTORS = ("'none'",)
 # CSP_OBJECT_SRC = ("'none'",)
 # CSP_BASE_URI = ("'self'",)
+
+# ==============================================================================
+# Qdrant Vector Database Settings
+# ==============================================================================
+
+# Qdrantサーバーのホスト名
+QDRANT_HOST = os.environ.get('QDRANT_HOST', 'qdrant')
+
+# Qdrantサーバーのポート番号（gRPC用）
+QDRANT_PORT = int(os.environ.get('QDRANT_PORT', 6333))
+
+# コレクション名
+QDRANT_COLLECTION_DOCUMENTS = "documents"  # ドキュメント用コレクション名
+QDRANT_COLLECTION_QA = "qa_pairs"         # Q&Aペア用コレクション名
+
+# ベクトルの次元数 - 環境変数から取得またはデフォルト値を使用
+# 一般的なTransformerベースのモデル（例：BERT）のサイズをデフォルトとして設定
+QDRANT_VECTOR_SIZE = int(os.environ.get('QDRANT_VECTOR_SIZE', 768))
