@@ -48,6 +48,45 @@ class RegisterUserUseCase(ABC):
         pass
 
 
+# --- ログイン関連 ---
+@dataclass(frozen=True)
+class LoginUserInputData:
+    """ユーザーログイン入力データ"""
+    email: str
+    password: str
+
+
+@dataclass(frozen=True)
+class LoginUserOutputData:
+    """ユーザーログイン出力データ"""
+    user_id: int
+    email: str
+
+
+class LoginUserUseCase(ABC):
+    """
+    ユーザーログインユースケース
+
+    登録済みユーザーの認証を行うための処理を定義します。
+    """
+
+    @abstractmethod
+    def execute(self, input_data: LoginUserInputData) -> LoginUserOutputData:
+        """
+        ユーザーログイン処理を実行します。
+
+        Args:
+            input_data: ユーザーログインに必要な入力データ
+
+        Returns:
+            LoginUserOutputData: 認証されたユーザー情報
+
+        Raises:
+            AuthenticationError: 認証処理で発生したエラー
+        """
+        pass
+
+
 # --- カスタム例外 ---
 class RegistrationError(Exception):
     """ユーザー登録処理中のエラーの基底クラス"""
@@ -71,4 +110,9 @@ class WeakPasswordError(RegistrationError):
 
 class InvalidEmailFormatError(RegistrationError):
     """メールアドレス形式が不正な場合のエラー"""
+    pass
+
+
+class AuthenticationError(Exception):
+    """認証失敗時のエラー"""
     pass
