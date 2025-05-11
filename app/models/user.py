@@ -1,5 +1,4 @@
-"""
-カスタムユーザーモデル
+"""カスタムユーザーモデル
 
 メールアドレスをユーザー名として使用するカスタムユーザーモデルを定義します。
 """
@@ -9,15 +8,13 @@ from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
-    """
-    カスタムユーザーモデルのマネージャ
+    """カスタムユーザーモデルのマネージャ
 
     メールアドレスをユーザー名として使用するカスタムユーザーモデルのためのマネージャを定義します。
     """
 
     def create_user(self, email, password=None, **extra_fields):
-        """
-        通常ユーザーを作成します。
+        """通常ユーザーを作成します。
 
         Args:
             email: ユーザーのメールアドレス
@@ -40,8 +37,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        """
-        スーパーユーザー（管理者）を作成します。
+        """スーパーユーザー（管理者）を作成します。
 
         Args:
             email: ユーザーのメールアドレス
@@ -63,8 +59,7 @@ class UserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    """
-    カスタムユーザーモデル
+    """カスタムユーザーモデル
 
     メールアドレスをユーザー名として使用するカスタムユーザーモデルを定義します。
     """
@@ -86,16 +81,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []  # スーパーユーザー作成時にemailは既に必須
 
     class Meta:
+        """モデルのメタ情報を定義するクラス"""
         verbose_name = 'ユーザー'
         verbose_name_plural = 'ユーザー'
         app_label = 'app'  # アプリケーションラベルを明示的に指定
 
     def __str__(self):
+        """オブジェクトの文字列表現を返す"""
         return self.email
 
     def get_full_name(self):
-        """
-        ユーザーのフルネームを取得します。
+        """ユーザーのフルネームを取得します。
 
         Returns:
             姓名をスペースで連結した文字列、姓名が設定されていない場合はメールアドレス
@@ -105,8 +101,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_short_name(self):
-        """
-        ユーザーの短い名前を取得します。
+        """ユーザーの短い名前を取得します。
 
         Returns:
             名、設定されていない場合はメールアドレス

@@ -1,5 +1,4 @@
-"""
-リポジトリインターフェース定義
+"""リポジトリインターフェース定義
 
 クリーンアーキテクチャのUseCase層でのリポジトリインターフェースを定義します。
 """
@@ -11,16 +10,14 @@ from app.models.user_settings import UserSettings
 
 
 class UserRepository(ABC):
-    """
-    ユーザーリポジトリインターフェース
+    """ユーザーリポジトリインターフェース
 
     UserAccountドメインエンティティをデータストアに永続化するためのインターフェースを定義します。
     """
 
     @abstractmethod
     def save(self, user: CustomUser) -> CustomUser:
-        """
-        ユーザーを保存または更新します。
+        """ユーザーを保存または更新します。
 
         Args:
             user: 保存するユーザーオブジェクト
@@ -28,12 +25,10 @@ class UserRepository(ABC):
         Returns:
             保存されたユーザーオブジェクト
         """
-        pass
 
     @abstractmethod
     def find_by_id(self, user_id: int) -> Optional[CustomUser]:
-        """
-        IDによりユーザーを検索します。
+        """IDによりユーザーを検索します。
 
         Args:
             user_id: 検索するユーザーのID
@@ -41,12 +36,11 @@ class UserRepository(ABC):
         Returns:
             ユーザーオブジェクト、存在しない場合はNone
         """
-        pass
 
     @abstractmethod
     def find_by_email(self, email: str) -> Optional[CustomUser]:
-        """
-        メールアドレスによりユーザーを検索します。
+        """メールアドレスによりユーザーを検索します。
+
         大文字・小文字は区別しません。
 
         Args:
@@ -55,20 +49,18 @@ class UserRepository(ABC):
         Returns:
             ユーザーオブジェクト、存在しない場合はNone
         """
-        pass
 
 
 class UserSettingsRepository(ABC):
-    """
-    ユーザー設定リポジトリインターフェース
+    """ユーザー設定リポジトリインターフェース
 
     UserSettingsエンティティをデータストアに永続化するためのインターフェースを定義します。
     """
 
     @abstractmethod
     def get_or_create_for_user(self, user_id: int) -> UserSettings:
-        """
-        指定されたユーザーIDに対応するUserSettingsを取得します。
+        """指定されたユーザーIDに対応するUserSettingsを取得します。
+
         存在しない場合はデフォルト値で新規作成します。
 
         Args:
@@ -77,12 +69,10 @@ class UserSettingsRepository(ABC):
         Returns:
             ユーザー設定オブジェクト
         """
-        pass
 
     @abstractmethod
     def save(self, settings: UserSettings) -> UserSettings:
-        """
-        UserSettingsオブジェクトを保存または更新します。
+        """UserSettingsオブジェクトを保存または更新します。
 
         Args:
             settings: 保存するユーザー設定オブジェクト
@@ -90,4 +80,3 @@ class UserSettingsRepository(ABC):
         Returns:
             保存されたユーザー設定オブジェクト
         """
-        pass

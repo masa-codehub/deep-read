@@ -1,5 +1,4 @@
-"""
-Qdrantマネージャーのテストモジュール
+"""Qdrantマネージャーのテストモジュール
 
 Qdrantへの接続やコレクション操作、ベクトル検索の基本機能をテストします。
 """
@@ -42,8 +41,7 @@ skip_if_no_qdrant = pytest.mark.skipif(
 @pytest.mark.django_db  # settings を利用するため
 @skip_if_no_qdrant  # Qdrantが利用できない場合はスキップ
 class TestQdrantManager:
-    """
-    Qdrantマネージャーの機能テスト
+    """Qdrantマネージャーの機能テスト
 
     注意: このテストクラスの実行にはQdrantサービスが起動している必要があります。
     Docker Composeを使用して、テスト前にQdrantコンテナを起動してください。

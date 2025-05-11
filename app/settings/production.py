@@ -1,11 +1,11 @@
-"""
-Django settings for app project.
+"""Django settings for app project.
 
 本番環境用設定ファイル - 本番環境特有の設定を記述します。
 """
 
 import os
 
+# pylint: disable=wildcard-import,unused-wildcard-import
 from .base import *  # noqa
 
 # デバッグモードを無効にする

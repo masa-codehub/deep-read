@@ -1,5 +1,4 @@
-"""
-CryptoSecurityGatewayのテスト
+"""CryptoSecurityGatewayのテスト
 
 暗号化と復号が正しく動作するかを検証します。
 """

@@ -1,5 +1,4 @@
-"""
-ログインユースケースの実装。
+"""ログインユースケースの実装。
 
 登録済みユーザーの認証を行うための処理を実装します。
 """
@@ -16,16 +15,14 @@ from app.domain.value_objects import Email
 
 
 class LoginUserInteractor(LoginUserUseCase):
-    """
-    ログインユースケース実装クラス。
+    """ログインユースケース実装クラス。
 
     ユーザーのメールアドレスとパスワードを受け取り、認証を行います。
     認証にはDjangoの標準認証システム（authenticate関数）を使用します。
     """
 
     def execute(self, input_data: LoginUserInputData) -> LoginUserOutputData:
-        """
-        ユーザーログイン処理を実行します。
+        """ユーザーログイン処理を実行します。
 
         Args:
             input_data: ユーザーログインに必要な入力データ（メールアドレス、パスワード）
@@ -41,9 +38,9 @@ class LoginUserInteractor(LoginUserUseCase):
         try:
             # バリデーションのみ行い、変数は使用しない
             Email(input_data.email)
-        except ValueError:
+        except ValueError as exc:
             raise InvalidEmailFormatError(
-                f"無効なメールアドレス形式です: {input_data.email}")
+                f"無効なメールアドレス形式です: {input_data.email}") from exc
 
         # Djangoの標準認証システムを使用して認証
         # authenticateはユーザーが存在しない場合、パスワードが不正な場合、

@@ -1,5 +1,4 @@
-"""
-Celery タスク定義
+"""Celery タスク定義
 
 非同期実行するバックグラウンドタスクを定義するモジュールです。
 """
@@ -12,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task(bind=True, max_retries=3)
 def add(self, x, y):
-    """
-    シンプルな足し算を行うタスク（動作確認用）
+    """シンプルな足し算を行うタスク（動作確認用）
 
     Args:
         x (int): 足される数

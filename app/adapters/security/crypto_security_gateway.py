@@ -1,6 +1,4 @@
-"""
-暗号化・復号機能を提供するセキュリティゲートウェイの実装
-"""
+"""暗号化・復号機能を提供するセキュリティゲートウェイの実装"""
 import logging
 import os
 
@@ -16,16 +14,14 @@ NONCE_SIZE = 12    # GCMで推奨されるnonceサイズ
 
 
 class CryptoSecurityGateway(SecurityGateway):
-    """
-    AES-GCM暗号化を使用したSecurityGatewayの実装
+    """AES-GCM暗号化を使用したSecurityGatewayの実装
 
     この実装では一時的にランダムキーを使用します。
     実際の環境では、TASK-INFRA-KMSの完了後、KMSから鍵を取得するように更新する必要があります。
     """
 
     def __init__(self, key=None):
-        """
-        初期化
+        """初期化
 
         Args:
             key: 暗号化キー（指定がなければランダムに生成）
@@ -36,8 +32,7 @@ class CryptoSecurityGateway(SecurityGateway):
         logger.debug("CryptoSecurityGateway initialized")
 
     def encrypt(self, plaintext: str) -> bytes:
-        """
-        平文文字列をAES-GCMで暗号化する
+        """平文文字列をAES-GCMで暗号化する
 
         Args:
             plaintext: 暗号化する平文文字列
@@ -69,8 +64,7 @@ class CryptoSecurityGateway(SecurityGateway):
         return nonce + ciphertext
 
     def decrypt(self, ciphertext: bytes) -> str:
-        """
-        暗号化されたバイト列を復号する
+        """暗号化されたバイト列を復号する
 
         Args:
             ciphertext: nonce + 暗号文 形式のバイト列

@@ -454,8 +454,6 @@ disable=raw-checker-failed,
         C0111,  # missing docstrings
         C0103,  # invalid-name
         R0903,  # too-few-public-methods
-        R0201,  # no-self-use
-        C0330,  # bad-continuation
         R0913,  # too-many-arguments
         R0914,  # too-many-locals
         R0915,  # too-many-statements

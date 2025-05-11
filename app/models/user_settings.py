@@ -1,5 +1,4 @@
-"""
-ユーザー設定モデル
+"""ユーザー設定モデル
 
 ユーザーごとの設定情報やAPIキーなどのシークレット情報を管理します。
 APIキーは暗号化してデータベースに保存されます。
@@ -11,8 +10,7 @@ from app.core.db.fields import EncryptedField
 
 
 class UserSettings(models.Model):
-    """
-    ユーザー設定モデル
+    """ユーザー設定モデル
 
     ユーザーごとのAPIキーなどの設定情報を管理します。
     シークレットはEncryptedFieldを使用して暗号化して保存されます。
@@ -89,8 +87,10 @@ class UserSettings(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新日時')
 
     class Meta:
+        """モデルのメタ情報を定義するクラス"""
         verbose_name = 'ユーザー設定'
         verbose_name_plural = 'ユーザー設定'
 
     def __str__(self):
+        """オブジェクトの文字列表現を返す"""
         return f"{self.user}の設定"

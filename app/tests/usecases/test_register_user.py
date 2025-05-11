@@ -1,12 +1,10 @@
-"""
-ユーザー登録UseCaseのテスト
+"""ユーザー登録UseCaseのテスト
 
 RegisterUserUseCaseの機能をテストします。
 """
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
 from app.core.repositories import UserRepository
@@ -24,9 +22,7 @@ from app.usecases.register_user import RegisterUserInteractor
 
 
 class TestRegisterUserUseCase(unittest.TestCase):
-    """
-    ユーザー登録UseCase（RegisterUserInteractor）のテストケース
-    """
+    """ユーザー登録UseCase（RegisterUserInteractor）のテストケース"""
 
     def setUp(self):
         """テストの前準備"""

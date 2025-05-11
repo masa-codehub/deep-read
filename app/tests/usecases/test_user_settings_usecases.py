@@ -1,9 +1,7 @@
-"""
-ユーザー設定ユースケースのテスト
+"""ユーザー設定ユースケースのテスト
 
 APIキーの保存と取得が正しく動作するかを検証します。
 """
-from unittest.mock import Mock
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from app.models.user_settings import UserSettings

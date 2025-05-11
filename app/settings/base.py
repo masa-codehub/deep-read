@@ -1,5 +1,4 @@
-"""
-Django settings for app project.
+"""Django settings for app project.
 
 共通設定ファイル - 環境に依存しない設定を記述します
 """

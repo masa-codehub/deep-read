@@ -32,7 +32,6 @@ class UseCase(Generic[InputType, OutputType], ABC):
         Returns:
             OutputType: ユースケースの出力データ
         """
-        pass
 
 
 class ReadUseCase(UseCase[InputType, OutputType], ABC):
@@ -48,7 +47,6 @@ class ReadUseCase(UseCase[InputType, OutputType], ABC):
         Returns:
             OutputType: 読み取り操作の結果
         """
-        pass
 
 
 class WriteUseCase(UseCase[InputType, OutputType], ABC):
@@ -64,7 +62,6 @@ class WriteUseCase(UseCase[InputType, OutputType], ABC):
         Returns:
             OutputType: 書き込み操作の結果
         """
-        pass
 
 
 class ReadWriteUseCase(UseCase[InputType, OutputType], ABC):
@@ -80,7 +77,6 @@ class ReadWriteUseCase(UseCase[InputType, OutputType], ABC):
         Returns:
             OutputType: 読み書き操作の結果
         """
-        pass
 
 
 @dataclass
@@ -136,16 +132,14 @@ class RegisterUserOutputData:
 
 
 class RegisterUserUseCase(ABC):
-    """
-    ユーザー登録ユースケース
+    """ユーザー登録ユースケース
 
     新規ユーザーを登録するための処理を定義します。
     """
 
     @abstractmethod
     def execute(self, input_data: RegisterUserInputData) -> RegisterUserOutputData:
-        """
-        ユーザー登録処理を実行します。
+        """ユーザー登録処理を実行します。
 
         Args:
             input_data: ユーザー登録に必要な入力データ
@@ -156,7 +150,6 @@ class RegisterUserUseCase(ABC):
         Raises:
             RegistrationError: 登録処理で発生したエラー
         """
-        pass
 
 
 # --- ログイン関連 ---
@@ -175,16 +168,14 @@ class LoginUserOutputData:
 
 
 class LoginUserUseCase(ABC):
-    """
-    ユーザーログインユースケース
+    """ユーザーログインユースケース
 
     登録済みユーザーの認証を行うための処理を定義します。
     """
 
     @abstractmethod
     def execute(self, input_data: LoginUserInputData) -> LoginUserOutputData:
-        """
-        ユーザーログイン処理を実行します。
+        """ユーザーログイン処理を実行します。
 
         Args:
             input_data: ユーザーログインに必要な入力データ
@@ -195,35 +186,28 @@ class LoginUserUseCase(ABC):
         Raises:
             AuthenticationError: 認証処理で発生したエラー
         """
-        pass
 
 
 # --- カスタム例外 ---
 class RegistrationError(Exception):
     """ユーザー登録処理中のエラーの基底クラス"""
-    pass
 
 
 class EmailAlreadyExistsError(RegistrationError):
     """メールアドレスが既に存在する場合のエラー"""
-    pass
 
 
 class PasswordMismatchError(RegistrationError):
     """パスワードと確認用パスワードが一致しない場合のエラー"""
-    pass
 
 
 class WeakPasswordError(RegistrationError):
     """パスワードが要件を満たしていない場合のエラー"""
-    pass
 
 
 class InvalidEmailFormatError(RegistrationError):
     """メールアドレス形式が不正な場合のエラー"""
-    pass
 
 
 class AuthenticationError(Exception):
     """認証失敗時のエラー"""
-    pass

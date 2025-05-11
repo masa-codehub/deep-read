@@ -10,9 +10,8 @@ max-complexity = 12
 # 無視するエラー/警告コード
 # E203: スライスのホワイトスペースに関するエラー (Black対応)
 # W503: 演算子の前の改行 (PEP8が変更され、これが推奨になった)
-# E501: 行の長さ制限 (max-line-lengthで設定)
-ignore = E203, W503, E501
-
+# D415: docstringの改行に関するエラー (Black対応)
+ignore = E203, W503, E501, D415
 # docstring規約の設定 (flake8-docstringsプラグイン用)
 docstring-convention = google
 

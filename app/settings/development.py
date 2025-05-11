@@ -1,10 +1,11 @@
-"""
-Development環境の設定モジュール。
+"""Development環境の設定モジュール。
 
 開発環境固有の設定を定義します。
 """
 
+# pylint: disable=wildcard-import,unused-wildcard-import
 from .base import *  # noqa
+from .base import BASE_DIR  # 明示的にBASE_DIRをインポート
 
 # デバッグモードを有効にする
 DEBUG = True

@@ -1,5 +1,4 @@
-"""
-検索アプリケーション機能のテスト。
+"""検索アプリケーション機能のテスト。
 
 検索アプリケーションの初期化や設定に関するテストを含みます。
 """
@@ -11,8 +10,7 @@ from app.adapters.search.apps import SearchConfig
 
 
 class TestSearchConfig(TestCase):
-    """
-    SearchConfigクラスのテスト。
+    """SearchConfigクラスのテスト。
 
     検索アプリケーションの設定と初期化をテストします。
     """

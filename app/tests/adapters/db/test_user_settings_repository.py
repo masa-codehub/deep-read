@@ -1,10 +1,10 @@
-"""
-UserSettingsRepository実装のテスト。
+"""UserSettingsRepository実装のテスト。
 
 PostgresUserSettingsRepositoryの実装をテストします。
 """
 import pytest
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 
 from app.adapters.db.user_settings_repository import PostgresUserSettingsRepository
 from app.models.user_settings import UserSettings
@@ -14,9 +14,10 @@ User = get_user_model()
 
 @pytest.mark.django_db
 class TestUserSettingsRepository:
-    """
-    UserSettingsRepositoryインターフェースの実装テスト。
-    """
+    """UserSettingsRepositoryインターフェースの実装テスト。"""
+
+    user = None
+    repository = None
 
     def setup_method(self):
         """各テストメソッドの実行前に実行されます。"""
@@ -30,9 +31,7 @@ class TestUserSettingsRepository:
         self.repository = PostgresUserSettingsRepository()
 
     def test_get_or_create_for_new_user(self):
-        """
-        新規ユーザーに対して、デフォルト値で設定が作成されることをテストします
-        """
+        """新規ユーザーに対して、デフォルト値で設定が作成されることをテストします。"""
         # テストユーザーに対するUserSettingsを取得（新規作成されるはず）
         settings = self.repository.get_or_create_for_user(self.user.id)
 
@@ -49,9 +48,7 @@ class TestUserSettingsRepository:
         assert UserSettings.objects.filter(user_id=self.user.id).exists()
 
     def test_get_or_create_for_existing_user(self):
-        """
-        既存の設定を持つユーザーに対して、既存の設定が返されることをテストします
-        """
+        """既存の設定を持つユーザーに対して、既存の設定が返されることをテストします。"""
         # あらかじめUserSettingsオブジェクトを作成し、一部のフィールドに非デフォルト値を設定
         initial_settings = UserSettings.objects.create(
             user=self.user,
@@ -73,9 +70,7 @@ class TestUserSettingsRepository:
         assert UserSettings.objects.filter(user_id=self.user.id).count() == 1
 
     def test_save_updates_settings(self):
-        """
-        saveメソッドを使用して、設定が正しく更新されることをテストします
-        """
+        """saveメソッドを使用して、設定が正しく更新されることをテストします。"""
         # 設定を取得
         settings = self.repository.get_or_create_for_user(self.user.id)
 
@@ -99,9 +94,7 @@ class TestUserSettingsRepository:
         assert db_settings.email_notifications is False
 
     def test_get_or_create_for_nonexistent_user(self):
-        """
-        存在しないユーザーIDに対してValueErrorが発生することをテストします
-        """
+        """存在しないユーザーIDに対してValueErrorが発生することをテストします。"""
         non_existent_user_id = self.user.id + 999  # 存在しないIDを生成
 
         # モンキーパッチを使用してget_or_createメソッドが呼ばれた時にIntegrityErrorを発生させる
@@ -109,7 +102,6 @@ class TestUserSettingsRepository:
 
         def mock_get_or_create(user_id=None, **kwargs):
             if user_id == non_existent_user_id:
-                from django.db import IntegrityError
                 raise IntegrityError("模擬的なIntegrityError: 外部キー制約違反")
             return original_get_or_create(user_id=user_id, **kwargs)
 

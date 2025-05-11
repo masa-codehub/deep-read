@@ -1,5 +1,4 @@
-"""
-ユーザー登録 UseCase 実装。
+"""ユーザー登録 UseCase 実装。
 
 新規ユーザーを登録するための UseCase を実装します。
 """
@@ -21,15 +20,13 @@ from app.models import CustomUser
 
 
 class RegisterUserInteractor(RegisterUserUseCase):
-    """
-    ユーザー登録 UseCase の実装。
+    """ユーザー登録 UseCase の実装。
 
     新規ユーザーを登録するための処理を実装します。
     """
 
     def __init__(self, user_repository: UserRepository):
-        """
-        コンストラクタ。
+        """コンストラクタ。
 
         Args:
             user_repository: ユーザーリポジトリ
@@ -37,8 +34,7 @@ class RegisterUserInteractor(RegisterUserUseCase):
         self.user_repository = user_repository
 
     def execute(self, input_data: RegisterUserInputData) -> RegisterUserOutputData:
-        """
-        ユーザー登録処理を実行します。
+        """ユーザー登録処理を実行します。
 
         Args:
             input_data: ユーザー登録に必要な入力データ
@@ -65,10 +61,10 @@ class RegisterUserInteractor(RegisterUserUseCase):
         except ValueError as e:
             # エラー内容に応じて適切なカスタム例外に変換
             if "パスワード" in str(e):
-                raise WeakPasswordError(str(e))
+                raise WeakPasswordError(str(e)) from e
             if "メール" in str(e):
-                raise InvalidEmailFormatError(str(e))
-            raise RegistrationError(str(e))  # Generic error
+                raise InvalidEmailFormatError(str(e)) from e
+            raise RegistrationError(str(e)) from e  # Generic error
 
         # 3. メールアドレス重複チェック
         if self.user_repository.find_by_email(input_data.email):
@@ -80,12 +76,12 @@ class RegisterUserInteractor(RegisterUserUseCase):
                 email=input_data.email,
                 password=input_data.password
             )
-        except IntegrityError:
+        except IntegrityError as exc:
             # レースコンディション考慮 (find_by_email後、create_user前に同じメールで登録された場合)
-            raise EmailAlreadyExistsError("このメールアドレスは既に使用されています。")
+            raise EmailAlreadyExistsError("このメールアドレスは既に使用されています。") from exc
         except Exception as e:
             # その他の予期せぬエラー
-            raise RegistrationError(f"ユーザー作成中にエラーが発生しました: {str(e)}")
+            raise RegistrationError(f"ユーザー作成中にエラーが発生しました: {str(e)}") from e
 
         # 5. OutputDataを返す
         return RegisterUserOutputData(user_id=user.id, email=user.email)

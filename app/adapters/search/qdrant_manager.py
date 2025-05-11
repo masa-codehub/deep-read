@@ -1,12 +1,11 @@
-"""
-Qdrant ベクトルデータベース接続と管理を行うモジュール。
+"""Qdrant ベクトルデータベース接続と管理を行うモジュール。
 
 このモジュールは、Qdrant ベクトルデータベースへの接続、
 コレクションの作成・管理、および基本的なデータベース操作を提供します。
 """
 
 import logging
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 from django.conf import settings
 from qdrant_client import QdrantClient
@@ -15,46 +14,60 @@ from qdrant_client.http.models import Distance, VectorParams
 
 logger = logging.getLogger(__name__)
 
-# キャッシュされたQdrantクライアントインスタンス
-_qdrant_client: Optional[QdrantClient] = None
+
+class QdrantClientManager:
+    """Qdrantクライアントマネージャクラス。
+
+    シングルトンパターンでQdrantクライアントインスタンスを管理します。
+    """
+
+    # クラス変数として単一のインスタンスを保持
+    _instance: Optional[QdrantClient] = None
+
+    @classmethod
+    def get_client(cls) -> QdrantClient:
+        """Qdrant クライアントのインスタンスを取得します。
+
+        環境変数またはDjango設定から接続情報を読み込み、Qdrantに接続するためのクライアントを返します。
+        クライアントインスタンスはキャッシュされ、複数回の呼び出しでも同じインスタンスを返します。
+
+        Returns:
+            QdrantClient: 設定済みのQdrantクライアントインスタンス
+
+        Raises:
+            ConnectionError: Qdrantサーバーに接続できない場合
+        """
+        if cls._instance is None:
+            try:
+                # 将来的にAPIキーやHTTPS対応が必要な場合はここで設定
+                cls._instance = QdrantClient(
+                    host=settings.QDRANT_HOST,
+                    port=settings.QDRANT_PORT,
+                    timeout=settings.QDRANT_TIMEOUT if hasattr(settings, 'QDRANT_TIMEOUT') else 10.0
+                )
+                # 接続テスト
+                cls._instance.get_collections()
+                logger.debug(f"Qdrantサーバーに接続しました: {settings.QDRANT_HOST}:{settings.QDRANT_PORT}")
+            except Exception as e:
+                logger.error(f"Qdrantサーバーへの接続に失敗しました: {e}", exc_info=True)
+                raise ConnectionError(f"Qdrantサーバーに接続できません: {str(e)}") from e
+
+        return cls._instance
 
 
 def get_qdrant_client() -> QdrantClient:
-    """
-    Qdrant クライアントのインスタンスを取得します。
+    """Qdrant クライアントのインスタンスを取得します。
 
-    環境変数またはDjango設定から接続情報を読み込み、Qdrantに接続するためのクライアントを返します。
-    クライアントインスタンスはキャッシュされ、複数回の呼び出しでも同じインスタンスを返します。
+    クライアントマネージャを通じてシングルトンインスタンスを返します。
 
     Returns:
         QdrantClient: 設定済みのQdrantクライアントインスタンス
-
-    Raises:
-        ConnectionError: Qdrantサーバーに接続できない場合
     """
-    global _qdrant_client
-
-    if _qdrant_client is None:
-        try:
-            # 将来的にAPIキーやHTTPS対応が必要な場合はここで設定
-            _qdrant_client = QdrantClient(
-                host=settings.QDRANT_HOST,
-                port=settings.QDRANT_PORT,
-                timeout=settings.QDRANT_TIMEOUT if hasattr(settings, 'QDRANT_TIMEOUT') else 10.0
-            )
-            # 接続テスト
-            _qdrant_client.get_collections()
-            logger.debug(f"Qdrantサーバーに接続しました: {settings.QDRANT_HOST}:{settings.QDRANT_PORT}")
-        except Exception as e:
-            logger.error(f"Qdrantサーバーへの接続に失敗しました: {e}", exc_info=True)
-            raise ConnectionError(f"Qdrantサーバーに接続できません: {str(e)}") from e
-
-    return _qdrant_client
+    return QdrantClientManager.get_client()
 
 
 def get_existing_collections() -> Set[str]:
-    """
-    既存のQdrantコレクション名のセットを取得します。
+    """既存のQdrantコレクション名のセットを取得します。
 
     Returns:
         Set[str]: 既存のコレクション名のセット
@@ -64,8 +77,7 @@ def get_existing_collections() -> Set[str]:
 
 
 def ensure_collections_exist() -> None:
-    """
-    必要なQdrantコレクションが存在することを確認し、なければ作成します。
+    """必要なQdrantコレクションが存在することを確認し、なければ作成します。
 
     Django設定ファイルで指定されたコレクション名で、ベクトルコレクションを初期化します。
     このメソッドは冪等であり、既存のコレクションは変更しません。

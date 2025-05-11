@@ -1,5 +1,4 @@
-"""
-ユーザーモデルのテスト。
+"""ユーザーモデルのテスト。
 
 User モデルの機能をテストするためのテストケースを含みます。
 """
@@ -14,8 +13,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 class TestUserModel(TestCase):
-    """
-    ユーザーモデルのテスト。
+    """ユーザーモデルのテスト。
 
     User モデルの機能をテストします。
     """

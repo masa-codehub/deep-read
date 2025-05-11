@@ -112,7 +112,7 @@ class Password:
             django_validate_password(self.hashed_value)
         except ValidationError as e:
             # DjangoのValidationErrorをValueErrorに変換
-            raise ValueError(f"パスワードが要件を満たしていません: {'; '.join(e.messages)}")
+            raise ValueError(f"パスワードが要件を満たしていません: {'; '.join(e.messages)}") from e
 
     def matches(self, confirmation: str) -> bool:
         """パスワードが確認用パスワードと一致するか確認します。
