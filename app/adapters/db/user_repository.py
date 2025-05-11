@@ -1,17 +1,17 @@
 """
-UserRepositoryインターフェースのPostgreSQL実装
+UserRepositoryインターフェースのPostgreSQL実装。
 
 UserRepositoryインターフェースをDjango ORM + PostgreSQLで実装します。
 """
 from typing import Optional
-from django.db.models import Q
+
 from app.core.repositories import UserRepository
 from app.models import CustomUser
 
 
 class PostgresUserRepository(UserRepository):
     """
-    UserRepositoryインターフェースのPostgreSQL実装
+    UserRepositoryインターフェースのPostgreSQL実装。
 
     UserRepositoryインターフェースをDjango ORMを使用して実装します。
     実際のデータベースはDjangoの設定に依存します（開発環境ではSQLiteやPostgreSQLなど）。
@@ -26,6 +26,9 @@ class PostgresUserRepository(UserRepository):
 
         Returns:
             保存されたユーザーオブジェクト
+
+        Raises:
+            ValueError: ユーザーオブジェクトが無効な場合
         """
         # Django ORMのsaveメソッドを使用
         user.save()

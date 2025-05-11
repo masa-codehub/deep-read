@@ -1,13 +1,18 @@
 """
 暗号化・復号機能を提供するセキュリティゲートウェイの実装
 """
-import os
 import logging
+import os
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
 from app.core.security.gateways import SecurityGateway
 
-
 logger = logging.getLogger(__name__)
+
+# 定数定義
+AES_KEY_SIZE = 32  # AES-256用に32バイト
+NONCE_SIZE = 12    # GCMで推奨されるnonceサイズ
 
 
 class CryptoSecurityGateway(SecurityGateway):
@@ -27,7 +32,7 @@ class CryptoSecurityGateway(SecurityGateway):
         """
         # 暗号化キー: 本番環境ではKMSから取得する必要がある
         # 現時点ではランダム生成（テスト用・開発用）
-        self.dek = key if key else os.urandom(32)  # AES-256用に32バイト
+        self.dek = key if key else os.urandom(AES_KEY_SIZE)
         logger.debug("CryptoSecurityGateway initialized")
 
     def encrypt(self, plaintext: str) -> bytes:
@@ -54,7 +59,7 @@ class CryptoSecurityGateway(SecurityGateway):
 
         # GCMに必要なnonce（Number used ONCE）を生成
         # nonceは暗号文ごとに一意である必要があり、再利用してはいけない
-        nonce = os.urandom(12)  # GCMでは12バイトが推奨サイズ
+        nonce = os.urandom(NONCE_SIZE)
 
         # 暗号化実行（認証データ(associated_data)は使用しない）
         ciphertext = aesgcm.encrypt(nonce, plaintext.encode('utf-8'), None)
@@ -76,6 +81,7 @@ class CryptoSecurityGateway(SecurityGateway):
         Raises:
             ValueError: 復号に失敗した場合（認証エラーや不正なデータなど）
             TypeError: ciphertext がNoneの場合
+            ValueError: 不正な形式の暗号文（nonceが短すぎる場合など）
         """
         if ciphertext is None:
             raise TypeError("復号する暗号文がNoneです")
@@ -83,15 +89,19 @@ class CryptoSecurityGateway(SecurityGateway):
         if not ciphertext:
             return ''
 
+        # 暗号文の長さチェック
+        if len(ciphertext) < NONCE_SIZE:
+            raise ValueError(f"暗号文が短すぎます。少なくとも{NONCE_SIZE}バイトが必要です")
+
         try:
             # AES-GCMインスタンスを作成
             aesgcm = AESGCM(self.dek)
 
-            # 先頭12バイトをnonceとして抽出
-            nonce = ciphertext[:12]
+            # 先頭バイトをnonceとして抽出
+            nonce = ciphertext[:NONCE_SIZE]
 
             # 残りを暗号文として抽出
-            actual_ciphertext = ciphertext[12:]
+            actual_ciphertext = ciphertext[NONCE_SIZE:]
 
             # 復号実行
             plaintext_bytes = aesgcm.decrypt(nonce, actual_ciphertext, None)

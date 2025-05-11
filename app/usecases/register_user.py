@@ -1,17 +1,20 @@
 """
-ユーザー登録 UseCase 実装
+ユーザー登録 UseCase 実装。
 
 新規ユーザーを登録するための UseCase を実装します。
 """
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError
 
 from app.core.repositories import UserRepository
 from app.core.usecases import (
-    RegisterUserUseCase, RegisterUserInputData, RegisterUserOutputData,
-    EmailAlreadyExistsError, PasswordMismatchError,
-    WeakPasswordError, InvalidEmailFormatError, RegistrationError
+    EmailAlreadyExistsError,
+    InvalidEmailFormatError,
+    PasswordMismatchError,
+    RegisterUserInputData,
+    RegisterUserOutputData,
+    RegisterUserUseCase,
+    RegistrationError,
+    WeakPasswordError,
 )
 from app.domain.value_objects import Email, Password
 from app.models import CustomUser
@@ -19,14 +22,14 @@ from app.models import CustomUser
 
 class RegisterUserInteractor(RegisterUserUseCase):
     """
-    ユーザー登録 UseCase の実装
+    ユーザー登録 UseCase の実装。
 
     新規ユーザーを登録するための処理を実装します。
     """
 
     def __init__(self, user_repository: UserRepository):
         """
-        コンストラクタ
+        コンストラクタ。
 
         Args:
             user_repository: ユーザーリポジトリ
@@ -56,10 +59,9 @@ class RegisterUserInteractor(RegisterUserUseCase):
 
         # 2. 値オブジェクトでバリデーション
         try:
-            # Email値オブジェクトで形式検証
-            email_vo = Email(input_data.email)
-            # Password値オブジェクトで強度検証
-            password_vo = Password(input_data.password)
+            # Email値オブジェクトとPassword値オブジェクトでバリデーション
+            Email(input_data.email)
+            Password(input_data.password)
         except ValueError as e:
             # エラー内容に応じて適切なカスタム例外に変換
             if "パスワード" in str(e):

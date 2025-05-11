@@ -1,11 +1,122 @@
-"""
-UseCase インターフェース定義
+"""ユースケースの基底クラス定義モジュール。
 
-クリーンアーキテクチャのUseCase層のインターフェースを定義します。
+このモジュールでは、アプリケーションのユースケースを実装するための基本クラスを提供します。
+クリーンアーキテクチャに基づいたユースケースパターンを実装しています。
 """
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Generic, TypeVar
+
+InputType = TypeVar('InputType')
+OutputType = TypeVar('OutputType')
+
+
+@dataclass
+class ResponseModel:
+    """レスポンスモデルの基底クラス。"""
+    success: bool
+    message: str = ""
+
+
+class UseCase(Generic[InputType, OutputType], ABC):
+    """ユースケースの基底抽象クラス。"""
+
+    @abstractmethod
+    def execute(self, input_data: InputType) -> OutputType:
+        """ユースケースを実行する。
+
+        Args:
+            input_data: ユースケースの入力データ
+
+        Returns:
+            OutputType: ユースケースの出力データ
+        """
+        pass
+
+
+class ReadUseCase(UseCase[InputType, OutputType], ABC):
+    """読み取り操作を行うユースケースの基底クラス。"""
+
+    @abstractmethod
+    def execute(self, input_data: InputType) -> OutputType:
+        """読み取りユースケースを実行する。
+
+        Args:
+            input_data: 読み取り操作の入力データ
+
+        Returns:
+            OutputType: 読み取り操作の結果
+        """
+        pass
+
+
+class WriteUseCase(UseCase[InputType, OutputType], ABC):
+    """書き込み操作を行うユースケースの基底クラス。"""
+
+    @abstractmethod
+    def execute(self, input_data: InputType) -> OutputType:
+        """書き込みユースケースを実行する。
+
+        Args:
+            input_data: 書き込み操作の入力データ
+
+        Returns:
+            OutputType: 書き込み操作の結果
+        """
+        pass
+
+
+class ReadWriteUseCase(UseCase[InputType, OutputType], ABC):
+    """読み書き両方の操作を行うユースケースの基底クラス。"""
+
+    @abstractmethod
+    def execute(self, input_data: InputType) -> OutputType:
+        """読み書きユースケースを実行する。
+
+        Args:
+            input_data: 読み書き操作の入力データ
+
+        Returns:
+            OutputType: 読み書き操作の結果
+        """
+        pass
+
+
+@dataclass
+class SuccessResponse(ResponseModel):
+    """成功レスポンス。"""
+    success: bool = True
+
+
+@dataclass
+class ErrorResponse(ResponseModel):
+    """エラーレスポンス。"""
+    success: bool = False
+
+
+@dataclass
+class NotFoundResponse(ErrorResponse):
+    """リソースが見つからない場合のレスポンス。"""
+    message: str = "リソースが見つかりませんでした。"
+
+
+@dataclass
+class ValidationErrorResponse(ErrorResponse):
+    """バリデーションエラーのレスポンス。"""
+    message: str = "入力値が不正です。"
+
+
+@dataclass
+class AuthenticationErrorResponse(ErrorResponse):
+    """認証エラーのレスポンス。"""
+    message: str = "認証に失敗しました。"
+
+
+@dataclass
+class AuthorizationErrorResponse(ErrorResponse):
+    """権限エラーのレスポンス。"""
+    message: str = "操作を行う権限がありません。"
 
 
 # --- ユーザー登録関連 ---

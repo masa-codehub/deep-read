@@ -1,6 +1,4 @@
-"""
-モデル定義のパッケージ
-"""
+"""モデル定義のパッケージです。"""
 
 # user.py (CustomUserモデル)を先にインポートし、その後に依存するモデルをインポート
 from app.models.user import CustomUser

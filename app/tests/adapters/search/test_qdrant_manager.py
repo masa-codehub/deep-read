@@ -4,15 +4,19 @@ Qdrantマネージャーのテストモジュール
 Qdrantへの接続やコレクション操作、ベクトル検索の基本機能をテストします。
 """
 
-import os
 import uuid
+from unittest.mock import MagicMock, patch
+
 import pytest
 from django.conf import settings
 from qdrant_client import QdrantClient, models
-from qdrant_client.http.models import PointStruct, Distance, VectorParams
-from qdrant_client.models import PointIdsList, Filter, FieldCondition, MatchValue
+from qdrant_client.http.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-from app.adapters.search.qdrant_manager import get_qdrant_client, ensure_collections_exist
+from app.adapters.search.qdrant_manager import (
+    ensure_collections_exist,
+    get_qdrant_client,
+)
 
 # Qdrantサービスが利用可能かどうかを確認する関数
 
@@ -100,6 +104,31 @@ class TestQdrantManager:
         assert settings.QDRANT_COLLECTION_DOCUMENTS in collection_names
         assert settings.QDRANT_COLLECTION_QA in collection_names
 
+    @patch('app.adapters.search.qdrant_manager.get_qdrant_client')
+    def test_collection_creation_failure(self, mock_get_qdrant_client):
+        """コレクション作成が失敗した場合のエラーハンドリングをテスト"""
+        # モッククライアントの準備
+        mock_client = MagicMock(spec=QdrantClient)
+
+        # get_collections を設定して空のコレクションリストを返す
+        mock_collections = MagicMock()
+        mock_collections.collections = []
+        mock_client.get_collections.return_value = mock_collections
+
+        # create_collection でエラーを発生させる
+        mock_client.create_collection.side_effect = Exception("コレクション作成エラー")
+
+        # get_qdrant_client がこのモッククライアントを返すように設定
+        mock_get_qdrant_client.return_value = mock_client
+
+        # ensure_collections_exist が例外を送出することを期待
+        with pytest.raises(Exception, match="コレクション作成エラー"):
+            ensure_collections_exist()
+
+        # get_collections と create_collection が呼び出されたことを確認
+        assert mock_client.get_collections.called
+        assert mock_client.create_collection.called
+
     def test_basic_upsert_search(self):
         """簡単なベクトル登録と検索が成功するか確認（専用のテストコレクションを使用）"""
         client = get_qdrant_client()
@@ -163,9 +192,9 @@ class TestQdrantManager:
         assert filtered_points[test_id_1].payload["text"] == "doc1"
         assert filtered_points[test_id_2].payload["text"] == "doc2"
 
-        # ベクトル検索機能を検証
-        # パターン1: ベクトル1に近いクエリベクトルで検索
-        query_for_vector1 = [0.11] * self.vector_size
+        # ベクトル検索機能を検証 - 類似度に基づいた検索結果を確認
+        # パターン1: vector_1 ([0.1,...]) に近いクエリベクトルで検索
+        query_for_vector1 = [0.11] * self.vector_size  # vector_1に少しだけ寄せたベクトル
         search_result_1 = client.query_points(
             collection_name=self.test_collection_name,
             query=query_for_vector1,
@@ -177,15 +206,13 @@ class TestQdrantManager:
                     )
                 ]
             ),
-            limit=1
+            limit=1  # 最も近いもの1つを取得
         )
-
-        # IDを確認するのではなく、フィールドの内容を検証（より安定したテスト）
         assert len(search_result_1.points) > 0
-        assert search_result_1.points[0].payload["text"] == "doc1"
+        assert search_result_1.points[0].payload["text"] == "doc1", "Query for vector_1 should return doc1"
 
-        # パターン2: ベクトル2に近いクエリベクトルで検索
-        query_for_vector2 = [0.89] * self.vector_size
+        # パターン2: vector_2 ([0.9,...]) に近いクエリベクトルで検索
+        query_for_vector2 = [0.89] * self.vector_size  # vector_2に少しだけ寄せたベクトル
         search_result_2 = client.query_points(
             collection_name=self.test_collection_name,
             query=query_for_vector2,
@@ -197,9 +224,7 @@ class TestQdrantManager:
                     )
                 ]
             ),
-            limit=1
+            limit=1  # 最も近いもの1つを取得
         )
-
-        # IDを確認するのではなく、フィールドの内容を検証（より安定したテスト）
         assert len(search_result_2.points) > 0
-        assert search_result_2.points[0].payload["text"] == "doc2"
+        assert search_result_2.points[0].payload["text"] == "doc2", "Query for vector_2 should return doc2"

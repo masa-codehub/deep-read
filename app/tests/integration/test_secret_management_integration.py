@@ -1,22 +1,21 @@
 """
-シークレット管理機能の結合テスト
+シークレット管理機能の結合テスト。
 
 暗号化・復号機能、ユーザー設定モデル、ユースケースが連携して
 正しく動作するかを検証します。
 """
-from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
-from app.models.user_settings import UserSettings
-from app.core.security.gateways import SecurityGateway
-from app.adapters.security.factory import get_security_gateway
-from app.usecases.user_settings import SaveUserApiKeyUseCase, GetUserApiKeyUseCase
+from django.test import TestCase
 
+from app.adapters.security.factory import get_security_gateway
+from app.models.user_settings import UserSettings
+from app.usecases.user_settings import GetUserApiKeyUseCase, SaveUserApiKeyUseCase
 
 User = get_user_model()
 
 
 class SecretManagementIntegrationTest(TestCase):
-    """シークレット管理機能の結合テスト"""
+    """シークレット管理機能の結合テスト。"""
 
     def setUp(self):
         """テスト前の準備"""

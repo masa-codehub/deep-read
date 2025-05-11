@@ -1,15 +1,13 @@
 """
-UserSettingsRepository実装のテスト
+UserSettingsRepository実装のテスト。
 
 PostgresUserSettingsRepositoryの実装をテストします。
 """
 import pytest
 from django.contrib.auth import get_user_model
-from django.db import transaction
 
-from app.models.user_settings import UserSettings
 from app.adapters.db.user_settings_repository import PostgresUserSettingsRepository
-
+from app.models.user_settings import UserSettings
 
 User = get_user_model()
 
@@ -17,11 +15,11 @@ User = get_user_model()
 @pytest.mark.django_db
 class TestUserSettingsRepository:
     """
-    UserSettingsRepositoryインターフェースの実装テスト
+    UserSettingsRepositoryインターフェースの実装テスト。
     """
 
     def setup_method(self):
-        """各テストメソッドの実行前に実行されます"""
+        """各テストメソッドの実行前に実行されます。"""
         # テストユーザーを作成
         self.user = User.objects.create_user(
             email='test@example.com',

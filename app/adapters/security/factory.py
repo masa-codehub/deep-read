@@ -3,13 +3,17 @@
 
 設定に基づいて適切なSecurityGatewayの実装を提供します。
 """
-import os
 import logging
-from app.core.security.gateways import SecurityGateway
-from app.adapters.security.crypto_security_gateway import CryptoSecurityGateway
+import os
+from typing import Optional
 
+from app.adapters.security.crypto_security_gateway import CryptoSecurityGateway
+from app.core.security.gateways import SecurityGateway
 
 logger = logging.getLogger(__name__)
+
+# シングルトンインスタンスを保持するためのグローバル変数
+_security_gateway_instance: Optional[SecurityGateway] = None
 
 
 def create_security_gateway() -> SecurityGateway:
@@ -36,10 +40,6 @@ def create_security_gateway() -> SecurityGateway:
     return CryptoSecurityGateway()
 
 
-# シングルトンインスタンスを保持するためのグローバル変数
-_security_gateway_instance = None
-
-
 def get_security_gateway() -> SecurityGateway:
     """
     SecurityGatewayのシングルトンインスタンスを取得する
@@ -48,9 +48,22 @@ def get_security_gateway() -> SecurityGateway:
     シングルトンパターンを使用します。
 
     Returns:
-        SecurityGateway: セキュリティゲートウェイのインスタンス
+        SecurityGateway: セキュリティゲートウェイのシングルトンインスタンス
     """
     global _security_gateway_instance
     if _security_gateway_instance is None:
         _security_gateway_instance = create_security_gateway()
     return _security_gateway_instance
+
+
+def reset_security_gateway() -> None:
+    """
+    SecurityGatewayのシングルトンインスタンスをリセットする
+
+    テストなどで初期化が必要な場合に使用します。
+
+    Returns:
+        None
+    """
+    global _security_gateway_instance
+    _security_gateway_instance = None

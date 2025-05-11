@@ -1,7 +1,6 @@
-"""
-Search アダプターモジュール
+"""検索機能アダプターパッケージです。
 
-ベクトル検索やQdrant接続に関するアダプターを提供します。
+ベクトル検索やQdrant関連の実装を提供します。
 """
 
 default_app_config = 'app.adapters.search.apps.SearchConfig'
