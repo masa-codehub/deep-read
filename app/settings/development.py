@@ -28,5 +28,5 @@ CSRF_COOKIE_SECURE = False
 SECURE_HSTS_SECONDS = 0
 
 # Qdrant開発設定
-QDRANT_HOST = "localhost"
-QDRANT_PORT = 6333
+# QDRANT_HOST = "localhost"
+# QDRANT_PORT = 6333

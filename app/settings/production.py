@@ -53,4 +53,4 @@ CONTENT_SECURITY_POLICY = {
 
 # Qdrant本番設定
 QDRANT_HOST = os.environ.get('QDRANT_HOST', 'qdrant')
-QDRANT_PORT = int(os.environ.get('QDRANT_PORT', 6333))
+QDRANT_PORT = int(os.environ.get('QDRANT_PORT', 6334))

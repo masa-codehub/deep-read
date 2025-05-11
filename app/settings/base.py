@@ -212,7 +212,10 @@ CONTENT_SECURITY_POLICY = {
 QDRANT_HOST = os.environ.get('QDRANT_HOST', 'qdrant')
 
 # Qdrantサーバーのポート番号（gRPC用）
-QDRANT_PORT = int(os.environ.get('QDRANT_PORT', 6333))
+QDRANT_PORT = int(os.environ.get('QDRANT_PORT', 6334))  # デフォルトを6334に変更
+
+# Qdrantへの接続タイムアウト設定（秒）
+QDRANT_TIMEOUT = float(os.environ.get('QDRANT_TIMEOUT', '10.0'))
 
 # コレクション名
 QDRANT_COLLECTION_DOCUMENTS = "documents"  # ドキュメント用コレクション名

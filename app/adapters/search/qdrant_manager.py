@@ -42,9 +42,12 @@ class QdrantClientManager:
                 # 将来的にAPIキーやHTTPS対応が必要な場合はここで設定
                 cls._instance = QdrantClient(
                     host=settings.QDRANT_HOST,
-                    port=settings.QDRANT_PORT,
-                    timeout=settings.QDRANT_TIMEOUT if hasattr(settings, 'QDRANT_TIMEOUT') else 10.0
+                    # port=settings.QDRANT_PORT,  # この行をコメントアウトまたは削除
+                    grpc_port=settings.QDRANT_PORT,  # settings.QDRANT_PORT (6334) を grpc_port に指定
+                    prefer_grpc=True,              # gRPC接続を優先するフラグを立てる
+                    timeout=settings.QDRANT_TIMEOUT
                 )
+
                 # 接続テスト
                 cls._instance.get_collections()
                 logger.debug(f"Qdrantサーバーに接続しました: {settings.QDRANT_HOST}:{settings.QDRANT_PORT}")
@@ -66,7 +69,7 @@ def get_qdrant_client() -> QdrantClient:
     return QdrantClientManager.get_client()
 
 
-def get_existing_collections() -> Set[str]:
+def _get_existing_collections() -> Set[str]:
     """既存のQdrantコレクション名のセットを取得します。
 
     Returns:
@@ -108,7 +111,7 @@ def ensure_collections_exist() -> None:
     ]
 
     # 既存のコレクション名を取得
-    existing_collections = get_existing_collections()
+    existing_collections = _get_existing_collections()
     logger.debug(f"既存のQdrantコレクション: {existing_collections}")
 
     # 各コレクションの存在確認と作成
