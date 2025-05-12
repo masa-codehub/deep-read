@@ -2,6 +2,7 @@
 
 Qdrantへの接続やコレクション操作、ベクトル検索の基本機能をテストします。
 """
+# pylint: disable=redefined-outer-name
 
 import uuid
 from unittest.mock import MagicMock, patch
@@ -119,12 +120,12 @@ class TestQdrantIntegration:
         test_id_2 = 1002
         test_tag = f"test_tag_{uuid.uuid4().hex[:8]}"  # 一意のタグを使用
 
-        # 完全に異なるベクトル値を使用して混同を避ける
-        # ID 1001のポイント: すべて0.1の値
-        vector_1 = [0.1] * self.vector_size
+        # ベクトルを明確に識別できるように、まったく異なる値を使用
+        # ID 1001のポイント: 前半が1.0、後半が0.0の値
+        vector_1 = [1.0] * (self.vector_size // 2) + [0.0] * (self.vector_size - self.vector_size // 2)
 
-        # ID 1002のポイント: すべて0.9の値
-        vector_2 = [0.9] * self.vector_size
+        # ID 1002のポイント: 前半が0.0、後半が1.0の値
+        vector_2 = [0.0] * (self.vector_size // 2) + [1.0] * (self.vector_size - self.vector_size // 2)
 
         # ダミーデータを登録
         points_to_upsert = [
@@ -181,8 +182,9 @@ class TestQdrantIntegration:
             assert filtered_points[test_id_2].payload["text"] == "doc2"
 
             # ベクトル検索機能を検証 - 類似度に基づいた検索結果を確認
-            # パターン1: vector_1 ([0.1,...]) に近いクエリベクトルで検索
-            query_for_vector1 = [0.11] * self.vector_size  # vector_1に少しだけ寄せたベクトル
+            # パターン1: vector_1に近いクエリベクトルで検索
+            # vector_1と同じパターンで、前半が高い値、後半が低い値
+            query_for_vector1 = [0.9] * (self.vector_size // 2) + [0.1] * (self.vector_size - self.vector_size // 2)
             search_result_1 = client.query_points(
                 collection_name=self.test_collection_name,
                 query=query_for_vector1,
@@ -197,10 +199,12 @@ class TestQdrantIntegration:
                 limit=1  # 最も近いもの1つを取得
             )
             assert len(search_result_1.points) > 0
-            assert search_result_1.points[0].payload["text"] == "doc1", "Query for vector_1 should return doc1"
+            assert search_result_1.points[0].id == test_id_1, f"Query for vector_1 should return doc1 (id:{test_id_1}), got id:{search_result_1.points[0].id}"
+            assert search_result_1.points[0].payload["text"] == "doc1", f"Query for vector_1 should return doc1, got {search_result_1.points[0].payload['text']}"
 
-            # パターン2: vector_2 ([0.9,...]) に近いクエリベクトルで検索
-            query_for_vector2 = [0.89] * self.vector_size  # vector_2に少しだけ寄せたベクトル
+            # パターン2: vector_2に近いクエリベクトルで検索
+            # vector_2と同じパターンで、前半が低い値、後半が高い値
+            query_for_vector2 = [0.1] * (self.vector_size // 2) + [0.9] * (self.vector_size - self.vector_size // 2)
             search_result_2 = client.query_points(
                 collection_name=self.test_collection_name,
                 query=query_for_vector2,
@@ -215,7 +219,15 @@ class TestQdrantIntegration:
                 limit=1  # 最も近いもの1つを取得
             )
             assert len(search_result_2.points) > 0
-            assert search_result_2.points[0].payload["text"] == "doc2", "Query for vector_2 should return doc2"
+            assert search_result_2.points[0].id == test_id_2, f"Query for vector_2 should return doc2 (id:{test_id_2}), got id:{search_result_2.points[0].id}"
+            assert search_result_2.points[0].payload["text"] == "doc2", f"Query for vector_2 should return doc2, got {search_result_2.points[0].payload['text']}"
+
+            # デバッグ用に付加的な情報を出力
+            print("\nテストベクトル情報:")
+            print(f"vector_1 (doc1): 前半1.0, 後半0.0 - サンプル: [{vector_1[0]}, {vector_1[1]}, ... {vector_1[-2]}, {vector_1[-1]}]")
+            print(f"vector_2 (doc2): 前半0.0, 後半1.0 - サンプル: [{vector_2[0]}, {vector_2[1]}, ... {vector_2[-2]}, {vector_2[-1]}]")
+            print(f"query_for_vector1: 前半0.9, 後半0.1 - サンプル: [{query_for_vector1[0]}, {query_for_vector1[1]}, ... {query_for_vector1[-2]}, {query_for_vector1[-1]}]")
+            print(f"query_for_vector2: 前半0.1, 後半0.9 - サンプル: [{query_for_vector2[0]}, {query_for_vector2[1]}, ... {query_for_vector2[-2]}, {query_for_vector2[-1]}]")
 
 
 # モックを使用するユニットテスト（スキップなし）
@@ -247,37 +259,37 @@ class TestQdrantManagerUnit:
         # create_collection が呼び出されたことを確認
         assert mock_client.create_collection.called
 
-    def test_ensure_collections_exist_missing_vector_size_setting(self, django_settings):
+    def test_ensure_collections_exist_missing_vector_size_setting(self, settings):
         """QDRANT_VECTOR_SIZEが未設定または無効な場合のエラーをテスト"""
         # ベクトルサイズ設定を削除
-        delattr(django_settings, 'QDRANT_VECTOR_SIZE')
+        delattr(settings, 'QDRANT_VECTOR_SIZE')
 
         # ensure_collections_existがValueErrorを送出することを確認
         with pytest.raises(ValueError, match="QDRANT_VECTOR_SIZEが未設定または無効な値です"):
             ensure_collections_exist()
 
-    def test_ensure_collections_exist_invalid_vector_size_setting(self, django_settings):
+    def test_ensure_collections_exist_invalid_vector_size_setting(self, settings):
         """QDRANT_VECTOR_SIZEが無効値（0以下）の場合のエラーをテスト"""
         # ベクトルサイズを無効な値に設定
-        django_settings.QDRANT_VECTOR_SIZE = 0
+        settings.QDRANT_VECTOR_SIZE = 0
 
         # ensure_collections_existがValueErrorを送出することを確認
         with pytest.raises(ValueError, match="QDRANT_VECTOR_SIZEが未設定または無効な値です"):
             ensure_collections_exist()
 
-    def test_ensure_collections_exist_missing_documents_collection_setting(self, django_settings):
+    def test_ensure_collections_exist_missing_documents_collection_setting(self, settings):
         """QDRANT_COLLECTION_DOCUMENTSが未設定の場合のエラーをテスト"""
         # ドキュメントコレクション設定を削除
-        delattr(django_settings, 'QDRANT_COLLECTION_DOCUMENTS')
+        delattr(settings, 'QDRANT_COLLECTION_DOCUMENTS')
 
         # ensure_collections_existがValueErrorを送出することを確認
         with pytest.raises(ValueError, match="QDRANT_COLLECTION_DOCUMENTSが未設定です"):
             ensure_collections_exist()
 
-    def test_ensure_collections_exist_missing_qa_collection_setting(self, django_settings):
+    def test_ensure_collections_exist_missing_qa_collection_setting(self, settings):
         """QDRANT_COLLECTION_QAが未設定の場合のエラーをテスト"""
         # QAコレクション設定を削除
-        delattr(django_settings, 'QDRANT_COLLECTION_QA')
+        delattr(settings, 'QDRANT_COLLECTION_QA')
 
         # ensure_collections_existがValueErrorを送出することを確認
         with pytest.raises(ValueError, match="QDRANT_COLLECTION_QAが未設定です"):
@@ -285,7 +297,7 @@ class TestQdrantManagerUnit:
 
     @patch('app.adapters.search.qdrant_manager._get_existing_collections')
     @patch('app.adapters.search.qdrant_manager.get_qdrant_client')
-    def test_ensure_collections_exist_collections_already_exist(self, mock_get_qdrant_client, mock_get_existing_collections, django_settings):
+    def test_ensure_collections_exist_collections_already_exist(self, mock_get_qdrant_client, mock_get_existing_collections, settings):
         """コレクションが既に存在する場合のパスをテスト"""
         # モッククライアントの準備
         mock_client = MagicMock(spec=QdrantClient)
@@ -293,8 +305,8 @@ class TestQdrantManagerUnit:
 
         # 既存コレクションとして設定ファイルの内容を返すように設定
         mock_get_existing_collections.return_value = {
-            django_settings.QDRANT_COLLECTION_DOCUMENTS,
-            django_settings.QDRANT_COLLECTION_QA
+            settings.QDRANT_COLLECTION_DOCUMENTS,
+            settings.QDRANT_COLLECTION_QA
         }
 
         # 実行
@@ -305,7 +317,7 @@ class TestQdrantManagerUnit:
 
     @patch('app.adapters.search.qdrant_manager.QdrantClientManager._instance', None)
     @patch('app.adapters.search.qdrant_manager.QdrantClient')
-    def test_get_client_successful_connection(self, mock_qdrant_client_class, django_settings):
+    def test_get_client_successful_connection(self, mock_qdrant_client_class, settings):
         """クライアント初期化と接続テストが成功するケースをテスト"""
         # QdrantClientのモックインスタンスを設定
         mock_client = MagicMock(spec=QdrantClient)
@@ -319,10 +331,10 @@ class TestQdrantManagerUnit:
 
         # クライアントが適切に初期化されたことを確認
         mock_qdrant_client_class.assert_called_once_with(
-            host=django_settings.QDRANT_HOST,
-            grpc_port=django_settings.QDRANT_PORT,
+            host=settings.QDRANT_HOST,
+            grpc_port=settings.QDRANT_PORT,
             prefer_grpc=True,
-            timeout=django_settings.QDRANT_TIMEOUT
+            timeout=settings.QDRANT_TIMEOUT
         )
 
         # 接続テストが呼ばれたことを確認

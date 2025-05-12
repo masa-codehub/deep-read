@@ -463,7 +463,8 @@ disable=raw-checker-failed,
         C0301,  # line-too-long
         C0121,  # singleton-comparison
         W0703,  # broad-except
-        W1203   # logging-fstring-interpolation
+        W1203,  # logging-fstring-interpolation
+        W0621   # redefined-outer-name
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

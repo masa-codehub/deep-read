@@ -111,6 +111,7 @@ disable = [
     "C0121",  # singleton-comparison
     "W0703",  # broad-except
     "W1203",  # logging-fstring-interpolation
+    "W0621",  # redefined-outer-name
 ]
 
 [tool.pylint.typecheck]

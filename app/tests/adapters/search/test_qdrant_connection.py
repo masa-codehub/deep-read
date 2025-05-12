@@ -68,14 +68,16 @@ class TestQdrantDirectConnection:
             # QdrantClientのモック化がうまくいっていることを確認
             client = QdrantClient(
                 host='mockhost',
-                port=1234,
+                grpc_port=1234,  # portからgrpc_portに変更
+                prefer_grpc=True,  # prefer_grpcを追加
                 timeout=5.0
             )
 
             # モックが呼び出されたことを確認
             mock_client_cls.assert_called_once_with(
                 host='mockhost',
-                port=1234,
+                grpc_port=1234,  # portからgrpc_portに変更
+                prefer_grpc=True,  # prefer_grpcを追加
                 timeout=5.0
             )
 
@@ -155,31 +157,46 @@ class TestQdrantDirectConnection:
             print(f"QdrantClientManager経由での接続中に予期せぬエラーが発生: {type(e).__name__} - {str(e)}")
             pytest.fail(f"QdrantClientManager.get_client() で予期せぬエラーが発生しました: {e}")
 
-    @pytest.mark.skip(reason="実際のQdrantサーバーへの接続が必要なテストです")
+    # スキップマークを削除し、実際のサーバーへの接続テストを有効化
     def test_real_qdrant_connection(self):
         """実際のQdrantサーバーへの接続をテストする統合テスト。
 
-        このテストは実際のQdrantサーバーが稼働している環境でのみ実行されることを想定しています。
-        CI/CD環境や開発環境では通常スキップします。
+        このテストは実際のQdrantサーバーが稼働している環境で実行されます。
+        Qdrantサーバーへの接続を確立し、基本的な操作（コレクションの取得）を行います。
         """
         qdrant_host = settings.QDRANT_HOST
         qdrant_port = settings.QDRANT_PORT
         qdrant_timeout = getattr(settings, 'QDRANT_TIMEOUT', 10.0)
 
-        logger.info(f"実際の接続試行先: host={qdrant_host}, port={qdrant_port}, timeout={qdrant_timeout}")
-        print(f"実際の接続試行先: host={qdrant_host}, port={qdrant_port}, timeout={qdrant_timeout}")
+        logger.info(f"実際の接続試行先: host={qdrant_host}, grpc_port={qdrant_port}, timeout={qdrant_timeout}")
+        print(f"実際の接続試行先: host={qdrant_host}, grpc_port={qdrant_port}, timeout={qdrant_timeout}")
 
         client = None
         try:
+            # QdrantClientManagerと同じパラメータを使用して接続
             client = QdrantClient(
                 host=qdrant_host,
-                port=qdrant_port,
+                grpc_port=qdrant_port,  # portからgrpc_portに変更
+                prefer_grpc=True,       # gRPC接続を優先
                 timeout=qdrant_timeout
             )
             collections_list = client.get_collections()
-            logger.info(f"実際の接続成功。取得されたコレクション: {[c.name for c in collections_list.collections]}")
-            print(f"実際の接続成功。取得されたコレクション: {[c.name for c in collections_list.collections]}")
-            assert True  # 接続成功
+            collection_names = [c.name for c in collections_list.collections]
+            logger.info(f"実際の接続成功。取得されたコレクション: {collection_names}")
+            print(f"実際の接続成功。取得されたコレクション: {collection_names}")
+
+            # コレクションが取得できたことを確認（少なくとも空のリストが返される）
+            assert isinstance(collection_names, list)
+
+            # 期待されるコレクションが存在するか確認（存在しなくてもテスト失敗にはしない）
+            expected_collections = [settings.QDRANT_COLLECTION_DOCUMENTS, settings.QDRANT_COLLECTION_QA]
+            for expected in expected_collections:
+                if expected in collection_names:
+                    logger.info(f"期待されるコレクション '{expected}' が存在します")
+                    print(f"期待されるコレクション '{expected}' が存在します")
+                else:
+                    logger.warning(f"期待されるコレクション '{expected}' が見つかりません")
+                    print(f"警告: 期待されるコレクション '{expected}' が見つかりません")
         except Exception as e:
             logger.error(f"実際の接続中にエラーが発生: {type(e).__name__} - {str(e)}", exc_info=True)
             print(f"実際の接続中にエラーが発生: {type(e).__name__} - {str(e)}")
@@ -189,3 +206,40 @@ class TestQdrantDirectConnection:
                 client.close()
                 logger.info("実際の接続クライアントをクローズしました。")
                 print("実際の接続クライアントをクローズしました。")
+
+    def test_ensure_collections_exist(self):
+        """必要なコレクションが存在することを確認するテスト。
+
+        QdrantClientManagerを使用して、期待されるコレクションが存在するかを確認します。
+        存在しない場合は作成されることを検証します。
+        """
+        from app.adapters.search.qdrant_manager import ensure_collections_exist
+
+        # QdrantClientManagerのインスタンスをリセット
+        # pylint: disable=protected-access
+        QdrantClientManager._instance = None
+        # pylint: enable=protected-access
+
+        try:
+            # コレクションの存在を確認・作成する関数を呼び出し
+            ensure_collections_exist()
+
+            # クライアントを取得してコレクションを確認
+            client = get_qdrant_client()
+            collections_list = client.get_collections()
+            collection_names = [c.name for c in collections_list.collections]
+
+            # 期待されるコレクションが存在するか確認
+            expected_collections = [settings.QDRANT_COLLECTION_DOCUMENTS, settings.QDRANT_COLLECTION_QA]
+            for expected in expected_collections:
+                assert expected in collection_names, f"コレクション '{expected}' が作成されていません"
+                logger.info(f"コレクション '{expected}' の存在を確認しました")
+                print(f"コレクション '{expected}' の存在を確認しました")
+
+            logger.info("すべての必要なコレクションが存在することを確認しました")
+            print("すべての必要なコレクションが存在することを確認しました")
+
+        except Exception as e:
+            logger.error(f"コレクション確認中にエラーが発生: {type(e).__name__} - {str(e)}", exc_info=True)
+            print(f"コレクション確認中にエラーが発生: {type(e).__name__} - {str(e)}")
+            pytest.fail(f"コレクション確認テストに失敗しました: {e}")
