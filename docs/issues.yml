@@ -846,21 +846,47 @@ github_issues:
       milestone: "MVP Foundation"
       labels: [type:technical-task, chore, layer:infrastructure, layer:development-process, epic:EPIC-ARCH-NFR, MVP, priority:medium, TDD]
     - id: ISSUE-033
-      title: "[TechnicalTask] メール送信設定 (TASK-INFRA-01)"
+      title: "[TechnicalTask] 完了: メール送信設定 (TASK-INFRA-01)"
       description: |
-        技術タスク TASK-INFRA-01 を実施する。パスワードリセットメール送信のための設定を行う。
+        技術タスク TASK-INFRA-01 に対応し、Djangoアプリケーションからのメール送信設定を行いました。
+        前回のレビューでの指摘事項およびPylintの警告に対応済みです。
+
+        **実装内容:**
+
+        * **`app/settings/base.py`:**
+            * `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_USE_SSL`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`, `SERVER_EMAIL`, `ADMINS` といったメール関連設定を環境変数経由で設定できるようにしました。
+            * `ADMINS` 設定では、`ADMIN_EMAIL` 環境変数が未設定の場合のデフォルト値として `'admin@localhost'` を使用するようにしました。
+        * **`app/settings/development.py`:**
+            * 開発環境では `EMAIL_BACKEND` を `'django.core.mail.backends.console.EmailBackend'` に上書きしました。
+        * **`app/management/commands/sendtestemail.py`:**
+            * テストメール送信用の管理コマンドのDocstringを拡充しました。
+            * (Pylintの指摘に基づき、コードスタイル等を修正しました。)
+        * **`app/tests/test_email_sending.py`:**
+            * メール送信機能をテストするための単体テストクラスおよびメソッドにDocstringを追加しました。
+
+        **動作確認:**
+
+        * 開発環境 (`EMAIL_BACKEND` がコンソールバックエンド) で `python manage.py sendtestemail test@example.com` を実行し、メールの内容がコンソールに正しく出力されることを確認しました。
+        * `pytest` を実行し、追加した `test_email_sending.py` のテストケースが全てパスすること、およびPylintを含む静的解析で新たなエラー/警告が発生していないことを確認しました。
+        * これにより、設定されたメールバックエンドを通じてメールが送信（またはテスト用アウトボックスに格納）され、認証情報がソースコードにハードコーディングされることなく安全に管理できる状態となりました。
+
+        **結論:**
+
+        上記の実装と確認により、「Djangoアプリケーションからテストメールが正常に送信されること」および「認証情報が安全に管理されていること」という受け入れ基準は満たされたと判断し、本Issue `TASK-INFRA-01` を解決済みとします。
+
+        **関連Issue:** `US-AUTH-003` (このIssueの完了により進行可能), `TASK-SEC-002` (本Issueで考慮済み)
       tasks:
-        - "[ ] メール送信方法の決定（SMTPサーバ or 外部サービス[SendGrid等]）。"
-        - "[ ] DjangoのEmailBackend設定 (`settings.py`)。"
-        - "[ ] 認証情報（ユーザ名、パスワード、APIキー）の安全な設定（環境変数、KMS等）。"
-        - "[ ] テストメール送信による動作確認。"
+        - "[x] メール送信方法の決定（SMTPサーバ or 外部サービス[SendGrid等]）。"
+        - "[x] DjangoのEmailBackend設定 (`settings.py`)。"
+        - "[x] 認証情報（ユーザ名、パスワード、APIキー）の安全な設定（環境変数、KMS等）。"
+        - "[x] テストメール送信による動作確認。"
       acceptance_criteria:
         - Djangoアプリケーションからテストメールが正常に送信されること。
         - 認証情報が安全に管理されていること。
       related_requirements: [TASK-INFRA-01, US-AUTH-003]
       dependencies: [TASK-SEC-002] # TASK-SEC-002 is ISSUE-042
       milestone: "MVP Foundation" # Or subsequent
-      labels: [type:technical-task, chore, layer:infrastructure, layer:adapter-notification, epic:EPIC-FOUNDATION, priority:low]
+      labels: [type:technical-task, chore, layer:infrastructure, layer:adapter-notification, epic:EPIC-FOUNDATION, priority:low, status:done]
     - id: ISSUE-034
       title: "[TechnicalTask] バッチ処理スケジューラ設定 (TASK-INFRA-02)"
       description: |
@@ -1299,7 +1325,7 @@ github_issues:
         - "[x] **テストケースの追加・修正:** カバレッジレポートに基づき、特に重要ロジック (UseCase, Domain) や複雑な分岐を中心にテストを追加。"
         - "[x] **既存テストのリファクタリング (任意):** カバレッジ向上の過程で、既存テストの可読性や保守性を改善。"
         - "[x] **全テストの成功確認:** 追加・修正を含め、全テストがPASSすることを確認。"
-        - "[x] **カバレッジ目標達成の確認:** カバレッジレポートで全体のカバレッジが80%以上であることを確認。"
+        - "[x] **カバレッジ目標達成の確認:** カバレッジレポートで全体のカバレッジが 80% 以上であることを確認。"
         - "[x] **(推奨) CI/CD への組み込み:** CI/CD パイプラインにカバレッジ測定・レポートステップを追加。"
       acceptance_criteria:
         - "コードカバレッジ測定ツール (`pytest-cov`) が設定され、カバレッジレポートが生成可能であること。"
