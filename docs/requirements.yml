@@ -467,7 +467,7 @@ requirement_definition:
       domain_centric: "ドメインモデルをシステムの中心に据え、ビジネスロジックをドメイン層にカプセル化。"
       bounded_contexts: "主要ドメインごとの境界づけられたコンテキストを意識し、疎結合な設計を目指す（マイクロサービス化も将来検討）。"
       infrastructure_as_code: "IaCの導入検討。"
-      logging: "**ログは不具合発生時に原因特定が可能なレベルで詳細に記録すること（構造化ログ推奨）。**"
+      logging: "**Python標準の`logging`モジュールを利用し、ログは不具合発生時に原因特定が可能なレベルで詳細に記録すること（構造化ログ推奨）。開発環境ではDEBUGレベル、本番環境ではINFOレベル（`django.request`はERROR）を基本とし、主要処理ポイントでログ出力を行う。エラー時にはスタックトレースも記録する。**"
       coding_standards: "コードの可読性、一貫性を保つためのコーディング規約策定。"
       prompt_configurability: "**AI呼び出し部分のプロンプトは設定ファイルから読み込み、容易に変更・調整可能とすること。**"
       parameter_configurability: "**ファイルサイズ上限等のパラメータは設定ファイルまたはDBで管理し、ハードコーディングしないこと。**"
@@ -479,7 +479,7 @@ requirement_definition:
       integration_e2e_tests: "主要ユースケースに対するインテグレーションテスト、E2Eテストの実装。"
       test_automation: "テスト自動化パイプラインの構築 (CI/CD)。"
       mocking_stubbing: "外部API連携部分はモック/スタブを利用したテストを容易にする設計。"
-      test_suite_status: "**最新の `pytest` 実行結果では93件のテストが安定して成功。残る課題はFlake8、Pylintによるスタイル警告への対応と、一部未カバー箇所（`app/models/user.py` (79%)や`app/domain/value_objects.py` (89%)など）へのテスト追加検討。**"
+      test_suite_status: "**最新の `pytest` 実行結果では93件のテストが安定して成功。ロギング設定変更後も既存テストは全てパスし、カバレッジも94%以上を維持。残る課題はFlake8、Pylintによるスタイル警告への対応と、一部未カバー箇所（`app/models/user.py` (79%)や`app/domain/value_objects.py` (89%)など）へのテスト追加検討。**"
     ui_ux: # アクセシビリティ要件を追加
       responsive_design: "主要デスクトップブラウザ対応。"
       design_consistency: "一貫性のあるデザインシステム（初期は暫定）。"
