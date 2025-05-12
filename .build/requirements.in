@@ -8,6 +8,8 @@ django               # Django フレームワーク
 django-csp         # Django 用の CSP (Content Security Policy) ミドルウェア
 dj-database-url      # Django 用のデータベース URL パーサー
 
+pdf2image   # 
+
 cryptography        # 暗号化ライブラリ (Django Secret Key の生成に使用)
 
 # 非同期処理基盤

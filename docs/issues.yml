@@ -926,18 +926,41 @@ github_issues:
       milestone: "MVP Pipeline" # Or MVP Foundation
       labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:high, status:done]
     - id: ISSUE-036
-      title: "[TechnicalTask] Poppler依存解決 (TASK-INFRA-04)"
+      title: "[TechnicalTask] 完了: Poppler依存解決 (TASK-INFRA-04)"
       description: |
-        技術タスク TASK-INFRA-04 を実施する。`pdf2image` が依存するPopplerをDocker環境にインストールし、利用可能にする。
+        技術タスク TASK-INFRA-04 を実施し、完了しました。`pdf2image` が依存するPopplerをDocker環境にインストールし、利用可能であることを確認しました。
+
+        **目的:**
+        本 Issue は、PDFページ画像化処理に必要なPopplerライブラリ（ユーティリティ）をDockerコンテナ環境に導入し、`pdf2image` Pythonライブラリから正常に利用できることを確認することを目的としていました。
+
+        **実施内容:**
+        * `.build/Dockerfile` を更新し、`apt-get install -y poppler-utils` コマンドを追加して、PopplerユーティリティをDockerイメージにインストールするようにしました。
+        * Popplerのインストールと `pdf2image` からの利用可能性を確認するため、以下の確認用スクリプトを追加しました。
+            * `tools/compatibility_checks/poppler/create_test_pdf.py`: テスト用の2ページのPDFファイルを生成します。
+            * `tools/compatibility_checks/poppler/check_poppler.py`: `pdftoppm` コマンドの存在とバージョンを確認し、`pdf2image.pdfinfo_from_path()` を使用してPopplerが `pdf2image` から認識されるか、また `pdf2image.convert_from_path()` を使用して実際にPDFから画像への変換が成功するかを確認します。
+            * `tools/compatibility_checks/poppler/convert_pdf_to_image.py`: より詳細なPDFから画像への変換機能を持つスクリプトで、これも動作確認に利用しました。
+        
+        **動作確認結果:**
+        1. 修正後のDockerfileでDockerイメージをビルド。
+        2. ビルドしたコンテナ内で `tools/compatibility_checks/poppler/create_test_pdf.py` を実行し、`test.pdf` を生成。
+        3. 同コンテナ内で `tools/compatibility_checks/poppler/check_poppler.py` （`test.pdf` を参照）を実行し、以下の出力を確認。
+           * `pdftoppm` が期待されるパスに存在すること。
+           * Popplerのバージョン情報が表示されること。
+           * `pdfinfo_from_path()` が成功し、PDFのページ数が正しく取得できること。
+           * `convert_from_path()` が成功し、期待される枚数の画像が生成されるメッセージが表示されること。
+        4. さらに、`tools/compatibility_checks/poppler/convert_pdf_to_image.py` を使って `test.pdf` をJPG画像に変換し、生成された画像ファイル（2ページ分）を目視で確認し、問題ないことを確認しました。
+        
+        **クローズ:**
+        上記の変更と確認により、Dockerコンテナ内で `pdf2image` がPopplerを正常に認識し、基本的なPDFから画像への変換処理が動作することが確認できました。これにより、本 Issue の受け入れ基準を満たしたため、クローズします。これにより、PDFページ画像化機能実装 (TASK-PDF-01) の実施が可能になりました。
       tasks:
-        - "[ ] Dockerfileに必要なパッケージ（`poppler-utils`等）のインストールコマンドを追加。"
-        - "[ ] Dockerイメージをビルドし、`pdf2image` がPopplerを見つけられることを確認。"
+        - "[x] Dockerfileに必要なパッケージ（`poppler-utils`等）のインストールコマンドを追加。"
+        - "[x] Dockerイメージをビルドし、`pdf2image` がPopplerを見つけられることを確認。"
       acceptance_criteria:
         - Dockerコンテナ内で`pdf2image`が正常に動作すること。
       related_requirements: [TASK-INFRA-04, TASK-PDF-01]
       dependencies: []
       milestone: "MVP Pipeline" # Or MVP Foundation
-      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:low]
+      labels: [type:technical-task, chore, layer:infrastructure, epic:EPIC-PIPELINE, MVP, priority:low, status:done]
     - id: ISSUE-037
       title: "[TechnicalTask] ロギング設定 (TASK-LOG-01)"
       description: |

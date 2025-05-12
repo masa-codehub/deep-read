@@ -6,6 +6,7 @@ WORKDIR /app
 # 最新版のgitのインストール  
 RUN apt-get update && \
     apt-get install -y git && \
+    apt-get install -y poppler-utils && \
     rm -rf /var/lib/apt/lists/*
 
 # 必要なPythonパッケージのインストール
