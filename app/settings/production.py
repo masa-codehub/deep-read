@@ -54,3 +54,52 @@ CONTENT_SECURITY_POLICY = {
 # Qdrant本番設定
 QDRANT_HOST = os.environ.get('QDRANT_HOST', 'qdrant')
 QDRANT_PORT = int(os.environ.get('QDRANT_PORT', 6334))
+
+# Logging override for production
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {  # Production might still log to console for containerized environments
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        # Optional: File handler for production
+        # 'file': {
+        #     'level': 'INFO',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': '/var/log/django/app.log',  # Ensure this path exists and is writable
+        #     'maxBytes': 1024 * 1024 * 10,  # 10MB
+        #     'backupCount': 5,
+        #     'formatter': 'verbose',
+        # },
+        # Optional: Mail admins for critical errors
+        # 'mail_admins': {
+        #     'level': 'ERROR',
+        #     'class': 'django.utils.log.AdminEmailHandler',
+        #     # 'include_html': True,  # Uncomment if you want HTML emails
+        # }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],  # Add 'file', 'mail_admins' as needed
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],  # Add 'mail_admins' for critical request errors
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'app': {
+            'handlers': ['console'],  # Add 'file' as needed
+            'level': 'INFO',  # INFO level for production
+            'propagate': True,
+        },
+    },
+}
+
+# Ensure ADMINS and SERVER_EMAIL are set if using AdminEmailHandler
+# ADMINS = [('Admin Name', 'admin@example.com')]
+# SERVER_EMAIL = 'noreply@example.com'

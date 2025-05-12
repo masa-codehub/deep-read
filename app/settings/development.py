@@ -30,3 +30,43 @@ SECURE_HSTS_SECONDS = 0
 # Qdrant開発設定
 # QDRANT_HOST = "localhost"
 # QDRANT_PORT = 6333
+
+# Logging override for development
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',  # Override to DEBUG for development
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',  # Ensure 'verbose' formatter is defined in base.py or here
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # More verbose for requests in development
+            'propagate': False,
+        },
+        'app': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Override to DEBUG for development
+            'propagate': True,
+        },
+    },
+}
