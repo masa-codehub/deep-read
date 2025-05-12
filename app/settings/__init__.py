@@ -1,5 +1,5 @@
-"""
-このファイルはapp.settingsをPythonパッケージとして認識させるために必要です。
+"""このファイルはapp.settingsをPythonパッケージとして認識させるために必要です。
+
 環境変数DJANGOへSETTINGS_MODULEが設定されていない場合は、デフォルトでdevelopment設定を使用します。
 """
 

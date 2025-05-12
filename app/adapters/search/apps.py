@@ -1,6 +1,4 @@
-"""
-SearchアプリケーションのDjango AppConfig
-"""
+"""SearchアプリケーションのDjango AppConfig"""
 
 import logging
 from django.apps import AppConfig
@@ -10,8 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class SearchConfig(AppConfig):
-    """
-    検索機能に関する設定を定義するAppConfig
+    """検索機能に関する設定を定義するAppConfig
 
     ベクトル検索やQdrant関連の初期化を行います。
     """
@@ -19,9 +16,7 @@ class SearchConfig(AppConfig):
     name = 'app.adapters.search'
 
     def ready(self):
-        """
-        アプリケーション起動時に必要なQdrantコレクションを初期化
-        """
+        """アプリケーション起動時に必要なQdrantコレクションを初期化"""
         # AppConfigのready()はDjango起動時に呼び出される
         # この処理はウェブサーバーの各プロセス起動時に実行されるため注意
         try:

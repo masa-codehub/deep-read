@@ -1,29 +1,25 @@
-"""
-セキュリティ設定テスト
+"""セキュリティ設定テスト
 
 このモジュールは、Django設定のセキュリティ関連設定が
 正しく適用されているかを検証するためのテストケースを提供します。
 """
 
 from django.test import TestCase, Client, override_settings
-from django.conf import settings
 from django.urls import reverse
 from django.middleware.csrf import get_token
 
 
 class SecurityHeadersTest(TestCase):
-    """
-    セキュリティヘッダーが正しくレスポンスに含まれていることをテストします。
-    """
+    """セキュリティヘッダーが正しくレスポンスに含まれていることをテストします。"""
 
     def setUp(self):
+        """テスト環境のセットアップ"""
         self.client = Client()
         # ルートURLを使用するが、実際のURLが異なる場合は適宜変更
         self.test_url = '/'
 
     def test_security_headers_production_settings(self):
         """本番環境設定でのセキュリティヘッダーをテストします。"""
-
         # 本番設定を強制適用するデコレータ
         # CONTENT_SECURITY_POLICY.REPORT_ONLYをFalseに設定（本番設定と同じ）
         @override_settings(
@@ -65,7 +61,6 @@ class SecurityHeadersTest(TestCase):
 
     def test_security_headers_development_settings(self):
         """開発環境設定でのセキュリティヘッダーをテストします。"""
-
         # 開発設定を強制適用するデコレータ
         # CONTENT_SECURITY_POLICY.REPORT_ONLYをTrueに設定（開発設定と同じ）
         @override_settings(
@@ -86,19 +81,16 @@ class SecurityHeadersTest(TestCase):
 
 
 class CSRFProtectionTest(TestCase):
-    """
-    CSRFトークン保護機能が正しく動作するかテストします。
-    """
+    """CSRFトークン保護機能が正しく動作するかテストします。"""
 
     def setUp(self):
+        """テスト環境のセットアップ"""
         self.client = Client(enforce_csrf_checks=True)
         # 管理画面のログインURLをテスト対象として使用
         self.login_url = reverse('admin:login')
 
     def test_csrf_token_included(self):
-        """
-        CSRFトークンがGETレスポンスに含まれていることを確認します。
-        """
+        """CSRFトークンがGETレスポンスに含まれていることを確認します。"""
         response = self.client.get(self.login_url)
         self.assertEqual(response.status_code, 200)
 
@@ -106,9 +98,7 @@ class CSRFProtectionTest(TestCase):
         self.assertContains(response, 'csrfmiddlewaretoken')
 
     def test_csrf_protection_enforced(self):
-        """
-        CSRFトークンなしでPOSTすると403エラーになることを確認します。
-        """
+        """CSRFトークンなしでPOSTすると403エラーになることを確認します。"""
         # CSRFトークンなしでPOSTリクエスト
         response = self.client.post(self.login_url, {
             'username': 'testuser',
@@ -119,8 +109,8 @@ class CSRFProtectionTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_csrf_protection_pass(self):
-        """
-        正しいCSRFトークンでPOSTすると成功することを確認します。
+        """正しいCSRFトークンでPOSTすると成功することを確認します。
+
         ※実際のログインは失敗するが、CSRF検証は通過することを確認
         """
         # まずGETリクエストでCSRFトークンを取得
@@ -141,17 +131,15 @@ class CSRFProtectionTest(TestCase):
 
 
 class ContentSecurityPolicyTest(TestCase):
-    """
-    Content Security Policy（CSP）が正しく設定されているかテストします。
-    """
+    """Content Security Policy（CSP）が正しく設定されているかテストします。"""
 
     def setUp(self):
+        """テスト環境のセットアップ"""
         self.client = Client()
         self.test_url = '/'
 
     def test_csp_directives_production(self):
         """本番環境のCSPディレクティブが正しく設定されているかテストします。"""
-
         @override_settings(
             DEBUG=False,
             CONTENT_SECURITY_POLICY={
@@ -182,7 +170,6 @@ class ContentSecurityPolicyTest(TestCase):
 
     def test_csp_directives_development(self):
         """開発環境のCSPディレクティブが正しく設定されているかテストします。"""
-
         @override_settings(
             DEBUG=True,
             CONTENT_SECURITY_POLICY={

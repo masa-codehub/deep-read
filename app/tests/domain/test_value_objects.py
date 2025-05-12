@@ -1,10 +1,9 @@
-"""
-値オブジェクトのテスト
+"""値オブジェクトのテスト。
 
 ドメイン値オブジェクトの機能をテストします。
 """
 from django.test import TestCase, override_settings
-from django.contrib.auth import password_validation
+
 from app.domain.value_objects import Email, Password
 
 

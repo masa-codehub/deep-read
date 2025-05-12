@@ -1,28 +1,28 @@
-"""
-ユーザー登録UseCaseのテスト
+"""ユーザー登録UseCaseのテスト
 
 RegisterUserUseCaseの機能をテストします。
 """
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from django.db import IntegrityError
-from django.core.exceptions import ValidationError
 
-from app.core.usecases import (
-    RegisterUserInputData, RegisterUserOutputData,
-    EmailAlreadyExistsError, PasswordMismatchError,
-    WeakPasswordError, InvalidEmailFormatError
-)
 from app.core.repositories import UserRepository
+from app.core.usecases import (
+    EmailAlreadyExistsError,
+    InvalidEmailFormatError,
+    PasswordMismatchError,
+    RegisterUserInputData,
+    RegisterUserOutputData,
+    RegistrationError,
+    WeakPasswordError,
+)
 from app.models.user import CustomUser
 from app.usecases.register_user import RegisterUserInteractor
 
 
 class TestRegisterUserUseCase(unittest.TestCase):
-    """
-    ユーザー登録UseCase（RegisterUserInteractor）のテストケース
-    """
+    """ユーザー登録UseCase（RegisterUserInteractor）のテストケース"""
 
     def setUp(self):
         """テストの前準備"""
@@ -146,3 +146,95 @@ class TestRegisterUserUseCase(unittest.TestCase):
             # Act & Assert
             with self.assertRaises(EmailAlreadyExistsError):
                 self.use_case.execute(input_data)
+
+    def test_register_user_other_error(self):
+        """異常系：その他の予期せぬエラーが発生するケース"""
+        # Arrange
+        # モックの設定: メールは存在しない
+        self.user_repository.find_by_email.return_value = None
+        # モックの設定: create_userで一般的な例外発生
+        with patch('app.models.user.CustomUser.objects.create_user', side_effect=Exception("一般エラー")):
+            input_data = RegisterUserInputData(
+                email='test@example.com',
+                password='StrongP@ss123',
+                password_confirmation='StrongP@ss123'
+            )
+
+            # Act & Assert
+            with self.assertRaises(RegistrationError) as context:
+                self.use_case.execute(input_data)
+
+            # エラーメッセージに期待する文字列が含まれているか確認
+            self.assertIn("ユーザー作成中にエラーが発生しました", str(context.exception))
+
+    @patch('app.usecases.register_user.Email')
+    def test_register_user_email_specific_error(self, mock_email_class):
+        """異常系：メール検証時の具体的なエラーパスをテスト"""
+        # Arrange
+        # Emailクラスのインスタンス化時にValueErrorを発生させる
+        mock_email_class.side_effect = ValueError("メールアドレスの形式が正しくありません")
+
+        input_data = RegisterUserInputData(
+            email='bad@format.com',  # この値は mock_email_class.side_effect で上書きされる
+            password='StrongP@ss123',
+            password_confirmation='StrongP@ss123'
+        )
+
+        # Act & Assert
+        with self.assertRaises(InvalidEmailFormatError) as context:
+            self.use_case.execute(input_data)
+
+        # エラーメッセージの伝播を確認（任意）
+        self.assertIn("メールアドレスの形式が正しくありません", str(context.exception))
+
+    @patch('app.usecases.register_user.Email')
+    @patch('app.usecases.register_user.Password')
+    def test_register_user_password_specific_error(self, mock_password_class, mock_email_class):
+        """異常系：パスワード検証時のWeakPasswordErrorパスをテスト"""
+        # Arrange
+        # Emailインスタンス化は成功させる
+        mock_email_class.return_value = MagicMock()
+
+        # Passwordクラスのインスタンス化時にパスワード関連のValueErrorを発生させる
+        mock_password_class.side_effect = ValueError("パスワードは8文字以上必要です")
+
+        input_data = RegisterUserInputData(
+            email='test@example.com',
+            password='weak',
+            password_confirmation='weak'
+        )
+
+        # Act & Assert
+        with self.assertRaises(WeakPasswordError) as context:
+            self.use_case.execute(input_data)
+
+        # エラーメッセージの伝播を確認
+        self.assertIn("パスワードは8文字以上必要です", str(context.exception))
+
+    @patch('app.usecases.register_user.Email')
+    @patch('app.usecases.register_user.Password')
+    def test_register_user_generic_validation_error(self, mock_password_class, mock_email_class):
+        """異常系：その他の値オブジェクト検証エラーをテスト"""
+        # Arrange
+        # Emailのインスタンス化は成功させる
+        mock_email_class.return_value = MagicMock()
+
+        # Passwordクラスのインスタンス化時に"パスワード"という単語を完全に含まないValueErrorを発生させる
+        # "password"という英語も避ける
+        mock_password_class.side_effect = ValueError("検証に失敗しました")
+
+        input_data = RegisterUserInputData(
+            email='test@example.com',
+            password='AnyPassword',
+            password_confirmation='AnyPassword'
+        )
+
+        # Act & Assert
+        with self.assertRaises(RegistrationError) as context:
+            self.use_case.execute(input_data)
+
+        # エラーメッセージの内容を確認
+        self.assertIn("検証に失敗しました", str(context.exception))
+        # WeakPasswordErrorやInvalidEmailFormatErrorではないことを確認（より厳密なテスト）
+        self.assertNotIsInstance(context.exception, WeakPasswordError)
+        self.assertNotIsInstance(context.exception, InvalidEmailFormatError)

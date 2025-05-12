@@ -1,5 +1,4 @@
-"""
-ユーザー設定に関するユースケース
+"""ユーザー設定に関するユースケース
 
 ユーザーのAPIキー等の設定情報を安全に管理するためのユースケースを提供します。
 シークレット情報は暗号化して保存され、必要時のみ復号されます。
@@ -14,15 +13,13 @@ User = get_user_model()
 
 
 class SaveUserApiKeyUseCase:
-    """
-    ユーザーのAPIキーを安全に保存するユースケース
+    """ユーザーのAPIキーを安全に保存するユースケース
 
     平文のAPIキーを受け取り、暗号化してデータベースに保存します。
     """
 
     def __init__(self, security_gateway: SecurityGateway):
-        """
-        初期化
+        """初期化
 
         Args:
             security_gateway: 暗号化・復号を行うセキュリティゲートウェイ
@@ -30,8 +27,7 @@ class SaveUserApiKeyUseCase:
         self.security_gateway = security_gateway
 
     def execute(self, user_id: int, api_key: str, api_provider: str = None) -> UserSettings:
-        """
-        APIキーを暗号化して保存する
+        """APIキーを暗号化して保存する
 
         Args:
             user_id: ユーザーID
@@ -45,7 +41,7 @@ class SaveUserApiKeyUseCase:
         user = User.objects.get(id=user_id)
 
         # UserSettingsオブジェクトを取得または作成
-        settings, created = UserSettings.objects.get_or_create(user=user)
+        settings, _ = UserSettings.objects.get_or_create(user=user)
 
         # APIキーが提供されている場合のみ暗号化して保存
         if api_key is not None:  # Noneチェックを明示的に行う
@@ -64,15 +60,13 @@ class SaveUserApiKeyUseCase:
 
 
 class GetUserApiKeyUseCase:
-    """
-    ユーザーのAPIキーを取得するユースケース
+    """ユーザーのAPIキーを取得するユースケース
 
     暗号化されたAPIキーをデータベースから取得し、復号して返します。
     """
 
     def __init__(self, security_gateway: SecurityGateway):
-        """
-        初期化
+        """初期化
 
         Args:
             security_gateway: 暗号化・復号を行うセキュリティゲートウェイ
@@ -80,8 +74,7 @@ class GetUserApiKeyUseCase:
         self.security_gateway = security_gateway
 
     def execute(self, user_id: int) -> Optional[str]:
-        """
-        ユーザーのAPIキーを復号して取得する
+        """ユーザーのAPIキーを復号して取得する
 
         Args:
             user_id: ユーザーID

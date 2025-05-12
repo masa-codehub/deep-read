@@ -1,5 +1,4 @@
-"""
-UserSettingsRepositoryの実装
+"""UserSettingsRepositoryの実装
 
 PostgreSQLを使用したユーザー設定リポジトリの実装クラス
 """
@@ -14,16 +13,15 @@ User = get_user_model()
 
 
 class PostgresUserSettingsRepository(UserSettingsRepository):
-    """
-    PostgreSQLデータベースを使用したUserSettingsリポジトリの実装
+    """PostgreSQLデータベースを使用したUserSettingsリポジトリの実装
 
     Djangoのモデルマネージャーとget_or_createメソッドを使用して
     UserSettingsRepositoryインターフェースを実装します
     """
 
     def get_or_create_for_user(self, user_id: int) -> UserSettings:
-        """
-        指定されたユーザーIDに対応するUserSettingsを取得します。
+        """指定されたユーザーIDに対応するUserSettingsを取得します。
+
         存在しない場合はデフォルト値で新規作成します。
 
         Args:
@@ -45,8 +43,7 @@ class PostgresUserSettingsRepository(UserSettingsRepository):
 
     @transaction.atomic
     def save(self, settings: UserSettings) -> UserSettings:
-        """
-        UserSettingsオブジェクトを保存または更新します。
+        """UserSettingsオブジェクトを保存または更新します。
 
         Args:
             settings: 保存するユーザー設定オブジェクト

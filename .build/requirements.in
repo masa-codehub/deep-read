@@ -37,8 +37,16 @@ pytest-django       # Django 用の pytest プラグイン
 ruff                    # 高速な Linter & Formatter
 mypy                    # 静的型チェッカー
 
+# 静的コード解析ツール
+flake8          # コードの静的解析ツール
+flake8-bugbear  # Flake8の追加バグ検出プラグイン
+flake8-docstrings  # ドキュメント文字列チェック用プラグイン
+pylint          # より詳細な静的コード解析ツール
+pylint-django    # Django用Pylintプラグイン
+pytest-flake8    # pytest用Flake8プラグイン
+pytest-pylint   # pytest用Pylintプラグイン
+pre-commit             # コミット前チェックツール
+
 # 他に必要な開発ツールがあれば以下に追加
 #例:
-# pre-commit
 # ipython
-# pytest-cov

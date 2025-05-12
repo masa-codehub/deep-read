@@ -1,5 +1,4 @@
-"""
-UserRepositoryのPostgreSQL実装に対する結合テスト
+"""UserRepositoryのPostgreSQL実装に対する結合テスト
 
 UserRepositoryインターフェースのPostgreSQL実装が正しく動作するかを検証します。
 """

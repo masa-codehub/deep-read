@@ -13,21 +13,115 @@ dependencies = [
     "qdrant-client (>=1.7.0)"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest-cov (>=4.1.0)",  # カバレッジ計測ツール追加
+    "pytest-flake8",         # Flake8統合
+    "pytest-pylint",         # Pylint統合
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-minversion = "7.0" # pytestの最小バージョン指定
-addopts = "-ra -q" # pytest実行時のデフォルトオプション
-testpaths = [      # テストファイルを探すディレクトリ
-    "tests",
-    "app/tests",   # アプリケーションのテストディレクトリを追加
+minversion = "7.0"                  # pytestの最小バージョン指定
+DJANGO_SETTINGS_MODULE = "app.settings.development"  # Django設定モジュール
+addopts = "-ra -q --cov=app --cov-report=term-missing --cov-report=html --flake8 --pylint --pylint-error-types=EFW" # カバレッジとコード品質チェックの設定を統合
+testpaths = [                       # テストファイルを探すディレクトリ
+    "app",
 ]
-python_files = "test_*.py"  # pytest.iniとpyproject.tomlの設定をマージ
-python_classes = "Test*"    # テストクラスのパターン
-python_functions = "test_*" # テスト関数のパターン
+python_files = ["tests.py", "test_*.py", "*_tests.py"]  # テストファイルのパターン
+python_classes = "Test*"                               # テストクラスのパターン
+python_functions = "test_*"                            # テスト関数のパターン
 
-# pytest-django用の設定
-DJANGO_SETTINGS_MODULE = "app.settings.base"  # Django設定モジュール
+# カバレッジ設定
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/settings/*",
+    "*/__pycache__/*",
+    "*/manage.py",
+    "*/wsgi.py",
+    "*/asgi.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]
+fail_under = 80    # カバレッジが80%未満の場合にエラーを発生させる
+
+# コード品質チェックの設定
+[tool.flake8]
+max-line-length = 88
+exclude = [".git", "__pycache__", "docs", "*/migrations/*", "venv", "*/static/*", "*/media/*"]
+ignore = ["E203", "W503", "E501"]
+docstring-convention = "google"
+per-file-ignores = """
+    */__init__.py: F401
+    tests/*: S101, D100, D101, D102, D103
+    app/migrations/*: D100, D101, D102, D103
+"""
+
+[tool.pylint.main]
+load-plugins = ["pylint_django"]
+ignore = ["CVS", "migrations", "__pycache__", "manage.py"]
+
+[tool.pylint.messages_control]
+disable = [
+    "raw-checker-failed",
+    "bad-inline-option",
+    "locally-disabled",
+    "file-ignored",
+    "suppressed-message",
+    "useless-suppression",
+    "deprecated-pragma",
+    "use-implicit-booleaness-not-comparison-to-string",
+    "use-implicit-booleaness-not-comparison-to-zero",
+    "use-symbolic-message-instead",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "too-many-locals",
+    "too-many-arguments",
+    "too-many-statements",
+    "fixme",
+    "line-too-long",
+    "trailing-whitespace",
+    "C0111",  # missing docstrings
+    "C0103",  # invalid-name
+    "R0903",  # too-few-public-methods
+    "R0201",  # no-self-use
+    "C0330",  # bad-continuation
+    "R0913",  # too-many-arguments
+    "R0914",  # too-many-locals
+    "R0915",  # too-many-statements
+    "R0902",  # too-many-instance-attributes
+    "R0801",  # duplicate-code
+    "R0912",  # too-many-branches
+    "C0301",  # line-too-long
+    "C0121",  # singleton-comparison
+    "W0703",  # broad-except
+    "W1203",  # logging-fstring-interpolation
+    "W0621",  # redefined-outer-name
+]
+
+[tool.pylint.typecheck]
+generated-members = ["REQUEST", "acl_users", "aq_parent", "objects", "DoesNotExist", "id", "pk", "_meta", "base_fields", "context"]
+ignored-classes = ["optparse.Values", "thread._local", "_thread._local", "argparse.Namespace", "WSGIRequest", "ModelBase"]
+
+[tool.pylint.design]
+max-args = 8
+max-attributes = 10
+min-public-methods = 1
+
+[tool.pylint.format]
+max-line-length = 88
