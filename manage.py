@@ -2,6 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import logging
 
 
 def main():
@@ -19,4 +20,7 @@ def main():
 
 
 if __name__ == '__main__':
+    # Initialize logger
+    logger = logging.getLogger(__name__)  # Use __name__ for the logger
+    logger.info("Application starting from manage.py...")  # Example log message
     main()
