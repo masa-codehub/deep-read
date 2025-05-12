@@ -264,3 +264,22 @@ QDRANT_COLLECTION_QA = "qa_pairs"         # Q&Aペア用コレクション名
 # ベクトルの次元数 - 環境変数から取得またはデフォルト値を使用
 # 一般的なTransformerベースのモデル（例：BERT）のサイズをデフォルトとして設定
 QDRANT_VECTOR_SIZE = int(os.environ.get('QDRANT_VECTOR_SIZE', 768))
+
+# ==============================================================================
+# Email Settings
+# (Base settings for production, overridden in development.py for dev)
+# ==============================================================================
+
+# 本番環境では 'django_ses.SESBackend' などを想定
+EMAIL_BACKEND = os.environ.get('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'email-smtp.us-east-1.amazonaws.com')  # 例: Amazon SES (us-east-1)
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+# SMTP認証が必要な場合 (Amazon SESの場合はIAMロールやEC2インスタンスプロファイルでの認証が推奨される場合もある)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # SES SMTP Username
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # SES SMTP Password
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@example.com')
+SERVER_EMAIL = os.environ.get('SERVER_EMAIL', DEFAULT_FROM_EMAIL)  # Djangoエラーメールの送信元
+ADMINS = [('Admin', os.environ.get('ADMIN_EMAIL', 'admin@localhost'))]  # エラーレポートの送信先 (環境変数で設定)
+MANAGERS = ADMINS

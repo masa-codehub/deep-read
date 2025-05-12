@@ -339,7 +339,12 @@ requirement_definition:
       FR-AUTH-002:
         description: 登録済みユーザはメールアドレスとパスワードでログインできること。
       FR-AUTH-003:
-        description: パスワード再設定機能を提供すること。
+        description: |
+          パスワード再設定機能を提供すること。
+          **実装状況：** 基盤となるメール送信機能 (TASK-INFRA-01) は完了。`app/settings/base.py`にメール送信設定を環境変数経由で設定可能とし、
+          `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_USE_SSL`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, 
+          `DEFAULT_FROM_EMAIL`, `SERVER_EMAIL`, `ADMINS` 等を設定。開発環境では`console.EmailBackend`を利用。
+          テストメール送信コマンド `sendtestemail` も実装済み。
     LEGAL:
       FR-LEGAL-001:
         description: |

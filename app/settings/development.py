@@ -70,3 +70,22 @@ LOGGING = {
         },
     },
 }
+
+# ==============================================================================
+# Email Settings (Development Override)
+# ==============================================================================
+
+# 開発環境ではコンソールにメール内容を出力する
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# 開発用のデフォルト送信元メールアドレス (任意)
+# DEFAULT_FROM_EMAIL = 'dev-noreply@example.com'
+
+# MailHogを使用する場合の例 (コメントアウト)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'localhost'  # MailHogがローカルで動作している場合
+# EMAIL_PORT = 1025
+# EMAIL_USE_TLS = False
+# EMAIL_USE_SSL = False
+# EMAIL_HOST_USER = '' # MailHogは通常認証不要
+# EMAIL_HOST_PASSWORD = '' # MailHogは通常認証不要
