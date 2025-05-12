@@ -587,3 +587,16 @@ requirement_definition:
       user_config: "**ユーザ毎設定（APIキー、パラメータ等）はDBで管理（ALE + 外部キー管理推奨）。**"
     budget_timeline: "(未定、別途定義が必要)"
     team_structure: "(未定、別途定義が必要)"
+  tasks:
+    - id: TASK-INFRA-04
+      type: infrastructure-task
+      title: "Docker環境へのPopplerインストールと`pdf2image`動作確認"
+      description: |
+        PDF2Imageライブラリが依存するPopplerをDocker環境にインストールし、正常に機能することを確認する。
+      acceptance_criteria:
+        - Dockerコンテナ内で`pdf2image`が正常に動作すること。
+      priority: low
+      status: completed
+      depends_on: []
+      blocks: [TASK-PDF-01]
+      epic: EPIC-PIPELINE
