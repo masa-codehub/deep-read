@@ -20,8 +20,46 @@ children:
     children:
       - name: __init__.py
         type: file
+      - name: __pycache__
+        type: directory
+      - name: adapters
+        type: directory
+        children:
+          - name: db
+            type: directory
+          - name: search
+            type: directory
+          - name: security
+            type: directory
       - name: asgi.py
         type: file
+      - name: celery.py
+        type: file
+      - name: core
+        type: directory
+        children:
+          - name: db
+            type: directory
+          - name: repositories.py
+            type: file
+          - name: security
+            type: directory
+          - name: usecases.py
+            type: file
+      - name: domain
+        type: directory
+        children:
+          - name: value_objects.py
+            type: file
+      - name: management
+        type: directory
+        children:
+          - name: commands
+            type: directory
+      - name: migrations
+        type: directory
+      - name: models
+        type: directory
       - name: settings
         type: directory
         children:
@@ -33,10 +71,23 @@ children:
             type: file
           - name: production.py
             type: file
-      - name: settings.py
+      - name: tasks.py
         type: file
+      - name: tests
+        type: directory
       - name: urls.py
         type: file
+      - name: usecases
+        type: directory
+        children:
+          - name: __init__.py
+            type: file
+          - name: login_user.py
+            type: file
+          - name: register_user.py
+            type: file
+          - name: user_settings.py
+            type: file
       - name: wsgi.py
         type: file
   - name: docs
@@ -52,21 +103,67 @@ children:
         type: file
       - name: issues.yml
         type: file
-      - name: requiremets.yml
+      - name: requirements.yml
         type: file
       - name: folder_structure.json
         type: file
       - name: folder_structure.yml
         type: file
+  - name: frontend
+    type: directory
+    children:
+      - name: .gitignore
+        type: file
+      - name: README.md
+        type: file
+      - name: eslint.config.js
+        type: file
+      - name: index.html
+        type: file
+      - name: node_modules
+        type: directory
+      - name: package-lock.json
+        type: file
+      - name: package.json
+        type: file
+      - name: public
+        type: directory
+      - name: src
+        type: directory
+      - name: tsconfig.app.json
+        type: file
+      - name: tsconfig.json
+        type: file
+      - name: tsconfig.node.json
+        type: file
+      - name: vite.config.ts
+        type: file
+  - name: htmlcov
+    type: directory
+  - name: tools
+    type: directory
+    children:
+      - name: compatibility_checks
+        type: directory
+  - name: .coverage
+    type: file
+  - name: .flake8
+    type: file
+  - name: .git
+    type: directory
   - name: .gitignore
     type: file
+  - name: .pylintrc
+    type: file
+  - name: .pytest_cache
+    type: directory
   - name: LICENSE
     type: file
   - name: README.md
     type: file
-  - name: manage.py
+  - name: db.sqlite3
     type: file
-  - name: poetry.lock
+  - name: manage.py
     type: file
   - name: pyproject.toml
     type: file
