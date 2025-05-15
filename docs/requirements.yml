@@ -360,6 +360,9 @@ requirement_definition:
           ユーザはローカルからPDFファイルをアップロードできること。
           ファイルサイズ上限、ページ数上限はユーザ毎のパラメータとして設定可能とすること
           （初期暫定値: 100MB, 100ページ）。
+          **実装状況：** PDFファイル選択ボタン、アップロードモーダル、ファイル選択・バリデーション、API通信サービス (`XMLHttpRequest` ベース、進捗コールバック付き) を実装済み。
+          バックエンドAPI未実装のため、Mock Service Worker (MSW) を導入し、フロントエンド単体での動作確認を実施。
+          CSRFトークンは現在metaタグからの取得を試みる形で実装済み（バックエンド連携時に要確認）。
       FR-UPLOAD-002:
         description: |
           アップロードされたPDFに対して、非同期でページ画像化とAIによる情報抽出処理を開始すること。
@@ -464,6 +467,7 @@ requirement_definition:
       api_key_management: "**外部APIキーはユーザ毎に設定・DBに保存。アプリケーションレベル暗号化(ALE)を採用し、SecurityGatewayインターフェースを通じた実装。暗号化方式はAES-GCM。現在は内部キー生成だが、将来的な外部KMS連携に対応した設計。**"
       vulnerability_mitigation: "OWASP Top 10等の対策、定期的な脆弱性診断検討。"
       content_security_policy: "**`django-csp`による Content Security Policy (CSP) を実装。本番環境では強制モード、開発環境では Report-Only モードを採用。開発環境では React 開発のため必要に応じて policy を緩和し、管理画面を CSP 対象外とする設定を追加。**"
+      csrf_protection: "**Django標準のCSRFミドルウェアに加え、フロントエンドのファイルアップロード処理 (`services/api.ts`) において、CSRFトークンをmetaタグから取得しリクエストヘッダーに含める形で対応済み。バックエンドAPIとの結合時に、Django側のCSRFトークン生成・検証メカニズムとの整合性を再確認する必要がある。**"
       security_headers: "**`SecurityMiddleware`による基本的なセキュリティヘッダー(X-Frame-Options、X-Content-Type-Options、Referrer-Policy等)を設定。Referrer-Policyは`strict-origin-when-cross-origin`に設定。**"
       future_auth_note: "将来的なOAuth等の認証方式追加を妨げない設計。"
     maintainability_extensibility: # Clean Architecture/DDD観点
@@ -498,6 +502,11 @@ requirement_definition:
   # 9. 受け入れ基準（Acceptance Criteria）
   # TDD観点：具体的なテストケース作成の基盤
   acceptance_criteria:
+    AC-UPLOAD-001-01: # 新規追加
+      description: |
+        ユーザがUIからPDFファイルを選択しアップロードを実行した際、Mock Service Worker (MSW) がリクエストをインターセプトし、
+        ファイル情報がコンソールに出力され、成功レスポンス (HTTP 200) が返却されること。
+        フロントエンドUI側では、このモックからの成功応答を受けて、「アップロード完了」および関連メッセージがモーダルに正しく表示されること。
     AC-UPLOAD-002-01:
       description: |
         ユーザが標準的なレイアウトの10ページのPDFをアップロードした場合、(目標時間内で)解析が完了し
