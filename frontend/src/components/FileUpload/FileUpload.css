@@ -1,0 +1,190 @@
+/* FileUpload.css - アップロード関連コンポーネントのスタイル */
+
+/* アップロードボタン */
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-button:hover {
+  background-color: #357abf;
+}
+
+.upload-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.upload-button:focus {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+/* アップロードエラー */
+.upload-error {
+  color: #d32f2f;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+/* モーダルオーバーレイ */
+.upload-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* モーダル本体 */
+.upload-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* モーダルヘッダー */
+.upload-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.upload-modal-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.upload-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.upload-modal-close:hover {
+  color: #666;
+}
+
+/* モーダル本文 */
+.upload-modal-body {
+  padding: 24px;
+}
+
+.upload-filename {
+  font-weight: 500;
+  margin-bottom: 16px;
+  word-break: break-word;
+}
+
+/* プログレスバー */
+.upload-progress-container {
+  height: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s;
+}
+
+.upload-progress-text {
+  display: block;
+  text-align: center;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* メッセージ */
+.upload-message {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.upload-error-message {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* モーダルフッター */
+.upload-modal-footer {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #eee;
+}
+
+.upload-modal-button {
+  padding: 8px 16px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.upload-modal-button:hover {
+  background-color: #357abf;
+}
+
+/* アップロード開始ボタン */
+.upload-start-container {
+  padding: 0 24px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-start-button {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-start-button:hover {
+  background-color: #388e3c;
+}

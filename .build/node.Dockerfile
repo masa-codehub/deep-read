@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 3000
 
 # 開発サーバーを起動するコマンド (例)
-# CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]

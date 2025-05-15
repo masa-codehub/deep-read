@@ -1,0 +1,40 @@
+/* LibraryView.css - ライブラリ画面のスタイル */
+
+.library-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.library-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+}
+
+.library-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.library-content {
+  min-height: 400px;
+}
+
+.library-documents {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  text-align: center;
+  color: #666;
+}
