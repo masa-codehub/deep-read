@@ -59,6 +59,33 @@ export const handlers = [
     );
     */
   }),
+
+  // ドキュメント一覧取得APIのモック
+  http.get('/api/library/documents', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+    const offset = (page - 1) * limit;
+
+    const mockDocuments = Array.from({ length: 25 }, (_, i) => ({
+      id: `doc${i + 1}`,
+      title: `サンプルドキュメント ${i + 1}`,
+      fileName: `sample_document_${i + 1}.pdf`,
+      updatedAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
+      status: ['Ready', 'Processing', 'Error'][Math.floor(Math.random() * 3)] as 'Ready' | 'Processing' | 'Error',
+      thumbnailUrl: `https://via.placeholder.com/150/0000FF/808080?Text=Doc${i + 1}`
+    }));
+
+    const paginatedDocuments = mockDocuments.slice(offset, offset + limit);
+
+    return HttpResponse.json({
+      documents: paginatedDocuments,
+      totalCount: mockDocuments.length,
+      currentPage: page,
+      pageSize: limit,
+      totalPages: Math.ceil(mockDocuments.length / limit),
+    });
+  }),
   
   // 他のAPIエンドポイントのモックもここに追加できます
 ];

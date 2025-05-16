@@ -135,3 +135,31 @@ export const uploadPDFFile = async (
     xhr.send(formData);
   });
 };
+
+export interface Document {
+  id: string;
+  title: string;
+  fileName: string;
+  updatedAt: string;
+  status: 'Ready' | 'Processing' | 'Error';
+  thumbnailUrl?: string;
+}
+
+export interface PaginatedDocumentsResponse {
+  documents: Document[];
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export const getLibraryDocuments = async (
+  page: number = 1,
+  limit: number = 10
+): Promise<PaginatedDocumentsResponse> => {
+  const response = await fetch(`/api/library/documents?page=${page}&limit=${limit}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch library documents');
+  }
+  return response.json() as Promise<PaginatedDocumentsResponse>;
+};

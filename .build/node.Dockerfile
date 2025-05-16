@@ -21,5 +21,5 @@ COPY . .
 # React開発サーバーが使うポートを開放 (例: Create React App や Vite のデフォルト)
 EXPOSE 3000
 
-# 開発サーバーを起動するコマンド (例)
-CMD ["npm", "run", "dev"]
+# # 開発サーバーを起動するコマンド (例)
+# CMD ["npm", "run", "dev"]
