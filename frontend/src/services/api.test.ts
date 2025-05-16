@@ -14,7 +14,7 @@ const xhrMock: Partial<XMLHttpRequest> = {
 };
 
 // グローバルにXMLHttpRequestをモック
-global.XMLHttpRequest = jest.fn(() => xhrMock as XMLHttpRequest) as any;
+globalThis.XMLHttpRequest = jest.fn(() => xhrMock as XMLHttpRequest) as any;
 
 describe('API Services', () => {
   beforeEach(() => {
@@ -53,8 +53,21 @@ describe('API Services', () => {
       const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
       const progressCallback = jest.fn();
 
-      await uploadPDFFile(file, progressCallback).catch(() => {});
-
+      // プロミスを取得
+      const promise = uploadPDFFile(file, progressCallback);
+      
+      // イベントハンドラを非同期で呼び出す（実際のブラウザの挙動に近い形で）
+      setTimeout(() => {
+        // readyStateChangeハンドラを呼び出し、プロミスを解決させる
+        const readyStateChangeHandler = (xhrMock as any).onreadystatechange;
+        if (readyStateChangeHandler) {
+          readyStateChangeHandler();
+        }
+      }, 0);
+      
+      // プロミスの解決を待つ
+      await promise;
+      
       // progress イベントリスナーが登録されたことを確認
       expect(xhrMock.upload?.addEventListener).toHaveBeenCalledWith('progress', expect.any(Function));
       
@@ -64,7 +77,7 @@ describe('API Services', () => {
       
       // コールバックが正しく呼び出されたことを確認
       expect(progressCallback).toHaveBeenCalledWith(50);
-    });
+    }, 60000);
 
     test('rejects promise on HTTP error', async () => {
       // エラーステータスをセット

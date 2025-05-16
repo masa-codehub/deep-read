@@ -31,7 +31,10 @@ describe('FileUploadModal', () => {
     
     expect(screen.getByText('ファイルアップロード')).toBeInTheDocument();
     expect(screen.getByText('test.pdf')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /閉じる/i })).toBeInTheDocument();
+    
+    // data-testidを使用してフッターの閉じるボタンを直接選択
+    const footerCloseButton = screen.getByTestId('footer-close-button');
+    expect(footerCloseButton).toBeInTheDocument();
   });
 
   // アップロード中の状態が正しく表示されることをテスト
@@ -55,8 +58,12 @@ describe('FileUploadModal', () => {
     
     expect(screen.getByText('45%')).toBeInTheDocument();
     
-    // アップロード中は閉じるボタンが表示されないことを確認
-    expect(screen.queryByRole('button', { name: /閉じる/i })).not.toBeInTheDocument();
+    // アップロード中はフッターの閉じるボタンが表示されないことを確認
+    const headerCloseButton = screen.getByTestId('header-close-button');
+    expect(headerCloseButton).toBeInTheDocument();
+    expect(headerCloseButton).toBeDisabled();
+    // フッターの閉じるボタンは存在しないはず
+    expect(screen.queryByTestId('footer-close-button')).not.toBeInTheDocument();
   });
 
   // 成功状態が正しく表示されることをテスト
@@ -75,7 +82,10 @@ describe('FileUploadModal', () => {
     expect(screen.getByText('アップロード完了')).toBeInTheDocument();
     expect(screen.getByText('success.pdf')).toBeInTheDocument();
     expect(screen.getByText('ファイルのアップロードに成功しました。解析処理を開始します。')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /閉じる/i })).toBeInTheDocument();
+    
+    // data-testidを使用して成功時のフッターの閉じるボタンを直接選択
+    const footerCloseButton = screen.getByTestId('footer-close-button');
+    expect(footerCloseButton).toBeInTheDocument();
   });
 
   // エラー状態が正しく表示されることをテスト
@@ -98,7 +108,9 @@ describe('FileUploadModal', () => {
     expect(errorMessage).toBeInTheDocument();
     expect(errorMessage.className).toContain('upload-error-message');
     
-    expect(screen.getByRole('button', { name: /閉じる/i })).toBeInTheDocument();
+    // data-testidを使用してエラー時のフッターの閉じるボタンを直接選択
+    const footerCloseButton = screen.getByTestId('footer-close-button');
+    expect(footerCloseButton).toBeInTheDocument();
   });
 
   // 閉じるボタンをクリックするとonCloseが呼ばれることをテスト
@@ -114,7 +126,9 @@ describe('FileUploadModal', () => {
       />
     );
     
-    fireEvent.click(screen.getByRole('button', { name: /閉じる/i }));
+    // data-testidを使用してフッターの閉じるボタンを直接選択してクリック
+    const footerCloseButton = screen.getByTestId('footer-close-button');
+    fireEvent.click(footerCloseButton);
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 });

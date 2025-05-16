@@ -54,6 +54,7 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
             onClick={onClose}
             aria-label="閉じる"
             disabled={status === 'uploading'}
+            data-testid="header-close-button"
           >
             ×
           </button>
@@ -96,6 +97,7 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
             <button 
               className="upload-modal-button" 
               onClick={onClose}
+              data-testid="footer-close-button"
             >
               閉じる
             </button>
