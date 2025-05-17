@@ -39,10 +39,10 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="upload-modal-overlay" role="dialog" aria-labelledby="upload-modal-title">
+    <div className="upload-modal-overlay" role="dialog" aria-labelledby="upload-modal-title" data-testid="upload-modal">
       <div className="upload-modal">
         <div className="upload-modal-header">
-          <h2 id="upload-modal-title">
+          <h2 id="upload-modal-title" data-testid="upload-modal-title">
             {status === 'idle' && 'ファイルアップロード'}
             {status === 'uploading' && 'アップロード中...'}
             {status === 'success' && 'アップロード完了'}
@@ -60,11 +60,11 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
           </button>
         </div>
         
-        <div className="upload-modal-body">
-          {fileName && <p className="upload-filename">{fileName}</p>}
+        <div className="upload-modal-body" data-testid="upload-modal-body">
+          {fileName && <p className="upload-filename" data-testid="upload-filename">{fileName}</p>}
           
           {status === 'uploading' && (
-            <div className="upload-progress-container">
+            <div className="upload-progress-container" data-testid="upload-progress-container">
               <div 
                 className="upload-progress-bar" 
                 style={{ width: `${progress}%` }} 
@@ -72,13 +72,17 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
                 aria-valuenow={progress}
                 aria-valuemin={0}
                 aria-valuemax={100}
+                data-testid="upload-progress-bar"
               />
-              <span className="upload-progress-text">{progress.toFixed(0)}%</span>
+              <span className="upload-progress-text" data-testid="upload-progress-text">{progress.toFixed(0)}%</span>
             </div>
           )}
           
           {message && (
-            <p className={`upload-message ${status === 'error' ? 'upload-error-message' : ''}`}>
+            <p 
+              className={`upload-message ${status === 'error' ? 'upload-error-message' : ''}`}
+              data-testid={status === 'error' ? 'upload-error-message' : 'upload-message'}
+            >
               {message}
             </p>
           )}
@@ -89,6 +93,7 @@ const FileUploadModal: React.FC<FileUploadModalProps> = ({
             <button 
               className="upload-modal-button upload-start-button"
               onClick={onUploadStart}
+              data-testid="upload-start-button"
             >
               アップロード開始
             </button>

@@ -78,3 +78,25 @@
   background-color: #fce8e6;
   color: #c5221f;
 }
+
+.progress-indicator {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #185abc;
+}
+
+.item-progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #e8f0fe;
+  border-radius: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.item-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4285f4 0%, #8ab4f8 100%);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}

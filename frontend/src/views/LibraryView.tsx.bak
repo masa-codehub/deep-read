@@ -1,0 +1,229 @@
+import React, { useEffect } from 'react';
+import UploadButton from '../components/FileUpload/UploadButton';
+import FileUploadModal from '../components/FileUpload/FileUploadModal';
+import DocumentList from '../components/DocumentList/DocumentList';
+import useDocumentLibrary from '../hooks/useDocumentLibrary';
+import useFileUpload from '../hooks/useFileUpload';
+import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling';
+import './LibraryView.css';
+
+/**
+ * ライブラリ画面コンポーネント
+ * PDFアップロード機能を含む
+ */
+const LibraryView: React.FC = () => {
+  // カスタムフックを使用してドキュメント一覧機能を統合
+  const {
+    documents,
+    isLoading,
+    error,
+    viewMode,
+    setViewMode,
+    retryFetchDocuments,
+    refreshDocuments
+  } = useDocumentLibrary();
+
+  // カスタムフックを使用してファイルアップロード機能を統合
+  const {
+    selectedFile,
+    isModalOpen,
+    uploadStatus,
+    uploadProgress,
+    resultMessage,
+    handleFileSelect,
+    handleUploadStart,
+    handleModalClose
+  } = useFileUpload();
+
+  // ファイル選択時の処理
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
+    setIsModalOpen(true);
+    setUploadStatus('idle');
+    setResultMessage('');
+  };
+
+  // ファイルアップロード処理の開始
+  const handleUploadStart = async () => {
+    if (!selectedFile) {
+      setResultMessage('アップロードするファイルが選択されていません。');
+      setUploadStatus('error');
+      return;
+    }
+
+    try {
+      // アップロード中の状態に更新
+      setUploadStatus('uploading');
+      setUploadProgress(0);
+
+      // APIを呼び出してファイルをアップロード
+      const response = await uploadPDFFile(selectedFile, (progress) => {
+        setUploadProgress(progress);
+      });
+
+      // 成功したら成功メッセージを表示
+      setUploadStatus('success');
+      setResultMessage(response.message || 'ファイルのアップロードに成功しました。解析処理を開始します。');
+
+      // 成功後の状態リセット（必要に応じて）
+      setSelectedFile(null);
+      
+    } catch (error) {
+      // エラーの場合はエラーメッセージを表示
+      setUploadStatus('error');
+      setResultMessage(error instanceof Error ? error.message : '不明なエラーが発生しました。');
+    }
+  };
+
+  // モーダルを閉じる処理
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    
+    // アップロード中でなければモーダルのステートをリセット
+    if (uploadStatus !== 'uploading') {
+      setUploadProgress(0);
+      setResultMessage('');
+    }
+  };
+
+  // ドキュメントのステータスをポーリングして更新
+  useEffect(() => {
+    if (!documents.length) return;
+    // ポーリング間隔（ms）
+    const interval = process.env.NODE_ENV === 'test' ? 1000 : 4000; // テスト環境では短い間隔に
+    // ポーリング対象: statusがProcessingのドキュメントID
+    const processingIds = documents.filter(doc => doc.status === 'Processing').map(doc => doc.id);
+    if (processingIds.length === 0) return;
+    
+    let timer: ReturnType<typeof setTimeout>;
+    let mounted = true;
+    
+    // ステータス更新関数
+    const updateDocumentStatus = async () => {
+      if (!mounted) return;
+      
+      // 各Processingドキュメントの最新ステータス取得
+      for (const id of processingIds) {
+        try {
+          const update = await getDocumentStatus(id);
+          
+          if (!mounted) return;
+          
+          if (update) {
+            setDocuments(prevDocs => prevDocs.map(doc => {
+              if (doc.id === update.id) {
+                // バグ修正: update.statusがundefinedの場合は更新しない
+                const newDoc = { ...doc };
+                if (update.status !== undefined) newDoc.status = update.status;
+                if (update.progress !== undefined) newDoc.progress = update.progress;
+                return newDoc;
+              }
+              return doc;
+            }));
+          }
+        } catch (error) {
+          console.error(`ドキュメント ${id} の更新中にエラーが発生しました:`, error);
+        }
+      }
+      
+      // 更新後に処理中ドキュメントがまだ存在すれば次回の更新をスケジュール
+      if (mounted) {
+        timer = setTimeout(updateDocumentStatus, interval);
+      }
+    };
+
+    // 最初の更新を遅延なく実行
+    updateDocumentStatus();
+    
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, [documents]);
+
+  // アップロード成功時は一覧を再取得
+  useEffect(() => {
+    if (uploadStatus === 'success') {
+      getLibraryDocuments().then(res => setDocuments(res.documents));
+    }
+  }, [uploadStatus]);
+
+  return (
+    <div className="library-view" data-testid="library-view-container">
+      <header className="library-header">
+        <h1>ライブラリ</h1>
+        <div className="library-actions">
+          <UploadButton 
+            onFileSelect={handleFileSelect} 
+            disabled={uploadStatus === 'uploading'} 
+          />
+        </div>
+      </header>
+
+      <main className="library-content">
+        {/* ライブラリのコンテンツ（ドキュメント一覧など）をここに表示 */}
+        <div className="view-mode-toggle">
+          <button
+            onClick={() => setViewMode('list')}
+            disabled={viewMode === 'list'}
+            data-testid="list-view-button"
+          >
+            リスト表示
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            disabled={viewMode === 'grid'}
+            data-testid="grid-view-button"
+          >
+            グリッド表示
+          </button>
+        </div>
+        <div className="library-documents" data-testid="document-container">
+          {isLoading && <p className="loading-message" data-testid="loading-message">読み込み中...</p>}
+          {error && (
+            <div className="error-container" data-testid="error-container">
+              <p className="error-message">ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。</p>
+              <p className="error-details">{error}</p>
+              <button 
+                className="retry-button"
+                data-testid="retry-button"
+                onClick={() => {
+                  setIsLoading(true);
+                  setError(null);
+                  // 再度APIを呼び出す
+                  getLibraryDocuments()
+                    .then(response => {
+                      setDocuments(response.documents);
+                      setIsLoading(false);
+                    })
+                    .catch(err => {
+                      setError(err instanceof Error ? err.message : '不明なエラーが発生しました。');
+                      setIsLoading(false);
+                    });
+                }}
+              >
+                再試行
+              </button>
+            </div>
+          )}
+          {!isLoading && !error && (
+            <DocumentList documents={documents} viewMode={viewMode} />
+          )}
+        </div>
+      </main>
+
+      {/* ファイルアップロードモーダル */}
+      <FileUploadModal 
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        status={uploadStatus}
+        progress={uploadProgress}
+        fileName={selectedFile?.name}
+        message={resultMessage}
+        onUploadStart={handleUploadStart}
+      />
+    </div>
+  );
+};
+
+export default LibraryView;
