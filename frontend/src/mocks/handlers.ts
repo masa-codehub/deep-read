@@ -4,6 +4,10 @@ import { http, HttpResponse } from 'msw';
  * APIリクエストのモックハンドラ
  * 開発環境でのテスト用
  */
+
+// ドキュメントごとの状態を保持（テスト・デモ用）
+const documentStatuses: Record<string, { status: 'Processing' | 'Ready' | 'Error', progress: number, step: number }> = {};
+
 export const handlers = [
   // PDFアップロードAPIのモック
   http.post('/api/documents/upload/', async ({ request }) => {
@@ -15,11 +19,14 @@ export const handlers = [
     }
 
     // 成功シナリオ (200 OK)
+    const newDocId = 'mock-doc-' + Math.floor(Math.random() * 1000);
+    // アップロード直後は「処理中」ステータスで初期化
+    documentStatuses[newDocId] = { status: 'Processing', progress: 0, step: 0 };
     return HttpResponse.json(
       {
         success: true,
         message: 'モック: ファイルのアップロードに成功しました。解析処理を開始します。',
-        documentId: 'mock-doc-' + Math.floor(Math.random() * 1000),
+        documentId: newDocId,
       },
       { status: 200 }
     );
@@ -67,14 +74,26 @@ export const handlers = [
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
     const offset = (page - 1) * limit;
 
-    const mockDocuments = Array.from({ length: 25 }, (_, i) => ({
-      id: `doc${i + 1}`,
-      title: `サンプルドキュメント ${i + 1}`,
-      fileName: `sample_document_${i + 1}.pdf`,
-      updatedAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
-      status: ['Ready', 'Processing', 'Error'][Math.floor(Math.random() * 3)] as 'Ready' | 'Processing' | 'Error',
-      thumbnailUrl: `https://via.placeholder.com/150/0000FF/808080?Text=Doc${i + 1}`
-    }));
+    const mockDocuments = Array.from({ length: 25 }, (_, i) => {
+      const id = `doc${i + 1}`;
+      // 初回アクセス時はランダムな状態で初期化
+      if (!documentStatuses[id]) {
+        const status = ['Ready', 'Processing', 'Error'][Math.floor(Math.random() * 3)] as 'Ready' | 'Processing' | 'Error';
+        documentStatuses[id] = {
+          status,
+          progress: status === 'Processing' ? Math.floor(Math.random() * 80) : 100,
+          step: status === 'Processing' ? Math.floor(Math.random() * 4) : 5,
+        };
+      }
+      return {
+        id,
+        title: `サンプルドキュメント ${i + 1}`,
+        fileName: `sample_document_${i + 1}.pdf`,
+        updatedAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
+        thumbnailUrl: `https://via.placeholder.com/150/0000FF/808080?Text=Doc${i + 1}`,
+        ...documentStatuses[id],
+      };
+    });
 
     const paginatedDocuments = mockDocuments.slice(offset, offset + limit);
 
@@ -87,5 +106,25 @@ export const handlers = [
     });
   }),
   
+  // ドキュメントごとのステータス取得API（ポーリング用）
+  http.get('/api/documents/:documentId/status', ({ params }) => {
+    const { documentId } = params;
+    if (typeof documentId !== 'string' || !documentStatuses[documentId]) {
+      return new HttpResponse(null, { status: 404 });
+    }
+    const current = documentStatuses[documentId];
+    // ステータス進行ロジック
+    if (current.status === 'Processing') {
+      current.step += 1;
+      current.progress = Math.min(current.step * 20, 100); // 5ステップで完了
+      if (current.step >= 5) {
+        // ランダムで成功かエラーか
+        current.status = Math.random() > 0.3 ? 'Ready' : 'Error';
+        current.progress = 100;
+      }
+    }
+    return HttpResponse.json({ id: documentId, status: current.status, progress: current.progress });
+  }),
+
   // 他のAPIエンドポイントのモックもここに追加できます
 ];

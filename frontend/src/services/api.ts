@@ -142,6 +142,7 @@ export interface Document {
   fileName: string;
   updatedAt: string;
   status: 'Ready' | 'Processing' | 'Error';
+  progress?: number; // 進捗（0-100, Processing時のみ）
   thumbnailUrl?: string;
 }
 
@@ -162,4 +163,19 @@ export const getLibraryDocuments = async (
     throw new Error('Failed to fetch library documents');
   }
   return response.json() as Promise<PaginatedDocumentsResponse>;
+};
+
+/**
+ * ドキュメントの最新ステータス・進捗を取得するAPI
+ * @param documentId
+ * @returns {Promise<{id: string, status: 'Ready' | 'Processing' | 'Error', progress: number}>}
+ */
+export const getDocumentStatus = async (
+  documentId: string
+): Promise<{ id: string; status: 'Ready' | 'Processing' | 'Error'; progress: number }> => {
+  const response = await fetch(`/api/documents/${documentId}/status`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch document status');
+  }
+  return response.json();
 };

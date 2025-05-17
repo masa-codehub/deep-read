@@ -71,12 +71,13 @@ const UploadButton: React.FC<UploadButtonProps> = ({
   };
 
   return (
-    <div>
+    <div data-testid="upload-button-container">
       <button 
         onClick={handleClick}
         disabled={disabled}
         className={`upload-button ${className}`}
         aria-label="PDFファイルをアップロード"
+        data-testid="pdf-upload-button"
       >
         PDFをアップロード
       </button>
@@ -89,10 +90,11 @@ const UploadButton: React.FC<UploadButtonProps> = ({
         accept=".pdf"
         style={{ display: 'none' }}
         aria-hidden="true"
+        data-testid="file-input"
       />
       
       {/* エラーメッセージの表示 */}
-      {error && <p className="upload-error" role="alert">{error}</p>}
+      {error && <p className="upload-error" role="alert" data-testid="upload-error">{error}</p>}
     </div>
   );
 };
