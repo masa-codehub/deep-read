@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import DocumentList from './DocumentList';
-import { Document } from '../../../../infrastructure/services/api';
+import { Document } from '../../../../types/document';
 
 describe('DocumentList', () => {
   const mockDocuments: Document[] = [
@@ -9,7 +9,7 @@ describe('DocumentList', () => {
       title: 'Document 1',
       fileName: 'document_1.pdf',
       updatedAt: new Date().toISOString(),
-      status: 'Ready',
+      status: 'READY',
       thumbnailUrl: 'https://via.placeholder.com/150',
     },
     {
@@ -17,7 +17,7 @@ describe('DocumentList', () => {
       title: 'Document 2',
       fileName: 'document_2.pdf',
       updatedAt: new Date().toISOString(),
-      status: 'Processing',
+      status: 'PROCESSING',
       thumbnailUrl: 'https://via.placeholder.com/150',
     },
   ];

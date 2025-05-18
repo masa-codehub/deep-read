@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw';
+import type { ProcessingStatus } from '../types/document';
 
 /**
  * APIリクエストのモックハンドラ
@@ -6,7 +7,9 @@ import { http, HttpResponse } from 'msw';
  */
 
 // ドキュメントごとの状態を保持（テスト・デモ用）
-const documentStatuses: Record<string, { status: 'Processing' | 'Ready' | 'Error', progress: number, step: number }> = {};
+const documentStatuses: Record<string, { status: ProcessingStatus; progress: number; step: number }> = {};
+
+const ALL_STATUSES: ProcessingStatus[] = ['READY', 'PROCESSING', 'ERROR'];
 
 export const handlers = [
   // PDFアップロードAPIのモック
@@ -17,11 +20,9 @@ export const handlers = [
     if (file instanceof File) {
       console.log('Mock API: Received file -', file.name, file.size, file.type);
     }
-
-    // 成功シナリオ (200 OK)
+    // 常に成功シナリオのみ返す（エラーはテスト側でserver.use()で上書き）
     const newDocId = 'mock-doc-' + Math.floor(Math.random() * 1000);
-    // アップロード直後は「処理中」ステータスで初期化
-    documentStatuses[newDocId] = { status: 'Processing', progress: 0, step: 0 };
+    documentStatuses[newDocId] = { status: 'PROCESSING', progress: 0, step: 0 };
     return HttpResponse.json(
       {
         success: true,
@@ -30,41 +31,6 @@ export const handlers = [
       },
       { status: 200 }
     );
-    
-    // 以下は必要に応じてコメントアウトを外して使用
-    
-    /*
-    // ファイルサイズ超過エラーシナリオ (413 Payload Too Large)
-    return HttpResponse.json(
-      {
-        success: false,
-        error: 'モック: ファイルサイズが上限を超えています。 (最大100MB)',
-      },
-      { status: 413 }
-    );
-    */
-    
-    /*
-    // サーバーエラーシナリオ (500 Internal Server Error)
-    return HttpResponse.json(
-      {
-        success: false,
-        error: 'モック: アップロード中にサーバーエラーが発生しました。',
-      },
-      { status: 500 }
-    );
-    */
-    
-    /*
-    // CSRFエラーシナリオ (403 Forbidden)
-    return HttpResponse.json(
-      {
-        success: false,
-        error: 'モック: CSRF検証に失敗しました。',
-      },
-      { status: 403 }
-    );
-    */
   }),
 
   // ドキュメント一覧取得APIのモック
@@ -78,11 +44,11 @@ export const handlers = [
       const id = `doc${i + 1}`;
       // 初回アクセス時はランダムな状態で初期化
       if (!documentStatuses[id]) {
-        const status = ['Ready', 'Processing', 'Error'][Math.floor(Math.random() * 3)] as 'Ready' | 'Processing' | 'Error';
+        const status = ALL_STATUSES[Math.floor(Math.random() * ALL_STATUSES.length)];
         documentStatuses[id] = {
           status,
-          progress: status === 'Processing' ? Math.floor(Math.random() * 80) : 100,
-          step: status === 'Processing' ? Math.floor(Math.random() * 4) : 5,
+          progress: status === 'PROCESSING' ? Math.floor(Math.random() * 80) : 100,
+          step: status === 'PROCESSING' ? Math.floor(Math.random() * 4) : 5,
         };
       }
       return {
@@ -114,17 +80,62 @@ export const handlers = [
     }
     const current = documentStatuses[documentId];
     // ステータス進行ロジック
-    if (current.status === 'Processing') {
+    if (current.status === 'PROCESSING') {
       current.step += 1;
       current.progress = Math.min(current.step * 20, 100); // 5ステップで完了
       if (current.step >= 5) {
         // ランダムで成功かエラーか
-        current.status = Math.random() > 0.3 ? 'Ready' : 'Error';
+        current.status = Math.random() > 0.3 ? 'READY' : 'ERROR';
         current.progress = 100;
       }
     }
     return HttpResponse.json({ id: documentId, status: current.status, progress: current.progress });
   }),
 
-  // 他のAPIエンドポイントのモックもここに追加できます
+  // --- ここから追加 ---
+  // doc1, doc2, doc3 の初期状態を明示的にセット
+  http.get('http://localhost/api/documents/statuses', ({ request }) => {
+    const url = new URL(request.url);
+    const idsQueryParam = url.searchParams.get('ids');
+    if (!idsQueryParam) {
+      return HttpResponse.json([], { status: 200 });
+    }
+    const requestedIds = idsQueryParam.split(',');
+    const statuses = requestedIds.map(id => {
+      const doc = documentStatuses[id];
+      if (!doc) return undefined;
+      return {
+        id,
+        status: doc.status,
+        progress: doc.progress,
+        title: `サンプルドキュメント ${id.replace(/\D/g, '')}`,
+        fileName: `${id}.pdf`,
+        uploaded_at: new Date().toISOString(),
+      };
+    }).filter(Boolean);
+    return HttpResponse.json(statuses, { status: 200 });
+  }),
+  // --- ここまで追加 ---
 ];
+
+// doc1の進捗を2秒ごとに10%ずつ進め、100%でReadyにする
+setInterval(() => {
+  const doc = documentStatuses['doc1'];
+  if (doc && doc.status === 'PROCESSING') {
+    doc.progress = Math.min(doc.progress + 10, 100);
+    if (doc.progress === 100) {
+      doc.status = 'READY';
+    }
+  }
+}, 2000);
+
+// 初期状態を明示的にセット
+if (!documentStatuses['doc1']) {
+  documentStatuses['doc1'] = { status: 'PROCESSING', progress: 0, step: 0 };
+}
+if (!documentStatuses['doc2']) {
+  documentStatuses['doc2'] = { status: 'READY', progress: 100, step: 5 };
+}
+if (!documentStatuses['doc3']) {
+  documentStatuses['doc3'] = { status: 'ERROR', progress: 0, step: 0 };
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import FileUploadModal, { UploadStatus } from './FileUploadModal';
 
 describe('FileUploadModal', () => {
@@ -115,7 +116,7 @@ describe('FileUploadModal', () => {
 
   // 閉じるボタンをクリックするとonCloseが呼ばれることをテスト
   test('calls onClose when close button is clicked', () => {
-    const mockOnClose = jest.fn();
+    const mockOnClose = vi.fn();
     
     render(
       <FileUploadModal 

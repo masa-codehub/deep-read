@@ -1,10 +1,12 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { useFileUpload } from './useFileUpload';
 import { uploadPDFFile } from '../../infrastructure/services/api';
 
 // APIをモック化
-jest.mock('../../infrastructure/services/api');
-const mockUploadPDFFile = uploadPDFFile as jest.MockedFunction<typeof uploadPDFFile>;
+vi.mock('../../infrastructure/services/api');
+// uploadPDFFileの型をvi.fnの戻り値型でキャスト
+const mockUploadPDFFile = uploadPDFFile as unknown as ReturnType<typeof vi.fn>;
 
 // モックファイルオブジェクトを作成するヘルパー関数
 const createMockFile = (name: string, size: number, type: string) => {
@@ -16,7 +18,7 @@ const createMockFile = (name: string, size: number, type: string) => {
 describe('useFileUpload', () => {
   beforeEach(() => {
     // 各テストの前にモックをリセット
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     
     // デフォルトのモック実装
     mockUploadPDFFile.mockResolvedValue({
