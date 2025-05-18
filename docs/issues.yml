@@ -1365,7 +1365,7 @@ github_issues:
             * これらの対応により、Qdrantへの接続問題は解決し、関連テストが正常に実行されるようになりました。
 
         2.  **テストカバレッジの大幅な向上:**
-            * Qdrant接続問題の解決に伴い、これまでスキップされていた、あるいは不安定だったQdrant関連のテスト（特に `app/tests/adapters/search/test_qdrant_manager.py` および `app/tests/adapters/search/test_apps.py` の関連部分）が安定して実行できるようになり、カバレッジ向上に貢献しました。
+            * Qdrant接続問題の解決により、これまでスキップされていた、あるいは不安定だったQdrant関連のテスト（特に `app/tests/adapters/search/test_qdrant_manager.py` および `app/tests/adapters/search/test_apps.py` の関連部分）が安定して実行できるようになり、カバレッジ向上に貢献しました。
             * プロジェクト全体のテストカバレッジは **94.73%** に達し、目標の80%を大きく上回りました。
             * `app/adapters/search/qdrant_manager.py` は94%、`app/tasks.py` は100%、`app/urls.py` は100%のカバレッジを達成するなど、多くのモジュールでテストが拡充されました。
 
