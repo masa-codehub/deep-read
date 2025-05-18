@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document } from '../../services/api';
+import { Document } from '../../../../infrastructure/services/api';
 import './DocumentListItem.css';
 
 interface DocumentListItemProps {

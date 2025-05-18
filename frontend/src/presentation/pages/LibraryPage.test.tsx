@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import LibraryView from './LibraryView';
-import { Document } from '../services/api';
+import LibraryPage from './LibraryPage';
+import { Document } from '../../infrastructure/services/api';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
 import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling';
@@ -46,7 +46,7 @@ const mockDocuments: Document[] = [
   },
 ];
 
-describe('LibraryView', () => {
+describe('LibraryPage', () => {
   beforeEach(() => {
     // 各テストの前にモックをリセット
     jest.clearAllMocks();
@@ -92,7 +92,7 @@ describe('LibraryView', () => {
 
   // 基本的なUIが正しくレンダリングされることをテスト
   test('renders library view with upload button', () => {
-    render(<LibraryView />);
+    render(<LibraryPage />);
     expect(screen.getByText('ライブラリ')).toBeInTheDocument();
     expect(screen.getByTestId('pdf-upload-button')).toBeInTheDocument();
   });
@@ -105,7 +105,7 @@ describe('LibraryView', () => {
       lastPolledAt: new Date()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // ドキュメントタイトルが表示されるのを待つ
     await waitFor(() => {
@@ -142,7 +142,7 @@ describe('LibraryView', () => {
       updateDocumentProperty: jest.fn()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // ローディングメッセージが表示されることを確認
     expect(screen.getByTestId('loading-message')).toBeInTheDocument();
@@ -174,7 +174,7 @@ describe('LibraryView', () => {
       updateDocumentProperty: jest.fn()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // エラーメッセージが表示されることを確認
     const errorContainer = screen.getByTestId('error-container');
@@ -212,7 +212,7 @@ describe('LibraryView', () => {
       resetUploadState: jest.fn()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // ファイルアップロードボタンがレンダリングされていることを確認
     const uploadButton = screen.getByTestId('pdf-upload-button');
@@ -248,7 +248,7 @@ describe('LibraryView', () => {
       resetUploadState: jest.fn()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // モーダルが表示されていることを確認
     const modal = screen.getByTestId('upload-modal');
@@ -274,7 +274,7 @@ describe('LibraryView', () => {
       resetUploadState: jest.fn()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // モーダルのタイトルがアップロード中になっていることを確認
     expect(screen.getByTestId('upload-modal-title')).toHaveTextContent('アップロード中...');
@@ -320,7 +320,7 @@ describe('LibraryView', () => {
       updateDocumentProperty: jest.fn()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // モーダルのタイトルが完了になっていることを確認
     expect(screen.getByTestId('upload-modal-title')).toHaveTextContent('アップロード完了');
@@ -355,7 +355,7 @@ describe('LibraryView', () => {
       updateDocumentProperty: jest.fn()
     });
     
-    render(<LibraryView />);
+    render(<LibraryPage />);
     
     // グリッド表示ボタンをクリック
     fireEvent.click(screen.getByTestId('grid-view-button'));

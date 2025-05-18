@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react';
-import UploadButton from '../components/FileUpload/UploadButton';
-import FileUploadModal from '../components/FileUpload/FileUploadModal';
-import DocumentList from '../components/DocumentList/DocumentList';
+import UploadButton from '../components/features/FileUpload/UploadButton';
+import FileUploadModal from '../components/features/FileUpload/FileUploadModal';
+import DocumentList from '../components/features/DocumentList/DocumentList';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
 import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling';
-import './LibraryView.css';
+import './LibraryPage.css';
 
 /**
  * ライブラリ画面コンポーネント
  * PDFアップロード機能を含む
  */
-const LibraryView: React.FC = () => {
+const LibraryPage: React.FC = () => {
   // カスタムフックを使用してドキュメント一覧機能を統合
   const {
     documents,
@@ -46,7 +46,7 @@ const LibraryView: React.FC = () => {
   }, [uploadStatus, refreshDocuments]);
 
   return (
-    <div className="library-view" data-testid="library-view-container">
+    <div className="library-page" data-testid="library-view-container">
       <header className="library-header">
         <h1>ライブラリ</h1>
         <div className="library-actions">
@@ -83,7 +83,7 @@ const LibraryView: React.FC = () => {
           {error && (
             <div className="error-container" data-testid="error-container">
               <p className="error-message">ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。</p>
-              <p className="error-details">{error}</p>
+              <p className="error-details" data-testid="error-details">{error}</p>
               <button 
                 className="retry-button"
                 data-testid="retry-button"
@@ -114,4 +114,4 @@ const LibraryView: React.FC = () => {
   );
 };
 
-export default LibraryView;
+export default LibraryPage;

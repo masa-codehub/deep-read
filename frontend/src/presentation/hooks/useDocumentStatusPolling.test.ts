@@ -1,12 +1,12 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import useDocumentStatusPolling from './useDocumentStatusPolling';
-import { getDocumentStatus, Document } from '../services/api';
+import { getDocumentStatus, Document } from '../../infrastructure/services/api';
 
 // テストのタイムアウト設定を増やす (ファイル全体に適用)
 jest.setTimeout(30000);
 
 // APIをモック化
-jest.mock('../services/api');
+jest.mock('../../infrastructure/services/api');
 const mockGetDocumentStatus = getDocumentStatus as jest.MockedFunction<typeof getDocumentStatus>;
 
 // テスト用のモックドキュメントを作成

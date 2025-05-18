@@ -1,9 +1,9 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useFileUpload } from './useFileUpload';
-import { uploadPDFFile } from '../services/api';
+import { uploadPDFFile } from '../../infrastructure/services/api';
 
 // APIをモック化
-jest.mock('../services/api');
+jest.mock('../../infrastructure/services/api');
 const mockUploadPDFFile = uploadPDFFile as jest.MockedFunction<typeof uploadPDFFile>;
 
 // モックファイルオブジェクトを作成するヘルパー関数

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Document, getDocumentStatus } from '../services/api';
+import { Document, getDocumentStatus } from '../../infrastructure/services/api';
 
 /**
  * 処理中のドキュメントのステータスをポーリングするカスタムフック
