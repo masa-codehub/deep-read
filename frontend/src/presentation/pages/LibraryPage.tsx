@@ -20,7 +20,8 @@ const LibraryPage: React.FC = () => {
     viewMode,
     setViewMode,
     retryFetchDocuments,
-    refreshDocuments
+    refreshDocuments,
+    updateDocuments // ← 追加
   } = useDocumentLibrary();
 
   // カスタムフックを使用してファイルアップロード機能を統合
@@ -36,7 +37,15 @@ const LibraryPage: React.FC = () => {
   } = useFileUpload();
 
   // ドキュメントステータスのポーリング処理を統合
-  const { documents: updatedDocuments } = useDocumentStatusPolling(documents);
+  const { documents: polledDocuments } = useDocumentStatusPolling(documents);
+
+  // ポーリングで取得したドキュメント一覧をuseDocumentLibraryの状態に反映
+  useEffect(() => {
+    if (polledDocuments && polledDocuments.length > 0) {
+      updateDocuments(polledDocuments);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [polledDocuments]);
 
   // アップロード成功時は一覧を再取得
   useEffect(() => {
@@ -95,7 +104,7 @@ const LibraryPage: React.FC = () => {
           )}
           
           {!isLoading && !error && (
-            <DocumentList documents={updatedDocuments || documents} viewMode={viewMode} />
+            <DocumentList documents={documents} viewMode={viewMode} />
           )}
         </div>
       </main>
