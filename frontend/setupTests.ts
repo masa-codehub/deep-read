@@ -1,26 +1,37 @@
 import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
+import fetch, { Response, Request, Headers } from 'node-fetch';
+import { vi, beforeAll, afterAll, afterEach } from 'vitest';
 
-// Jest環境でTextEncoderが未定義の場合にpolyfill
-import { TextEncoder } from 'util';
 if (typeof globalThis.TextEncoder === 'undefined') {
   globalThis.TextEncoder = TextEncoder;
+  // @ts-ignore
+  globalThis.TextDecoder = TextDecoder;
 }
-
-// Jest環境でResponse, Request, Headersが未定義の場合にpolyfill
-import fetch, { Response, Request, Headers } from 'node-fetch';
-if (typeof globalThis.Response === 'undefined') {
+if (typeof globalThis.fetch === 'undefined') {
+  // @ts-ignore
+  globalThis.fetch = fetch;
+  // @ts-ignore
   globalThis.Response = Response;
+  // @ts-ignore
   globalThis.Request = Request;
+  // @ts-ignore
   globalThis.Headers = Headers;
 }
-
-// MSWが必要とするBroadcastChannelのモック
 if (typeof globalThis.BroadcastChannel === 'undefined') {
   class MockBroadcastChannel {
     constructor(public readonly name: string) {}
     postMessage() {}
     onmessage() {}
     close() {}
+    addEventListener() {}
+    removeEventListener() {}
   }
   globalThis.BroadcastChannel = MockBroadcastChannel as any;
 }
+
+// MSWサーバのグローバルセットアップ
+import { server } from './src/mocks/server';
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterAll(() => server.close());
+afterEach(() => server.resetHandlers());

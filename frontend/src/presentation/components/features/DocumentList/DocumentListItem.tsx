@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document } from '../../../../infrastructure/services/api';
+import { Document } from '../../../../types/document';
 import './DocumentListItem.css';
 
 interface DocumentListItemProps {
@@ -11,9 +11,9 @@ interface DocumentListItemProps {
  * APIのステータス値と表示文字列の対応付け
  */
 const statusDisplayMap: Record<string, string> = {
-  'Ready': '準備完了',
-  'Processing': '処理中',
-  'Error': 'エラー'
+  'READY': '準備完了',
+  'PROCESSING': '処理中',
+  'ERROR': 'エラー'
 };
 
 const DocumentListItem: React.FC<DocumentListItemProps> = ({ document }) => {
@@ -27,7 +27,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({ document }) => {
         <p className="file-name">{fileName}</p>
         <p className="updated-at">{new Date(updatedAt).toLocaleString()}</p>
         {/* ステータス表示・進捗インジケータ */}
-        {status === 'Processing' ? (
+        {status === 'PROCESSING' ? (
           <div className="progress-indicator" data-testid={`progress-indicator-${document.id}`}>
             <p data-testid={`progress-text-${document.id}`}>
               {statusDisplayMap[status] || '処理中'}... {progress !== undefined ? `${progress.toFixed(0)}%` : '0%'}
@@ -40,6 +40,15 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({ document }) => {
               ></div>
             </div>
           </div>
+        ) : status === 'ERROR' ? (
+          <p 
+            className="status status-error"
+            data-testid={`status-${document.id}`}
+            style={{ color: 'red', display: 'flex', alignItems: 'center', gap: '0.5em' }}
+          >
+            <span role="img" aria-label="error" style={{ fontSize: '1.2em' }}>❌</span>
+            {statusDisplayMap[status] || status || 'エラー'}
+          </p>
         ) : (
           <p 
             className={`status status-${status ? status.toLowerCase() : 'default'}`}

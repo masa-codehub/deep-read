@@ -1,116 +1,62 @@
+import { describe, it, expect } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../mocks/server';
 import { uploadPDFFile } from './api';
 
-// XMLHttpRequestのモック
-const xhrMock: Partial<XMLHttpRequest> = {
-  open: jest.fn(),
-  send: jest.fn(),
-  setRequestHeader: jest.fn(),
-  readyState: 4,
-  status: 200,
-  responseText: JSON.stringify({ message: 'アップロード成功', documentId: 'doc123' }),
-  upload: {
-    addEventListener: jest.fn()
-  } as any
-};
-
-// グローバルにXMLHttpRequestをモック
-globalThis.XMLHttpRequest = jest.fn(() => xhrMock as XMLHttpRequest) as any;
-
 describe('API Services', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('uploadPDFFile', () => {
-    test('uploads file and resolves promise on success', async () => {
-      // モック処理をセットアップ
+    const endpoint = '/api/documents/upload/';
+
+    it('正常にファイルがアップロードされ、成功レスポンスを解決すること', async () => {
+      const mockSuccessResponse = { success: true, message: 'アップロード成功(MSW)', documentId: 'msw-doc-id-123' };
+      server.use(
+        http.post(endpoint, async () => {
+          return HttpResponse.json(mockSuccessResponse, { status: 200 });
+        })
+      );
+
       const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
-      const progressCallback = jest.fn();
+      const result = await uploadPDFFile(file);
 
-      // リクエスト完了イベントをシミュレーション
-      const promise = uploadPDFFile(file, progressCallback);
-      
-      // onreadystatechangeハンドラを手動で呼び出し
-      const readyStateChangeHandler = (xhrMock as any).onreadystatechange;
-      if (readyStateChangeHandler) {
-        readyStateChangeHandler();
-      }
-
-      // レスポンスを確認
-      const result = await promise;
-      expect(result).toEqual({
-        success: true,
-        message: 'アップロード成功',
-        documentId: 'doc123'
-      });
-
-      // APIのパラメータと設定を確認
-      expect(xhrMock.open).toHaveBeenCalledWith('POST', '/api/documents/upload/', true);
-      expect(xhrMock.send).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('アップロード成功(MSW)');
+      expect(result.documentId).toBe('msw-doc-id-123');
     });
 
-    test('registers progress callback correctly', async () => {
-      const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
-      const progressCallback = jest.fn();
+    it.skip('registers progress callback correctly', () => {
+      // fetch版では進捗コールバックは未対応のためスキップ (コメントは明確に)
+    });
 
-      // プロミスを取得
-      const promise = uploadPDFFile(file, progressCallback);
-      
-      // イベントハンドラを非同期で呼び出す（実際のブラウザの挙動に近い形で）
-      setTimeout(() => {
-        // readyStateChangeハンドラを呼び出し、プロミスを解決させる
-        const readyStateChangeHandler = (xhrMock as any).onreadystatechange;
-        if (readyStateChangeHandler) {
-          readyStateChangeHandler();
-        }
-      }, 0);
-      
-      // プロミスの解決を待つ
-      await promise;
-      
-      // progress イベントリスナーが登録されたことを確認
-      expect(xhrMock.upload?.addEventListener).toHaveBeenCalledWith('progress', expect.any(Function));
-      
-      // progress イベントをシミュレート
-      const progressHandler = (xhrMock.upload?.addEventListener as jest.Mock).mock.calls[0][1];
-      progressHandler({ lengthComputable: true, loaded: 50, total: 100 }); // 50%の進捗
-      
-      // コールバックが正しく呼び出されたことを確認
-      expect(progressCallback).toHaveBeenCalledWith(50);
-    }, 60000);
-
-    test('rejects promise on HTTP error', async () => {
-      // エラーステータスをセット
-      Object.defineProperty(xhrMock, 'status', { value: 413 });
-      Object.defineProperty(xhrMock, 'responseText', { value: JSON.stringify({ error: 'ファイルサイズが大きすぎます' }) });
+    it('HTTPエラー (413) 発生時にPromiseが適切なエラーメッセージでリジェクトされること', async () => {
+      const errorMessageFromServer = 'ファイルサイズが大きすぎます(MSW)';
+      server.use(
+        http.post(endpoint, async () => {
+          return HttpResponse.json({ error: errorMessageFromServer }, { status: 413 });
+        })
+      );
 
       const file = new File(['dummy content'], 'toolarge.pdf', { type: 'application/pdf' });
-
-      // リクエストを実行
-      const promise = uploadPDFFile(file);
-      
-      // エラー処理をシミュレート
-      const readyStateChangeHandler = (xhrMock as any).onreadystatechange;
-      if (readyStateChangeHandler) {
-        readyStateChangeHandler();
-      }
-
-      // エラーが正しくrejectされることを確認
-      await expect(promise).rejects.toThrow('ファイルサイズが大きすぎます');
+      await expect(uploadPDFFile(file)).rejects.toThrow(errorMessageFromServer);
     });
 
-    test('rejects promise on network error', async () => {
-      const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
-      
-      const promise = uploadPDFFile(file);
-      
-      // ネットワークエラーをシミュレート
-      const errorHandler = (xhrMock as any).onerror;
-      if (errorHandler) {
-        errorHandler(new Error('Network Error'));
-      }
+    it('サーバーがJSONでないエラーを返した場合 (例: 500でHTMLエラーページ) でも、汎用エラーメッセージでリジェクトされること', async () => {
+      server.use(
+        http.post(endpoint, async () => {
+          return new HttpResponse("<html><body>Internal Server Error</body></html>", { status: 500, headers: {'Content-Type': 'text/html'} });
+        })
+      );
+      const file = new File(['dummy content'], 'servererror.pdf', { type: 'application/pdf' });
+      await expect(uploadPDFFile(file)).rejects.toThrow('サーバーエラーが発生しました。後ほど再試行してください。');
+    });
 
-      await expect(promise).rejects.toThrow('ネットワークエラーが発生しました');
+    it('ネットワークエラー発生時にPromiseが適切なエラーメッセージでリジェクトされること', async () => {
+      server.use(
+        http.post(endpoint, () => {
+          return HttpResponse.error();
+        })
+      );
+      const file = new File(['dummy content'], 'network-error.pdf', { type: 'application/pdf' });
+      await expect(uploadPDFFile(file)).rejects.toThrow('ネットワークエラーが発生しました。インターネット接続を確認してください。');
     });
   });
 });

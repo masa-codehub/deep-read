@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import UploadButton from './UploadButton';
 
 // モックファイルオブジェクトを作成するヘルパー関数
@@ -12,7 +13,7 @@ const createMockFile = (name: string, size: number, type: string) => {
 describe('UploadButton', () => {
   // ボタンが正常にレンダリングされることをテスト
   test('renders upload button correctly', () => {
-    const mockOnFileSelect = jest.fn();
+    const mockOnFileSelect = vi.fn();
     render(<UploadButton onFileSelect={mockOnFileSelect} />);
     
     const button = screen.getByRole('button', { name: /PDFファイルをアップロード/i });
@@ -22,7 +23,7 @@ describe('UploadButton', () => {
 
   // ボタンがdisabled状態のときのテスト
   test('button is disabled when disabled prop is true', () => {
-    const mockOnFileSelect = jest.fn();
+    const mockOnFileSelect = vi.fn();
     render(<UploadButton onFileSelect={mockOnFileSelect} disabled={true} />);
     
     const button = screen.getByRole('button', { name: /PDFファイルをアップロード/i });
@@ -31,7 +32,7 @@ describe('UploadButton', () => {
 
   // 有効なPDFファイルが選択された場合のテスト
   test('calls onFileSelect when valid PDF file is selected', () => {
-    const mockOnFileSelect = jest.fn();
+    const mockOnFileSelect = vi.fn();
     render(<UploadButton onFileSelect={mockOnFileSelect} />);
     
     // ファイル入力要素を取得
@@ -49,7 +50,7 @@ describe('UploadButton', () => {
 
   // 無効なファイル形式が選択された場合のテスト
   test('shows error message when non-PDF file is selected', () => {
-    const mockOnFileSelect = jest.fn();
+    const mockOnFileSelect = vi.fn();
     render(<UploadButton onFileSelect={mockOnFileSelect} />);
     
     // ファイル入力要素を取得
@@ -68,7 +69,7 @@ describe('UploadButton', () => {
 
   // ファイルサイズが上限を超える場合のテスト
   test('shows error message when file size exceeds limit', () => {
-    const mockOnFileSelect = jest.fn();
+    const mockOnFileSelect = vi.fn();
     render(<UploadButton onFileSelect={mockOnFileSelect} />);
     
     // ファイル入力要素を取得

@@ -1,22 +1,19 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { vi } from 'vitest';
+
 import LibraryPage from './LibraryPage';
-import { Document } from '../../infrastructure/services/api';
+import { Document } from '../../types/document';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
 import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling';
 
-// テスト全体のタイムアウト設定を延長
-jest.setTimeout(60000);
+vi.mock('../hooks/useDocumentLibrary', () => ({ default: vi.fn() }));
+vi.mock('../hooks/useFileUpload', () => ({ default: vi.fn() }));
+vi.mock('../hooks/useDocumentStatusPolling', () => ({ default: vi.fn() }));
 
-// カスタムフックをモック化
-jest.mock('../hooks/useDocumentLibrary');
-jest.mock('../hooks/useFileUpload');
-jest.mock('../hooks/useDocumentStatusPolling');
-
-// モックフックのタイプ定義
-const mockUseDocumentLibrary = useDocumentLibrary as jest.MockedFunction<typeof useDocumentLibrary>;
-const mockUseFileUpload = useFileUpload as jest.MockedFunction<typeof useFileUpload>;
-const mockUseDocumentStatusPolling = useDocumentStatusPolling as jest.MockedFunction<typeof useDocumentStatusPolling>;
+const mockedUseDocumentLibrary = useDocumentLibrary as unknown as ReturnType<typeof vi.fn>;
+const mockedUseFileUpload = useFileUpload as unknown as ReturnType<typeof vi.fn>;
+const mockedUseDocumentStatusPolling = useDocumentStatusPolling as unknown as ReturnType<typeof vi.fn>;
 
 // モックファイルオブジェクトを作成するヘルパー関数
 const createMockFile = (name: string, size: number, type: string) => {
@@ -32,7 +29,7 @@ const mockDocuments: Document[] = [
     title: 'Document 1',
     fileName: 'document_1.pdf',
     updatedAt: new Date().toISOString(),
-    status: 'Ready',
+    status: 'READY',
     thumbnailUrl: 'https://via.placeholder.com/150',
   },
   {
@@ -40,7 +37,7 @@ const mockDocuments: Document[] = [
     title: 'Document 2',
     fileName: 'document_2.pdf',
     updatedAt: new Date().toISOString(),
-    status: 'Processing',
+    status: 'PROCESSING',
     progress: 50,
     thumbnailUrl: 'https://via.placeholder.com/150',
   },
@@ -48,45 +45,37 @@ const mockDocuments: Document[] = [
 
 describe('LibraryPage', () => {
   beforeEach(() => {
-    // 各テストの前にモックをリセット
-    jest.clearAllMocks();
-    
-    // デフォルトのモック実装を設定
-    mockUseDocumentLibrary.mockReturnValue({
+    vi.clearAllMocks();
+    mockedUseDocumentLibrary.mockReturnValue({
       documents: mockDocuments,
       isLoading: false,
       error: null,
       viewMode: 'list',
-      setViewMode: jest.fn(),
-      retryFetchDocuments: jest.fn(),
-      refreshDocuments: jest.fn(),
+      setViewMode: vi.fn(),
+      retryFetchDocuments: vi.fn(),
+      refreshDocuments: vi.fn(),
       totalCount: mockDocuments.length,
       currentPage: 1,
       totalPages: 1,
-      changePage: jest.fn(),
+      changePage: vi.fn(),
       pageSize: 10,
-      updateDocuments: jest.fn(),
-      updateDocumentProperty: jest.fn()
+      updateDocuments: vi.fn(),
+      updateDocumentProperty: vi.fn()
     });
-    
-    // useFileUploadのデフォルト実装
-    mockUseFileUpload.mockReturnValue({
+    mockedUseFileUpload.mockReturnValue({
       selectedFile: null,
       isModalOpen: false,
       uploadStatus: 'idle',
       uploadProgress: 0,
       resultMessage: '',
       uploadedDocumentId: null,
-      handleFileSelect: jest.fn(),
-      handleUploadStart: jest.fn(),
-      handleModalClose: jest.fn(),
-      resetUploadState: jest.fn()
+      handleFileSelect: vi.fn(),
+      handleUploadStart: vi.fn(),
+      handleModalClose: vi.fn(),
+      resetUploadState: vi.fn()
     });
-    
-    // useDocumentStatusPollingのデフォルト実装
-    mockUseDocumentStatusPolling.mockReturnValue({
+    mockedUseDocumentStatusPolling.mockReturnValue({
       documents: mockDocuments,
-      lastPolledAt: null
     });
   });
 
@@ -100,9 +89,8 @@ describe('LibraryPage', () => {
   // ドキュメントが正しく表示されることをテスト
   test('renders documents in the library', async () => {
     // ポーリングで更新されたドキュメントを返すようにモックを設定
-    mockUseDocumentStatusPolling.mockReturnValue({
+    mockedUseDocumentStatusPolling.mockReturnValue({
       documents: mockDocuments,
-      lastPolledAt: new Date()
     });
     
     render(<LibraryPage />);
@@ -125,21 +113,21 @@ describe('LibraryPage', () => {
   // ローディング状態のテスト
   test('shows loading state correctly', () => {
     // ローディング中の状態を返すようにモック
-    mockUseDocumentLibrary.mockReturnValue({
+    mockedUseDocumentLibrary.mockReturnValue({
       documents: [],
       isLoading: true,
       error: null,
       viewMode: 'list',
-      setViewMode: jest.fn(),
-      retryFetchDocuments: jest.fn(),
-      refreshDocuments: jest.fn(),
+      setViewMode: vi.fn(),
+      retryFetchDocuments: vi.fn(),
+      refreshDocuments: vi.fn(),
       totalCount: 0,
       currentPage: 1,
       totalPages: 0,
-      changePage: jest.fn(),
+      changePage: vi.fn(),
       pageSize: 10,
-      updateDocuments: jest.fn(),
-      updateDocumentProperty: jest.fn()
+      updateDocuments: vi.fn(),
+      updateDocumentProperty: vi.fn()
     });
     
     render(<LibraryPage />);
@@ -157,21 +145,21 @@ describe('LibraryPage', () => {
     const errorMessage = 'APIエラーが発生しました';
     
     // エラーの状態を返すようにモック
-    mockUseDocumentLibrary.mockReturnValue({
+    mockedUseDocumentLibrary.mockReturnValue({
       documents: [],
       isLoading: false,
       error: errorMessage,
       viewMode: 'list',
-      setViewMode: jest.fn(),
-      retryFetchDocuments: jest.fn(),
-      refreshDocuments: jest.fn(),
+      setViewMode: vi.fn(),
+      retryFetchDocuments: vi.fn(),
+      refreshDocuments: vi.fn(),
       totalCount: 0,
       currentPage: 1,
       totalPages: 0,
-      changePage: jest.fn(),
+      changePage: vi.fn(),
       pageSize: 10,
-      updateDocuments: jest.fn(),
-      updateDocumentProperty: jest.fn()
+      updateDocuments: vi.fn(),
+      updateDocumentProperty: vi.fn()
     });
     
     render(<LibraryPage />);
@@ -189,17 +177,17 @@ describe('LibraryPage', () => {
     fireEvent.click(retryButton);
     
     // retryFetchDocumentsメソッドが呼ばれていることを確認
-    const { retryFetchDocuments } = mockUseDocumentLibrary.mock.results[0].value;
+    const { retryFetchDocuments } = mockedUseDocumentLibrary.mock.results[0].value;
     expect(retryFetchDocuments).toHaveBeenCalledTimes(1);
   });
 
   // ファイルアップロード処理のテスト
   test('handles file upload interaction correctly', async () => {
     // ファイル選択ハンドラーをモック
-    const handleFileSelect = jest.fn();
+    const handleFileSelect = vi.fn();
     
     // handleFileSelectメソッドを持つモックを設定
-    mockUseFileUpload.mockReturnValue({
+    mockedUseFileUpload.mockReturnValue({
       selectedFile: null,
       isModalOpen: false,
       uploadStatus: 'idle',
@@ -207,9 +195,9 @@ describe('LibraryPage', () => {
       resultMessage: '',
       uploadedDocumentId: null,
       handleFileSelect,
-      handleUploadStart: jest.fn(),
-      handleModalClose: jest.fn(),
-      resetUploadState: jest.fn()
+      handleUploadStart: vi.fn(),
+      handleModalClose: vi.fn(),
+      resetUploadState: vi.fn()
     });
     
     render(<LibraryPage />);
@@ -235,17 +223,17 @@ describe('LibraryPage', () => {
   // ファイルアップロードモーダルのテスト
   test('renders file upload modal when isModalOpen is true', () => {
     // モーダルが開いている状態を返すようにモック
-    mockUseFileUpload.mockReturnValue({
+    mockedUseFileUpload.mockReturnValue({
       selectedFile: createMockFile('test.pdf', 1024 * 1024, 'application/pdf'),
       isModalOpen: true,
       uploadStatus: 'idle',
       uploadProgress: 0,
       resultMessage: '',
       uploadedDocumentId: null,
-      handleFileSelect: jest.fn(),
-      handleUploadStart: jest.fn(),
-      handleModalClose: jest.fn(),
-      resetUploadState: jest.fn()
+      handleFileSelect: vi.fn(),
+      handleUploadStart: vi.fn(),
+      handleModalClose: vi.fn(),
+      resetUploadState: vi.fn()
     });
     
     render(<LibraryPage />);
@@ -261,17 +249,17 @@ describe('LibraryPage', () => {
   // アップロード進行中の表示をテスト
   test('shows upload progress in modal', () => {
     // アップロード中の状態を返すようにモック
-    mockUseFileUpload.mockReturnValue({
+    mockedUseFileUpload.mockReturnValue({
       selectedFile: createMockFile('test.pdf', 1024 * 1024, 'application/pdf'),
       isModalOpen: true,
       uploadStatus: 'uploading',
       uploadProgress: 65,
       resultMessage: '',
       uploadedDocumentId: null,
-      handleFileSelect: jest.fn(),
-      handleUploadStart: jest.fn(),
-      handleModalClose: jest.fn(),
-      resetUploadState: jest.fn()
+      handleFileSelect: vi.fn(),
+      handleUploadStart: vi.fn(),
+      handleModalClose: vi.fn(),
+      resetUploadState: vi.fn()
     });
     
     render(<LibraryPage />);
@@ -288,36 +276,36 @@ describe('LibraryPage', () => {
   // アップロード成功時の表示をテスト
   test('shows success message after successful upload', async () => {
     // 成功状態を返すようにモック
-    mockUseFileUpload.mockReturnValue({
+    mockedUseFileUpload.mockReturnValue({
       selectedFile: createMockFile('test.pdf', 1024 * 1024, 'application/pdf'),
       isModalOpen: true,
       uploadStatus: 'success',
       uploadProgress: 100,
       resultMessage: 'アップロードに成功しました。解析処理を開始します。',
       uploadedDocumentId: 'new-doc-123',
-      handleFileSelect: jest.fn(),
-      handleUploadStart: jest.fn(),
-      handleModalClose: jest.fn(),
-      resetUploadState: jest.fn()
+      handleFileSelect: vi.fn(),
+      handleUploadStart: vi.fn(),
+      handleModalClose: vi.fn(),
+      resetUploadState: vi.fn()
     });
     
     // refreshDocumentsメソッドのモック
-    const refreshDocumentsMock = jest.fn();
-    mockUseDocumentLibrary.mockReturnValue({
+    const refreshDocumentsMock = vi.fn();
+    mockedUseDocumentLibrary.mockReturnValue({
       documents: mockDocuments,
       isLoading: false,
       error: null,
       viewMode: 'list',
-      setViewMode: jest.fn(),
-      retryFetchDocuments: jest.fn(),
+      setViewMode: vi.fn(),
+      retryFetchDocuments: vi.fn(),
       refreshDocuments: refreshDocumentsMock,
       totalCount: mockDocuments.length,
       currentPage: 1,
       totalPages: 1,
-      changePage: jest.fn(),
+      changePage: vi.fn(),
       pageSize: 10,
-      updateDocuments: jest.fn(),
-      updateDocumentProperty: jest.fn()
+      updateDocuments: vi.fn(),
+      updateDocumentProperty: vi.fn()
     });
     
     render(<LibraryPage />);
@@ -337,22 +325,22 @@ describe('LibraryPage', () => {
   // 表示モード切り替えのテスト
   test('allows switching between list and grid view modes', () => {
     // setViewModeメソッドのモック
-    const setViewModeMock = jest.fn();
-    mockUseDocumentLibrary.mockReturnValue({
+    const setViewModeMock = vi.fn();
+    mockedUseDocumentLibrary.mockReturnValue({
       documents: mockDocuments,
       isLoading: false,
       error: null,
       viewMode: 'list',
       setViewMode: setViewModeMock,
-      retryFetchDocuments: jest.fn(),
-      refreshDocuments: jest.fn(),
+      retryFetchDocuments: vi.fn(),
+      refreshDocuments: vi.fn(),
       totalCount: mockDocuments.length,
       currentPage: 1,
       totalPages: 1,
-      changePage: jest.fn(),
+      changePage: vi.fn(),
       pageSize: 10,
-      updateDocuments: jest.fn(),
-      updateDocumentProperty: jest.fn()
+      updateDocuments: vi.fn(),
+      updateDocumentProperty: vi.fn()
     });
     
     render(<LibraryPage />);

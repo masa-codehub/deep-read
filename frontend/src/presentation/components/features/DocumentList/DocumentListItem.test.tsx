@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import DocumentListItem from './DocumentListItem';
-import { Document } from '../../../../infrastructure/services/api';
+import { Document } from '../../../../types/document';
 
 describe('DocumentListItem', () => {
   const mockDocument: Document = {
@@ -8,7 +8,7 @@ describe('DocumentListItem', () => {
     title: 'Test Document',
     fileName: 'test_document.pdf',
     updatedAt: new Date().toISOString(),
-    status: 'Ready',
+    status: 'READY',
     thumbnailUrl: 'https://via.placeholder.com/150',
   };
 
@@ -25,7 +25,7 @@ describe('DocumentListItem', () => {
     render(
       <DocumentListItem document={{
         ...mockDocument,
-        status: 'Processing',
+        status: 'PROCESSING',
         progress: 45,
       }} />
     );
@@ -41,7 +41,7 @@ describe('DocumentListItem', () => {
     render(
       <DocumentListItem document={{
         ...mockDocument,
-        status: 'Processing',
+        status: 'PROCESSING',
         // progress値は明示的に未定義
       }} />
     );
@@ -57,7 +57,7 @@ describe('DocumentListItem', () => {
     render(
       <DocumentListItem document={{
         ...mockDocument,
-        status: 'Processing',
+        status: 'PROCESSING',
         progress: 0,
       }} />
     );
@@ -71,7 +71,7 @@ describe('DocumentListItem', () => {
     render(
       <DocumentListItem document={{
         ...mockDocument,
-        status: 'Processing',
+        status: 'PROCESSING',
         progress: 100,
       }} />
     );
@@ -85,7 +85,7 @@ describe('DocumentListItem', () => {
     render(
       <DocumentListItem document={{
         ...mockDocument,
-        status: 'Ready',
+        status: 'READY',
       }} />
     );
     expect(screen.getByText('準備完了')).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('DocumentListItem', () => {
     render(
       <DocumentListItem document={{
         ...mockDocument,
-        status: 'Error',
+        status: 'ERROR',
       }} />
     );
     expect(screen.getByText('エラー')).toBeInTheDocument();
