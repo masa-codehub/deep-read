@@ -18,11 +18,12 @@ services:
       - DATABASE_URL=${PG_ENDPOINT:-postgres://postgres:postgres@db:5432/deepread}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - QDRANT_HOST=${QDRANT_HOST:-qdrant}
-      - QDRANT_PORT=${QDRANT_PORT:-6333}
+      - QDRANT_PORT=${QDRANT_CON_PORT:-6333}
+      - QDRANT_TIMEOUT=${QDRANT_TIMEOUT:-10}
     # command: ["bash", "run.sh"]
     # command: python manage.py runserver 0.0.0.0:8000
     ports:
-      - ${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}
+      - ${DJANGO_HOST_PORT:-8000}:${DJANGO_CON_PORT:-8000}
     stdin_open: true
     tty: true
     depends_on:
@@ -31,12 +32,31 @@ services:
       - qdrant
     restart: always
 
+  react-frontend:
+    build:
+      context: ./${PROJECT_NAME}/.build
+      dockerfile: node.Dockerfile
+    image: ${PROJECT_NAME}_frontend_image
+    volumes:
+      - ./${PROJECT_NAME}/frontend:${CONTAINER_VOLUME:-/app}
+    working_dir: ${CONTAINER_VOLUME:-/app}
+    environment:
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:5173}
+      - BROWSER=${BROWSER:-none}
+    ports:
+      - ${REACT_HOST_PORT:-5173}:${REACT_CON_PORT:-5173}
+    stdin_open: true
+    tty: true
+    depends_on:
+      - deep-read
+    restart: always
+
   postgres:
     build:
       context: ./${POSTGRESQL}/.build
       dockerfile: Dockerfile
       args:
-        - PGPORT=${PG_PORT:-5432}
+        - PGPORT=${PG_CON_PORT:-5432}
     image: ${POSTGRESQL}_image
     volumes:
       - postgres_volume:${PG_VOLUME:-/var/lib/postgresql/data}
@@ -49,15 +69,15 @@ services:
       - POSTGRES_USER=${PG_USER:-my_id}
       - POSTGRES_PASSWORD=${PG_PASSWORD:-my_password}
       - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
-      - PGPORT=${PG_PORT:-5432}
+      - PGPORT=${PG_CON_PORT:-5432}
       # - LOGGING_LEVEL=DEBUG
     ports:
-      - ${PG_PORT:-5432}:${PG_PORT:-5432}
+      - ${PG_HOST_PORT:-5432}:${PG_CON_PORT:-5432}
   redis:
     image: "redis:7-alpine"
     container_name: deepread-redis
     ports:
-      - "127.0.0.1:6379:6379" # localhostからのみアクセス可能に
+      - 127.0.0.1:${REDIS_HOST_PORT:-6379}:${REDIS_CON_PORT:-6379} # localhostからのみアクセス可能に
     volumes:
       - redis_data:${REDIS_VOLUME:-/data}
     restart: always
@@ -80,7 +100,8 @@ services:
       - DATABASE_URL=${PG_ENDPOINT:-postgres://postgres:postgres@db:5432/deepread}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - QDRANT_HOST=${QDRANT_HOST:-qdrant}
-      - QDRANT_PORT=${QDRANT_PORT:-6333}
+      - QDRANT_PORT=${QDRANT_CON_PORT:-6333}
+      - QDRANT_TIMEOUT=${QDRANT_TIMEOUT:-10}
     stdin_open: true
     tty: true
     depends_on:
@@ -94,9 +115,9 @@ services:
     container_name: deepread-qdrant
     ports:
       # gRPC ポート (クライアント接続用) - ホストのローカルホストにのみ公開
-      - "127.0.0.1:6333:6333"
+      - 127.0.0.1:${QDRANT_HOST_GRPC_PORT:-6333}:${QDRANT_CON_GRPC_PORT:-6333}
       # REST API ポート (デバッグやUI用) - ホストのローカルホストにのみ公開
-      - "127.0.0.1:6334:6334"
+      - 127.0.0.1:${QDRANT_HOST_REST_PORT:-6334}:${QDRANT_CON_REST_PORT:-6334}
     volumes:
       # 名前付きボリュームをマウントしてデータを永続化
       - qdrant_storage:${QDRANT_VOLUME:-/qdrant/storage}
