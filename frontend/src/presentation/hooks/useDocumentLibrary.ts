@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getLibraryDocuments, Document, PaginatedDocumentsResponse } from '../services/api';
+import { getLibraryDocuments, Document, PaginatedDocumentsResponse } from '../../infrastructure/services/api';
 
 /**
  * ドキュメントライブラリに関連する状態と処理をカプセル化するカスタムフック

@@ -1,9 +1,9 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDocumentLibrary } from './useDocumentLibrary';
-import { getLibraryDocuments } from '../services/api';
+import { getLibraryDocuments } from '../../infrastructure/services/api';
 
 // APIをモック化
-jest.mock('../services/api');
+jest.mock('../../infrastructure/services/api');
 const mockGetLibraryDocuments = getLibraryDocuments as jest.MockedFunction<typeof getLibraryDocuments>;
 
 // テスト用のモックデータ
@@ -46,19 +46,29 @@ describe('useDocumentLibrary', () => {
 
   // 初期状態とデータロードをテスト
   test('初期状態でisLoadingがtrueになり、API成功後にdocumentsがセットされること', async () => {
+    // モックの動作を確実にする
+    mockGetLibraryDocuments.mockImplementation(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return mockPaginatedResponse;
+    });
+
     // カスタムフックをレンダリング
-    const { result } = renderHook(() => useDocumentLibrary());
+    const { result, rerender } = renderHook(() => useDocumentLibrary());
 
     // 初期状態ではisLoadingがtrueになっていることを確認
     expect(result.current.isLoading).toBe(true);
     expect(result.current.documents).toEqual([]);
     expect(result.current.error).toBeNull();
 
-    // API呼び出しが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    // API呼び出しが完了するのを待つ - 直接Promiseを待機
+    await act(async () => {
+      // モックの解決を待つ
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
-
+    
+    // 状態が更新されたことを確認
+    expect(result.current.isLoading).toBe(false);
+    
     // APIが呼ばれたことを確認
     expect(mockGetLibraryDocuments).toHaveBeenCalledTimes(1);
     expect(mockGetLibraryDocuments).toHaveBeenCalledWith(1, 10); // デフォルトパラメータ
@@ -74,17 +84,22 @@ describe('useDocumentLibrary', () => {
   test('API失敗時にエラーがセットされること', async () => {
     // このテスト用にAPIエラーをモック
     const errorMessage = 'APIエラーが発生しました';
-    mockGetLibraryDocuments.mockRejectedValueOnce(new Error(errorMessage));
+    mockGetLibraryDocuments.mockImplementation(async () => {
+      await new Promise((resolve, reject) => setTimeout(() => reject(new Error(errorMessage)), 10));
+      return mockPaginatedResponse; // これは実行されない
+    });
 
     // カスタムフックをレンダリング
     const { result } = renderHook(() => useDocumentLibrary());
 
     // API呼び出しが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      // エラーの処理を待つ
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
 
     // エラーメッセージが正しくセットされていることを確認
+    expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(errorMessage);
     expect(result.current.documents).toEqual([]);
   });
@@ -176,6 +191,7 @@ describe('useDocumentLibrary', () => {
 
     // 複数ページのレスポンスをモック
     mockGetLibraryDocuments.mockImplementation(async (page) => {
+      await new Promise(resolve => setTimeout(resolve, 10));
       if (page === 2) {
         return {
           documents: page2Documents,
@@ -199,11 +215,12 @@ describe('useDocumentLibrary', () => {
     const { result } = renderHook(() => useDocumentLibrary(1, 10));
 
     // 初期ロードが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
     
     // 初期ページのデータを確認
+    expect(result.current.isLoading).toBe(false);
     expect(result.current.documents).toEqual(page1Documents);
     expect(result.current.currentPage).toBe(1);
 
@@ -211,14 +228,15 @@ describe('useDocumentLibrary', () => {
     act(() => {
       result.current.changePage(2);
     });
-
-    // ページ2のデータロードが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-      expect(result.current.currentPage).toBe(2);
+    
+    // モック関数の解決を待つ
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
 
     // ページ2のデータが表示されていることを確認
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.currentPage).toBe(2);
     expect(result.current.documents).toEqual(page2Documents);
     
     // 最後の呼び出しでpage=2が指定されていることを確認
@@ -227,13 +245,23 @@ describe('useDocumentLibrary', () => {
 
   // ドキュメント更新機能をテスト
   test('updateDocumentPropertyで特定のドキュメントのプロパティが更新されること', async () => {
+    // モック実装を明示的に設定
+    mockGetLibraryDocuments.mockImplementation(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return mockPaginatedResponse;
+    });
+
     // カスタムフックをレンダリング
     const { result } = renderHook(() => useDocumentLibrary());
 
     // 初期ロードが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.documents).toEqual(mockDocuments);
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
+
+    // 初期状態を確認
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.documents).toEqual(mockDocuments);
 
     // ドキュメント2のステータスと進捗を更新
     act(() => {
@@ -256,13 +284,22 @@ describe('useDocumentLibrary', () => {
 
   // updateDocuments メソッドのテスト
   test('updateDocumentsで全ドキュメント配列が更新されること', async () => {
+    // モック実装を明示的に設定
+    mockGetLibraryDocuments.mockImplementation(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return mockPaginatedResponse;
+    });
+
     // カスタムフックをレンダリング
     const { result } = renderHook(() => useDocumentLibrary());
 
     // 初期ロードが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
+
+    // 初期状態を確認
+    expect(result.current.isLoading).toBe(false);
 
     // 新しいドキュメント配列
     const newDocuments = [
@@ -301,19 +338,25 @@ describe('useDocumentLibrary', () => {
     const customPageSize = 5;
     
     // 特定のパラメータに対応したレスポンスをモック
-    mockGetLibraryDocuments.mockResolvedValueOnce({
-      ...mockPaginatedResponse,
-      currentPage: initialPage,
-      pageSize: customPageSize
+    mockGetLibraryDocuments.mockImplementation(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return {
+        ...mockPaginatedResponse,
+        currentPage: initialPage,
+        pageSize: customPageSize
+      };
     });
 
     // カスタムフックをレンダリング
     const { result } = renderHook(() => useDocumentLibrary(initialPage, customPageSize));
 
     // API呼び出しが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
+
+    // ロード完了を確認
+    expect(result.current.isLoading).toBe(false);
 
     // APIが正しいパラメータで呼ばれたことを確認
     expect(mockGetLibraryDocuments).toHaveBeenCalledWith(initialPage, customPageSize);
@@ -329,20 +372,26 @@ describe('useDocumentLibrary', () => {
     const testTotalPages = 3;
     
     // モック実装でページ範囲を制限
-    mockGetLibraryDocuments.mockResolvedValue({
-      ...mockPaginatedResponse,
-      totalPages: testTotalPages,
-      currentPage: 1
+    mockGetLibraryDocuments.mockImplementation(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return {
+        ...mockPaginatedResponse,
+        totalPages: testTotalPages,
+        currentPage: 1
+      };
     });
 
     // カスタムフックをレンダリング
     const { result } = renderHook(() => useDocumentLibrary());
 
     // 初期ロードが完了するのを待つ
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-      expect(result.current.totalPages).toBe(testTotalPages);
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 20));
     });
+
+    // 初期状態を確認
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.totalPages).toBe(testTotalPages);
 
     // API呼び出し回数をリセット
     mockGetLibraryDocuments.mockClear();

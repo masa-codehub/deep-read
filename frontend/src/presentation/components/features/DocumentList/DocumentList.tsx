@@ -1,6 +1,6 @@
 import React from 'react';
 import DocumentListItem from './DocumentListItem';
-import { Document } from '../../services/api';
+import { Document } from '../../../../infrastructure/services/api';
 import './DocumentList.css';
 
 interface DocumentListProps {

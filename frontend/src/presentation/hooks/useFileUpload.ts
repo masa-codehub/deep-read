@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { uploadPDFFile } from '../services/api';
-import { UploadStatus } from '../components/FileUpload/FileUploadModal';
+import { uploadPDFFile } from '../../infrastructure/services/api';
+import { UploadStatus } from '../components/features/FileUpload/FileUploadModal';
 
 /**
  * ファイルアップロードに関連する状態と処理をカプセル化するカスタムフック

@@ -1,11 +1,10 @@
-import { useState } from 'react'
-import './App.css'
-import LibraryView from './views/LibraryView'
+import './presentation/styles/App.css'
+import LibraryPage from './presentation/pages/LibraryPage'
 
 function App() {
   return (
     <div className="app">
-      <LibraryView />
+      <LibraryPage />
     </div>
   )
 }

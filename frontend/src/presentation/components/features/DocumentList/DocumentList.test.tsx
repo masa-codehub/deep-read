@@ -1,7 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DocumentList from './DocumentList';
-import { Document } from '../../services/api';
+import { Document } from '../../../../infrastructure/services/api';
 
 describe('DocumentList', () => {
   const mockDocuments: Document[] = [
