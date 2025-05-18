@@ -367,8 +367,23 @@ requirement_definition:
         description: |
           アップロードされたPDFに対して、非同期でページ画像化とAIによる情報抽出処理を開始すること。
           処理中はユーザに進捗状況がわかるように表示すること。
+        implementation_status: |
+          **実装状況：** フロントエンド側で解析処理の進捗状況を表示するUIを実装済み。
+          `DocumentListItem.tsx` コンポーネントでは各ドキュメントのステータス（処理中、準備完了、エラー）を視覚的インジケータ（色、アイコン）で表示。
+          「処理中」状態のドキュメントに対しては進捗バーとパーセンテージで詳細な進捗を表示。
+          `useDocumentLibrary.ts` カスタムフックで内部的に `useDocumentStatusPolling` を活用し、処理中ドキュメントのステータスを定期的に更新。
+          バックエンドAPIとの連携のため、`uploadPDFFile` 関数を `Workspace` APIベースに全面的にリファクタリング。
+          MSW (Mock Service Worker) を使用して各種APIエンドポイント（アップロード、一覧取得、ステータス取得）のモックを実装。
       FR-UPLOAD-003:
         description: 解析処理のステータス（処理中、完了、エラー）をユーザに表示すること。
+        implementation_status: |
+          **実装状況：** `DocumentListItem.tsx` コンポーネントにドキュメントのステータス表示機能を実装。
+          各ドキュメントのステータス（処理中、準備完了、エラー）をテキストと視覚的インジケータ（色、アイコン）で表示。
+          ステータス情報を取得するための `useDocumentStatusPolling.ts` カスタムフックを開発。指定されたドキュメントIDリスト (`processingDocumentIds`) に対して、
+          定期的にバックエンドAPI (`/api/documents/statuses`) を呼び出し（ポーリング）し、最新ステータスを取得する。
+          取得した最新ステータス情報はコールバック (`onStatusUpdate`) 経由で親コンポーネントに通知。
+          ポーリングによるリアルタイム性と、コンポーネント間の責務分担を考慮した設計を採用。
+          テスト環境では、Vitestへの移行を完了し、MSWによるAPI通信モック処理を利用して安定したテストを実現。
     PDFPROC:
       FR-PDFPROC-001:
         description: アップロードされたPDFの各ページを画像ファイル形式に変換すること。（解像度はテストに基づき調整）
