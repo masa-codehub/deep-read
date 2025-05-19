@@ -4,7 +4,6 @@ import FileUploadModal from '../components/features/FileUpload/FileUploadModal';
 import DocumentList from '../components/features/DocumentList/DocumentList';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
-import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling';
 import './LibraryPage.css';
 
 /**
@@ -35,17 +34,6 @@ const LibraryPage: React.FC = () => {
     handleUploadStart,
     handleModalClose
   } = useFileUpload();
-
-  // ドキュメントステータスのポーリング処理を統合
-  const { documents: polledDocuments } = useDocumentStatusPolling(documents);
-
-  // ポーリングで取得したドキュメント一覧をuseDocumentLibraryの状態に反映
-  useEffect(() => {
-    if (polledDocuments && polledDocuments.length > 0) {
-      updateDocuments(polledDocuments);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [polledDocuments]);
 
   // アップロード成功時は一覧を再取得
   useEffect(() => {
