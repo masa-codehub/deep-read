@@ -6,6 +6,7 @@
 import type { DocumentStatusOutputData } from '../../types/document';
 import { PaginatedDocumentsResponse } from '../../types/paginatedDocumentsResponse';
 import { getCsrfToken } from '../../utils/csrf';
+import type { AskQuestionRequest, AskQuestionResponse } from '../../types/chat';
 
 /**
  * PDFファイルをアップロードする
@@ -121,4 +122,32 @@ export const getLibraryDocuments = async (
     throw new Error('Failed to fetch library documents');
   }
   return response.json() as Promise<PaginatedDocumentsResponse>;
+};
+
+/**
+ * 単一ドキュメントQ&A: 質問を送信しAI回答を取得するAPI
+ * @param {AskQuestionRequest} params - ドキュメントIDと質問
+ * @returns {Promise<AskQuestionResponse>} 回答と出典情報
+ */
+export const askSingleDocumentQuestion = async (
+  params: AskQuestionRequest
+): Promise<AskQuestionResponse> => {
+  const csrfToken = getCsrfToken();
+  const response = await fetch(`/api/documents/${params.documentId}/ask`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+    },
+    body: JSON.stringify({ question: params.question }),
+  });
+  if (!response.ok) {
+    let errorMessage = '質問送信中にエラーが発生しました。';
+    try {
+      const errorData = await response.json();
+      if (errorData.message) errorMessage = errorData.message;
+    } catch {}
+    throw new Error(errorMessage);
+  }
+  return response.json();
 };

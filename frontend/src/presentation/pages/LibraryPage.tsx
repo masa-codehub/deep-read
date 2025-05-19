@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import UploadButton from '../components/features/FileUpload/UploadButton';
 import FileUploadModal from '../components/features/FileUpload/FileUploadModal';
 import DocumentList from '../components/features/DocumentList/DocumentList';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
+import ChatPanel from '../components/features/ChatPanel';
 import './LibraryPage.css';
 
 /**
@@ -19,8 +20,7 @@ const LibraryPage: React.FC = () => {
     viewMode,
     setViewMode,
     retryFetchDocuments,
-    refreshDocuments,
-    updateDocuments // ← 追加
+    refreshDocuments
   } = useDocumentLibrary();
 
   // カスタムフックを使用してファイルアップロード機能を統合
@@ -34,6 +34,8 @@ const LibraryPage: React.FC = () => {
     handleUploadStart,
     handleModalClose
   } = useFileUpload();
+
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   // アップロード成功時は一覧を再取得
   useEffect(() => {
@@ -92,7 +94,14 @@ const LibraryPage: React.FC = () => {
           )}
           
           {!isLoading && !error && (
-            <DocumentList documents={documents} viewMode={viewMode} />
+            <>
+              <DocumentList documents={documents} viewMode={viewMode} onDocumentSelect={setSelectedDocumentId} />
+              {selectedDocumentId && (
+                <div style={{ marginTop: 24 }}>
+                  <ChatPanel documentId={selectedDocumentId} />
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>
