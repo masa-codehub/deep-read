@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import UploadButton from '../components/features/FileUpload/UploadButton';
 import FileUploadModal from '../components/features/FileUpload/FileUploadModal';
 import DocumentList from '../components/features/DocumentList/DocumentList';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
-import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling';
+import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling'; // issue#12_01 から
+import ChatPanel from '../components/features/ChatPanel'; // main から
 import './LibraryPage.css';
 
 /**
@@ -35,8 +36,11 @@ const LibraryPage: React.FC = () => {
     handleModalClose
   } = useFileUpload();
 
-  // ドキュメントステータスのポーリング処理を統合
+  // ドキュメントステータスのポーリング処理を統合 (issue#12_01 から)
   const { documents: updatedDocuments } = useDocumentStatusPolling(documents);
+
+  // 選択されたドキュメントIDの状態 (main から)
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   // アップロード成功時は一覧を再取得
   useEffect(() => {
@@ -50,9 +54,9 @@ const LibraryPage: React.FC = () => {
       <header className="library-header">
         <h1>ライブラリ</h1>
         <div className="library-actions">
-          <UploadButton 
-            onFileSelect={handleFileSelect} 
-            disabled={uploadStatus === 'uploading'} 
+          <UploadButton
+            onFileSelect={handleFileSelect}
+            disabled={uploadStatus === 'uploading'}
           />
         </div>
       </header>
@@ -79,12 +83,12 @@ const LibraryPage: React.FC = () => {
         {/* ライブラリのコンテンツ（ドキュメント一覧など） */}
         <div className="library-documents" data-testid="document-container">
           {isLoading && <p className="loading-message" data-testid="loading-message">読み込み中...</p>}
-          
+
           {error && (
             <div className="error-container" data-testid="error-container">
               <p className="error-message">ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。</p>
               <p className="error-details" data-testid="error-details">{error}</p>
-              <button 
+              <button
                 className="retry-button"
                 data-testid="retry-button"
                 onClick={retryFetchDocuments}
@@ -93,15 +97,26 @@ const LibraryPage: React.FC = () => {
               </button>
             </div>
           )}
-          
+
           {!isLoading && !error && (
-            <DocumentList documents={updatedDocuments || documents} viewMode={viewMode} />
+            <>
+              <DocumentList
+                documents={updatedDocuments || documents} // issue#12_01 のポーリング結果を優先
+                viewMode={viewMode}
+                onDocumentSelect={setSelectedDocumentId} // main のドキュメント選択機能
+              />
+              {selectedDocumentId && ( // main のチャットパネル表示
+                <div style={{ marginTop: 24 }}>
+                  <ChatPanel documentId={selectedDocumentId} />
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>
 
       {/* ファイルアップロードモーダル */}
-      <FileUploadModal 
+      <FileUploadModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
         status={uploadStatus}
