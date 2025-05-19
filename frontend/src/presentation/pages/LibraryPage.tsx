@@ -5,7 +5,11 @@ import DocumentList from '../components/features/DocumentList/DocumentList';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
 import ChatPanel from '../components/features/ChatPanel';
+import { SearchBar } from '../components/features/Search/SearchBar';
+import { useLibrarySearch } from '../hooks/useLibrarySearch';
+import NoSearchResultsMessage from './NoSearchResultsMessage';
 import './LibraryPage.css';
+import './NoSearchResultsMessage.css';
 
 /**
  * ライブラリ画面コンポーネント
@@ -35,6 +39,14 @@ const LibraryPage: React.FC = () => {
     handleModalClose
   } = useFileUpload();
 
+  const {
+    searchTerm,
+    setSearchTerm,
+    searchResults,
+    isLoading: isSearchLoading,
+    error: searchError,
+  } = useLibrarySearch();
+
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   // アップロード成功時は一覧を再取得
@@ -44,6 +56,13 @@ const LibraryPage: React.FC = () => {
     }
   }, [uploadStatus, refreshDocuments]);
 
+  // 検索キーワードがクリアされたら選択ドキュメントもクリア
+  useEffect(() => {
+    if (!searchTerm) {
+      setSelectedDocumentId(null);
+    }
+  }, [searchTerm]);
+
   return (
     <div className="library-page" data-testid="library-view-container">
       <header className="library-header">
@@ -52,6 +71,15 @@ const LibraryPage: React.FC = () => {
           <UploadButton 
             onFileSelect={handleFileSelect} 
             disabled={uploadStatus === 'uploading'} 
+          />
+        </div>
+        <div className="library-search-area">
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            isLoading={isSearchLoading}
+            onClear={() => setSearchTerm('')}
+            placeholder="キーワードで検索"
           />
         </div>
       </header>
@@ -77,25 +105,32 @@ const LibraryPage: React.FC = () => {
 
         {/* ライブラリのコンテンツ（ドキュメント一覧など） */}
         <div className="library-documents" data-testid="document-container">
-          {isLoading && <p className="loading-message" data-testid="loading-message">読み込み中...</p>}
-          
-          {error && (
+          {(isSearchLoading || isLoading) && <p className="loading-message" data-testid="loading-message">読み込み中...</p>}
+          {(searchError || error) && (
             <div className="error-container" data-testid="error-container">
-              <p className="error-message">ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。</p>
-              <p className="error-details" data-testid="error-details">{error}</p>
-              <button 
-                className="retry-button"
-                data-testid="retry-button"
-                onClick={retryFetchDocuments}
-              >
-                再試行
-              </button>
+              <p className="error-message">{searchError ? '検索に失敗しました。' : 'ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。'}</p>
+              <p className="error-details" data-testid="error-details">{searchError || error}</p>
+              {!searchError && (
+                <button 
+                  className="retry-button"
+                  data-testid="retry-button"
+                  onClick={retryFetchDocuments}
+                >
+                  再試行
+                </button>
+              )}
             </div>
           )}
-          
-          {!isLoading && !error && (
+          {!isSearchLoading && !searchError && !isLoading && !error && (
             <>
-              <DocumentList documents={documents} viewMode={viewMode} onDocumentSelect={setSelectedDocumentId} />
+              <DocumentList
+                documents={searchTerm ? searchResults : documents}
+                viewMode={viewMode}
+                onDocumentSelect={setSelectedDocumentId}
+              />
+              {searchTerm && searchResults.length === 0 && (
+                <NoSearchResultsMessage />
+              )}
               {selectedDocumentId && (
                 <div style={{ marginTop: 24 }}>
                   <ChatPanel documentId={selectedDocumentId} />

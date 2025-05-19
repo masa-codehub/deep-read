@@ -463,12 +463,59 @@ github_issues:
       labels: [type:user-story, feature:library, layer:usecase, layer:domain, layer:adapter-db, epic:EPIC-LIBRARY, MVP, priority:medium, TDD]
     - id: ISSUE-015
       title: "[UserStory] ライブラリ検索UIの実装 (US-LIB-002)"
-      description: ユーザーストーリー US-LIB-002 のためのUIを実装する。キーワード入力と検索結果表示を行う。
+      description: |
+        ユーザーストーリー US-LIB-002 のためのUIを実装する。キーワード入力と検索結果表示を行う。
+
+        **目的:**
+        本 Issue は、ライブラリ画面に検索機能UIを実装し、キーワードベースでドキュメントを検索できるようにすることを目的としていました。
+
+        **実施内容:**
+        * **ライブラリ検索UIの基本実装:**
+            * `LibraryPage.tsx` への `SearchBar` コンポーネントの配置。
+            * キーワード入力に応じたバックエンド検索API (`searchLibraryDocuments`) の呼び出し処理 (デバウンス処理、AbortControllerによるキャンセル処理含む)。
+            * 検索結果（ドキュメントリスト）を既存の `DocumentList` コンポーネントに反映する処理。
+            * 検索中のインジケータ表示。
+            * 検索結果が0件の場合の専用メッセージコンポーネント (`NoSearchResultsMessage`) の表示。
+            * 検索キーワードがクリアされた際に、選択されていたドキュメントID (`selectedDocumentId`) をリセットするUI挙動の改善。
+        * **APIサービスの更新 (`src/infrastructure/services/api.ts`):**
+            * 検索API呼び出し関数 `searchLibraryDocuments` を追加。
+            * エラーハンドリングを改善し、ステータスコードに応じたより詳細なエラーメッセージをスローするように修正。
+            * `AbortSignal` を引数に取り、リクエストのキャンセルに対応。
+        * **関連コンポーネントおよびフックの新規作成・修正:**
+            * `SearchBar.tsx` および `SearchBar.css`: 再利用可能な検索入力コンポーネント。
+            * `useLibrarySearch.ts`: 検索ロジック（キーワード管理、API呼び出し、デバウンス、ローディング/エラー状態管理、キャンセル処理）をカプセル化したカスタムフック。
+            * `NoSearchResultsMessage.tsx` および `NoSearchResultsMessage.css`: 検索結果0件時の表示コンポーネント。
+        * **テストコードの追加・拡充:**
+            * `api.test.ts`: `searchLibraryDocuments` 関数の正常系、エラー系、キャンセル処理に関するテストケースを追加・改善 (MSWハンドラの汎用化含む)。
+            * `SearchBar.test.tsx`: `SearchBar` コンポーネントの単体テストを新規作成。
+            * `useLibrarySearch.test.ts`: `useLibrarySearch` フックの単体テストを新規作成 (非同期処理の待機に `waitFor` を使用するよう改善)。
+
+        **レビューと改善の経緯:**
+        * 初期実装に対して、エラーハンドリングの具体性、テストコードの網羅性、CSSの外部ファイル化、APIリクエストのキャンセル処理、UIの挙動（ChatPanelの表示条件）などについて指摘がありました。
+        * 上記の指摘に対し、APIエラーメッセージの詳細化、MSWハンドラの改善、`waitFor` を用いた非同期テストの安定化、未使用コードの削除、`selectedDocumentId` のリセットロジック追加など、多くの改善が行われました。
+
+        **今後の課題・別途Issueで対応する事項:**
+        本Issueのスコープ外、または今後の改善点として以下の項目が挙げられます。これらは必要に応じて新しいIssueとして起票し、対応を検討します。
+
+        * **機能要件:**
+            * 検索結果のソート順選択UIの実装 (ユーザビリティ向上のため)。
+        * **非機能要件:**
+            * 検索APIおよびフロントエンド処理を含めた検索応答時間の計測と、目標値達成のためのパフォーマンスチューニング。
+        * **テスト:**
+            * プロジェクトで定義されたテストカバレッジ目標値の達成状況の確認と、必要に応じたテストケースの追加。
+        * **コード品質 & アーキテクチャ:**
+            * ESLint等の静的コード解析ツールによるチェックと、検出されたエラー/警告の修正。
+        * **ドキュメント・外部連携:**
+            * バックエンド検索API (`ISSUE-SEARCH-BACKEND`) の最終的な仕様との整合性確認。
+        * **その他改善提案 (Suggestionレベル):**
+            * `api.test.ts` の `AbortController` テストにおけるMSWハンドラの改善（`HttpResponse.error()` の利用検討）。
+            * `useLibrarySearch.ts` のエラーハンドリングにおける未知のエラーオブジェクトのログ出力改善。
+            * アクセシビリティの更なる向上（ARIA属性の適切な付与など）。
       tasks:
-        - "[ ] ライブラリ画面に検索ボックスを配置 (`layer:adapter-ui`)"
-        - "[ ] キーワード入力時にバックエンドの検索APIを呼び出す処理 (`layer:adapter-ui`)"
-        - "[ ] 検索結果（ドキュメントリスト）を一覧表示エリアに反映する処理 (`layer:adapter-ui`)"
-        - "[ ] 検索中のインジケータ表示 (`layer:adapter-ui`)"
+        - "[x] ライブラリ画面に検索ボックスを配置 (`layer:adapter-ui`)"
+        - "[x] キーワード入力時にバックエンドの検索APIを呼び出す処理 (`layer:adapter-ui`)"
+        - "[x] 検索結果（ドキュメントリスト）を一覧表示エリアに反映する処理 (`layer:adapter-ui`)"
+        - "[x] 検索中のインジケータ表示 (`layer:adapter-ui`)"
         - "[ ] 検索結果のソート順選択UI（任意） (`layer:adapter-ui`)"
       acceptance_criteria:
         - ユーザが検索ボックスにキーワードを入力すると、関連するドキュメントが一覧表示されること。
@@ -476,7 +523,7 @@ github_issues:
       related_requirements: [US-LIB-002]
       dependencies: [ISSUE-013, ISSUE-SEARCH-BACKEND] # Depends on list UI and search backend
       milestone: "MVP Library & Search"
-      labels: [type:user-story, feature:library, layer:adapter-ui, epic:EPIC-LIBRARY, MVP, priority:medium]
+      labels: [type:user-story, feature:library, layer:adapter-ui, epic:EPIC-LIBRARY, MVP, priority:medium, status:done]
     - id: ISSUE-016
       title: "[UserStory] ライブラリ検索バックエンド実装 (US-LIB-002)"
       description: ユーザーストーリー US-LIB-002 のためのバックエンドAPIを実装する。キーワードに基づいてドキュメントを検索する。

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
-import { uploadPDFFile } from './api';
+import { uploadPDFFile, searchLibraryDocuments } from './api';
 
 describe('API Services', () => {
   describe('uploadPDFFile', () => {
@@ -57,6 +57,60 @@ describe('API Services', () => {
       );
       const file = new File(['dummy content'], 'network-error.pdf', { type: 'application/pdf' });
       await expect(uploadPDFFile(file)).rejects.toThrow('ネットワークエラーが発生しました。インターネット接続を確認してください。');
+    });
+  });
+
+  describe('searchLibraryDocuments', () => {
+    const endpoint = '/api/library/search';
+    it('正常に検索結果を返す', async () => {
+      const mockResponse = { documents: [{ id: '1', title: 'doc' }], totalCount: 1 };
+      server.use(
+        http.get(endpoint, async ({ request }) => {
+          const url = new URL(request.url);
+          expect(url.searchParams.get('keyword')).toBe('test');
+          expect(url.searchParams.get('sortBy')).toBeNull();
+          return HttpResponse.json(mockResponse, { status: 200 });
+        })
+      );
+      const result = await searchLibraryDocuments({ keyword: 'test' });
+      expect(result.documents).toHaveLength(1);
+      expect(result.documents[0].title).toBe('doc');
+    });
+    it('sortByパラメータ付きで検索できる', async () => {
+      const mockResponse = { documents: [{ id: '2', title: 'sorted doc' }], totalCount: 1 };
+      server.use(
+        http.get(endpoint, async ({ request }) => {
+          const url = new URL(request.url);
+          expect(url.searchParams.get('keyword')).toBe('test');
+          expect(url.searchParams.get('sortBy')).toBe('date');
+          return HttpResponse.json(mockResponse, { status: 200 });
+        })
+      );
+      // sortByは現状UIから渡らないがAPIとしてはテスト
+      const result = await searchLibraryDocuments({ keyword: 'test', sortBy: 'date' });
+      expect(result.documents).toHaveLength(1);
+      expect(result.documents[0].title).toBe('sorted doc');
+    });
+    it('APIエラー時は詳細なエラーメッセージを投げる', async () => {
+      server.use(
+        http.get(endpoint, async ({ request }) => {
+          const url = new URL(request.url);
+          expect(url.searchParams.get('keyword')).toBe('test');
+          return HttpResponse.json({ message: '認証が必要です。ログインしてください。' }, { status: 401 });
+        })
+      );
+      await expect(searchLibraryDocuments({ keyword: 'test' })).rejects.toThrow('認証が必要です。ログインしてください。');
+    });
+    it('AbortControllerでキャンセルできる', async () => {
+      server.use(
+        http.get(endpoint, async ({ request }) => {
+          // 実際のリクエスト内容は検証しない
+          return new Promise(() => {}); // never resolves
+        })
+      );
+      const controller = new AbortController();
+      controller.abort();
+      await expect(searchLibraryDocuments({ keyword: 'test' }, controller.signal)).rejects.toThrow();
     });
   });
 });
