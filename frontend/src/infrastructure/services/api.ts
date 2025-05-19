@@ -10,7 +10,7 @@ import type { AskQuestionRequest, AskQuestionResponse } from '../../types/chat';
 
 /**
  * PDFファイルをアップロードする
- * 
+ *
  * @async
  * @function uploadPDFFile
  * @param {File} file - アップロードするPDFファイル
@@ -24,7 +24,6 @@ export const uploadPDFFile = async (
   const formData = new FormData();
   formData.append('pdf_file', file);
 
-  // fetchでアップロード
   try {
     const csrfToken = getCsrfToken();
     const response = await fetch('/api/documents/upload/', {
@@ -46,21 +45,14 @@ export const uploadPDFFile = async (
       let errorMessage = 'アップロード中にエラーが発生しました。';
       try {
         const errorData = await response.json();
-        if (errorData.error) {
+        if (errorData?.error) {
           errorMessage = errorData.error;
         } else {
-          if (response.status === 413) errorMessage = 'ファイルサイズが大きすぎます。';
-          else if (response.status === 415) errorMessage = '対応していないファイル形式です。PDFファイルのみアップロード可能です。';
-          else if (response.status === 401) errorMessage = '認証が必要です。ログインしてから再試行してください。';
-          else if (response.status === 403) errorMessage = 'この操作を実行する権限がありません。';
-          else if (response.status >= 500) errorMessage = 'サーバーエラーが発生しました。後ほど再試行してください。';
+          errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
         }
-      } catch (e) {
-        if (response.status === 413) errorMessage = 'ファイルサイズが大きすぎます。';
-        else if (response.status === 415) errorMessage = '対応していないファイル形式です。PDFファイルのみアップロード可能です。';
-        else if (response.status === 401) errorMessage = '認証が必要です。ログインしてから再試行してください。';
-        else if (response.status === 403) errorMessage = 'この操作を実行する権限がありません。';
-        else if (response.status >= 500) errorMessage = 'サーバーエラーが発生しました。後ほど再試行してください。';
+      } catch (jsonError) {
+        errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+        console.error("Failed to parse error response JSON:", jsonError);
       }
       throw new Error(errorMessage);
     }
@@ -123,6 +115,92 @@ export const getLibraryDocuments = async (
   }
   return response.json() as Promise<PaginatedDocumentsResponse>;
 };
+
+/**
+ * ユーザー登録API
+ * @param email メールアドレス
+ * @param password パスワード
+ * @returns {Promise<{ success: boolean; message?: string; errors?: Record<string, string> }>}
+ */
+export interface ApiErrorResponse {
+  success: false;
+  message: string; // messageは必須
+  errors?: Record<string, string | string[]>;
+}
+
+export interface RegisterUserSuccessResponse {
+  success: true;
+}
+
+export type RegisterUserResponse = RegisterUserSuccessResponse | ApiErrorResponse;
+
+export const registerUser = async (
+  email: string,
+  password: string
+): Promise<RegisterUserResponse> => {
+  try {
+    const csrfToken = getCsrfToken();
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    if (response.ok) {
+      return { success: true };
+    } else {
+      let errorMessage = '登録中にエラーが発生しました。';
+      let errors: Record<string, string | string[]> = {};
+      try {
+        const data = await response.json();
+        if (data.errors) {
+          errors = data.errors;
+        }
+        if (data.message) {
+          errorMessage = data.message;
+        } else if (typeof data.error === 'string' && !data.errors) {
+          errorMessage = data.error;
+          if (Object.keys(errors).length === 0) errors.form = data.error;
+        }
+        if (errorMessage === '登録中にエラーが発生しました。' && Object.keys(errors).length === 0) {
+          errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+        }
+      } catch (e) {
+        console.error("Failed to parse error JSON or process error data:", e);
+        errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+      }
+      return { success: false, message: errorMessage, errors };
+    }
+  } catch (error) {
+    console.error("Registration API call failed:", error);
+    return { success: false, message: 'ネットワークエラーが発生しました。接続を確認してください。' };
+  }
+};
+
+/**
+ * ステータスコードに応じた共通エラーメッセージを返す
+ */
+function getErrorMessageFromStatus(status: number, defaultMessage: string): string {
+  switch (status) {
+    case 400:
+      return '入力内容に誤りがあります。';
+    case 401:
+      return '認証が必要です。ログインしてから再試行してください。';
+    case 403:
+      return 'この操作を実行する権限がありません。';
+    case 409:
+      return 'このメールアドレスは既に使用されています。';
+    case 413:
+      return 'ファイルサイズが大きすぎます。';
+    case 415:
+      return '対応していないファイル形式です。PDFファイルのみアップロード可能です。';
+    default:
+      if (status >= 500) return 'サーバーエラーが発生しました。後ほど再試行してください。';
+      return defaultMessage;
+  }
+}
 
 /**
  * 単一ドキュメントQ&A: 質問を送信しAI回答を取得するAPI
