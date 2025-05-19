@@ -8,6 +8,7 @@ import ChatPanel from '../components/features/ChatPanel';
 import { SearchBar } from '../components/features/Search/SearchBar';
 import { useLibrarySearch } from '../hooks/useLibrarySearch';
 import NoSearchResultsMessage from './NoSearchResultsMessage';
+import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling'; // issue#12_01 から
 import './LibraryPage.css';
 import './NoSearchResultsMessage.css';
 
@@ -39,6 +40,7 @@ const LibraryPage: React.FC = () => {
     handleModalClose
   } = useFileUpload();
 
+  // ライブラリ検索機能のカスタムフック
   const {
     searchTerm,
     setSearchTerm,
@@ -47,6 +49,12 @@ const LibraryPage: React.FC = () => {
     error: searchError,
   } = useLibrarySearch();
 
+  // ドキュメントステータスのポーリング処理を統合 (issue#12_01 から)
+  // ポリング対象のドキュメントリストは、検索結果がない場合は元のドキュメントリスト、検索結果がある場合は検索結果リストとする
+  const documentsForPolling = searchTerm ? searchResults : documents;
+  const { documents: updatedDocuments } = useDocumentStatusPolling(documentsForPolling);
+
+  // 選択されたドキュメントIDの状態
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   // アップロード成功時は一覧を再取得
@@ -63,14 +71,18 @@ const LibraryPage: React.FC = () => {
     }
   }, [searchTerm]);
 
+  // 表示するドキュメントリストを決定
+  // 検索中であれば検索結果、そうでなければポーリングで更新されたドキュメント（または元のドキュメント）
+  const displayDocuments = searchTerm ? searchResults : (updatedDocuments || documents);
+
   return (
     <div className="library-page" data-testid="library-view-container">
       <header className="library-header">
         <h1>ライブラリ</h1>
         <div className="library-actions">
-          <UploadButton 
-            onFileSelect={handleFileSelect} 
-            disabled={uploadStatus === 'uploading'} 
+          <UploadButton
+            onFileSelect={handleFileSelect}
+            disabled={uploadStatus === 'uploading'}
           />
         </div>
         <div className="library-search-area">
@@ -110,8 +122,8 @@ const LibraryPage: React.FC = () => {
             <div className="error-container" data-testid="error-container">
               <p className="error-message">{searchError ? '検索に失敗しました。' : 'ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。'}</p>
               <p className="error-details" data-testid="error-details">{searchError || error}</p>
-              {!searchError && (
-                <button 
+              {!searchError && error && ( // 通常のドキュメント読み込みエラーの場合のみ再試行ボタンを表示
+                <button
                   className="retry-button"
                   data-testid="retry-button"
                   onClick={retryFetchDocuments}
@@ -124,11 +136,11 @@ const LibraryPage: React.FC = () => {
           {!isSearchLoading && !searchError && !isLoading && !error && (
             <>
               <DocumentList
-                documents={searchTerm ? searchResults : documents}
+                documents={displayDocuments}
                 viewMode={viewMode}
                 onDocumentSelect={setSelectedDocumentId}
               />
-              {searchTerm && searchResults.length === 0 && (
+              {searchTerm && searchResults.length === 0 && !isSearchLoading && (
                 <NoSearchResultsMessage />
               )}
               {selectedDocumentId && (
@@ -142,7 +154,7 @@ const LibraryPage: React.FC = () => {
       </main>
 
       {/* ファイルアップロードモーダル */}
-      <FileUploadModal 
+      <FileUploadModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
         status={uploadStatus}
