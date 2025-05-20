@@ -8,6 +8,7 @@ import { PaginatedDocumentsResponse } from '../../types/paginatedDocumentsRespon
 import { getCsrfToken } from '../../utils/csrf';
 import type { AskQuestionRequest, AskQuestionResponse } from '../../types/chat';
 import type { SearchLibraryRequest } from '../../types/search';
+import type { LegalConsentStatus, AgreeToTermsRequest } from '../../types/legal';
 
 /**
  * PDFファイルをアップロードする
@@ -265,3 +266,68 @@ export async function searchLibraryDocuments(
   }
   return res.json();
 }
+
+// --- Legal Consent API ---
+
+/**
+ * ユーザーの法的同意状況を取得するAPI
+ * @returns {Promise<LegalConsentStatus>}
+ */
+export const getLegalConsentStatus = async (): Promise<LegalConsentStatus> => {
+  const csrfToken = getCsrfToken();
+  const response = await fetch('/api/legal/consent-status', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+    },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    let errorMessage = '法的同意状況の取得に失敗しました';
+    try {
+      const errorData = await response.json();
+      if (errorData && errorData.message) {
+        errorMessage = errorData.message;
+      } else {
+        errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+      }
+    } catch {
+      errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+    }
+    throw new Error(errorMessage);
+  }
+  return response.json();
+};
+
+/**
+ * 利用規約・プライバシーポリシーに同意するAPI
+ * @param {AgreeToTermsRequest} request
+ * @returns {Promise<void>}
+ */
+export const agreeToLegalTerms = async (request: AgreeToTermsRequest): Promise<void> => {
+  const csrfToken = getCsrfToken();
+  const response = await fetch('/api/legal/agree', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+    },
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    let errorMessage = '同意処理に失敗しました';
+    try {
+      const errorData = await response.json();
+      if (errorData && errorData.message) {
+        errorMessage = errorData.message;
+      } else {
+        errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+      }
+    } catch {
+      errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+    }
+    throw new Error(errorMessage);
+  }
+};

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { registerUser } from "../../../../infrastructure/services/api";
 import { useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword } from "../../../../utils/validators";
+import TermsAgreementCheckbox from '../../common/TermsAgreementCheckbox';
 
 interface SignUpFormErrors {
   email?: string | string[];
@@ -161,26 +162,17 @@ export const SignUpForm: React.FC = () => {
           <p className="mt-1 text-sm text-red-600" id="passwordConfirm-error">{errors.passwordConfirm}</p>
         )}
       </div>
-      <div className="flex items-center">
-        <input
-          id="agree"
-          name="agree"
-          type="checkbox"
-          required
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+      <div>
+        {/* 利用規約・プライバシーポリシー同意チェックボックス */}
+        <TermsAgreementCheckbox
           checked={agree}
-          onChange={e => {
-            const newAgree = e.target.checked;
+          onChange={newAgree => {
             setAgree(newAgree);
             setErrors(prev => ({ ...prev, agree: validateForm({ ...getCurrentValues(), agree: newAgree }).agree }));
           }}
-          aria-invalid={!!errors.agree}
-          aria-describedby={errors.agree ? "agree-error" : undefined}
+          termsUrl="/terms"
+          privacyPolicyUrl="/privacy"
         />
-        <label htmlFor="agree" className="ml-2 block text-sm text-gray-900">
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">利用規約</a>と
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">プライバシーポリシー</a>に同意します
-        </label>
       </div>
       {errors.agree && (
         <p className="mt-1 text-sm text-red-600" id="agree-error">{errors.agree}</p>
