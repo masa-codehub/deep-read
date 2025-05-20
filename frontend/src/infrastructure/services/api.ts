@@ -229,3 +229,62 @@ export const askSingleDocumentQuestion = async (
   }
   return response.json();
 };
+
+/**
+ * ユーザーログインAPI
+ * @param email メールアドレス
+ * @param password パスワード
+ * @returns {Promise<LoginUserResponse>}
+ */
+export interface LoginUserSuccessResponse {
+  success: true;
+  // 必要に応じてtokenやuser情報を追加
+}
+
+export type LoginUserResponse = LoginUserSuccessResponse | ApiErrorResponse;
+
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<LoginUserResponse> => {
+  try {
+    const csrfToken = getCsrfToken();
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    if (response.ok) {
+      return { success: true };
+    } else {
+      let finalMessage = 'ログイン中にエラーが発生しました。';
+      let fieldErrors: Record<string, string | string[]> = {};
+      try {
+        const data = await response.json();
+        if (data.errors) {
+          fieldErrors = data.errors;
+        }
+        // APIからのメッセージを優先
+        if (data.message) {
+          finalMessage = data.message;
+        } else if (typeof data.error === 'string') {
+          finalMessage = data.error;
+          if (Object.keys(fieldErrors).length === 0) fieldErrors.form = data.error;
+        } else {
+          // APIから明確なメッセージがない場合、ステータスコードでフォールバック
+          finalMessage = getErrorMessageFromStatus(response.status, finalMessage);
+        }
+      } catch (e) {
+        console.error("Failed to parse error JSON or process error data for login:", e);
+        finalMessage = getErrorMessageFromStatus(response.status, finalMessage);
+      }
+      return { success: false, message: finalMessage, errors: fieldErrors };
+    }
+  } catch (error) {
+    console.error("Login API call failed:", error);
+    return { success: false, message: 'ネットワークエラーが発生しました。接続を確認してください。' };
+  }
+};

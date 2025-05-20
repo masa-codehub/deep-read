@@ -116,6 +116,20 @@ export const handlers = [
     return HttpResponse.json(statuses, { status: 200 });
   }),
   // --- ここまで追加 ---
+  http.post('/api/auth/login', async ({ request }) => {
+    const body: any = await request.json();
+    const { email, password } = body;
+    // テスト用有効認証情報
+    if (email === 'test@example.com' && password === 'password123') {
+      return HttpResponse.json({ success: true }, { status: 200 });
+    }
+    // 認証失敗
+    if (email === 'wrong@example.com') {
+      return HttpResponse.json({ success: false, message: 'メールアドレスまたはパスワードが正しくありません。' }, { status: 401 });
+    }
+    // 一般エラー
+    return HttpResponse.json({ success: false, message: 'サーバーエラーが発生しました。' }, { status: 500 });
+  }),
 ];
 
 // doc1の進捗を2秒ごとに10%ずつ進め、100%でReadyにする

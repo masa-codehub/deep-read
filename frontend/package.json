@@ -10,12 +10,6 @@
     "preview": "vite preview",
     "test": "jest --env=jsdom"
   },
-  "dependencies": {
-    "@types/react-router-dom": "^5.3.3",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.0"
-  },
   "devDependencies": {
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
@@ -26,8 +20,9 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.18",
     "@types/node-fetch": "^2.6.12",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "@types/react-router-dom": "^5.3.3",
     "@types/testing-library__jest-dom": "^5.14.9",
     "@types/testing-library__react": "^10.0.1",
     "@vitejs/plugin-react": "^4.4.1",
@@ -42,7 +37,10 @@
     "jest-environment-jsdom": "^29.7.0",
     "msw": "^2.8.3",
     "node-fetch": "^2.7.0",
-    "typescript": "~5.8.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5",
     "vitest": "^3.1.3",
