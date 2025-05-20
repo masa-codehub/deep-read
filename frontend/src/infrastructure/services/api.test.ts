@@ -1,7 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
-import { uploadPDFFile, searchLibraryDocuments } from './api';
+import { uploadPDFFile, searchLibraryDocuments, getLegalConsentStatus, agreeToLegalTerms } from './api';
+
+const apiUrl = '/api/legal';
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 describe('API Services', () => {
   describe('uploadPDFFile', () => {
@@ -111,6 +117,38 @@ describe('API Services', () => {
       const controller = new AbortController();
       controller.abort();
       await expect(searchLibraryDocuments({ keyword: 'test' }, controller.signal)).rejects.toThrow();
+    });
+  });
+
+  describe('getLegalConsentStatus', () => {
+    it('正常に同意状況を取得できる', async () => {
+      const status = await getLegalConsentStatus();
+      expect(status.userId).toBe('u1');
+      expect(status.hasAgreedToLatestTerms).toBe(false);
+    });
+
+    it('エラー時に例外を投げる', async () => {
+      server.use(
+        http.get(`${apiUrl}/consent-status`, async () => HttpResponse.text('', { status: 500 }))
+      );
+      await expect(getLegalConsentStatus()).rejects.toThrow('サーバーエラーが発生しました。後ほど再試行してください。');
+    });
+  });
+
+  describe('agreeToLegalTerms', () => {
+    it('正常に同意できる', async () => {
+      await expect(
+        agreeToLegalTerms({ userId: 'u1', termsVersion: 'v2', privacyPolicyVersion: 'v2' })
+      ).resolves.toBeUndefined();
+    });
+
+    it('エラー時に例外を投げる', async () => {
+      server.use(
+        http.post(`${apiUrl}/agree`, async () => HttpResponse.json({ message: '同意失敗' }, { status: 400 }))
+      );
+      await expect(
+        agreeToLegalTerms({ userId: 'u1', termsVersion: 'v2', privacyPolicyVersion: 'v2' })
+      ).rejects.toThrow('同意失敗');
     });
   });
 });

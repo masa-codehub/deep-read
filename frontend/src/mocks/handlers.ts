@@ -116,6 +116,22 @@ export const handlers = [
     return HttpResponse.json(statuses, { status: 200 });
   }),
   // --- ここまで追加 ---
+
+  // --- 法的同意APIのモック ---
+  http.get('/api/legal/consent-status', () => {
+    return HttpResponse.json({
+      userId: 'u1',
+      hasAgreedToLatestTerms: false,
+      latestTermsVersion: 'v2',
+      userAgreedTermsVersion: 'v1',
+      hasAgreedToLatestPrivacyPolicy: false,
+      latestPrivacyPolicyVersion: 'v2',
+      userAgreedPrivacyPolicyVersion: 'v1',
+    }, { status: 200 });
+  }),
+  http.post('/api/legal/agree', async () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
 ];
 
 // doc1の進捗を2秒ごとに10%ずつ進め、100%でReadyにする
