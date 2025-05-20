@@ -1,7 +1,8 @@
 import './presentation/styles/App.css';
 import LibraryPage from './presentation/pages/LibraryPage';
-import { useLegalConsent } from './presentation/hooks/useLegalConsent';
-import ConsentModal from './presentation/components/features/Legal/ConsentModal';
+import SettingsPage from './presentation/pages/SettingsPage'; // issue#84_01 から
+import { useLegalConsent } from './presentation/hooks/useLegalConsent'; // main から
+import ConsentModal from './presentation/components/features/Legal/ConsentModal'; // main から
 
 function App() {
   const {
@@ -13,11 +14,14 @@ function App() {
     latestTermsUrl,
     latestPrivacyPolicyUrl,
     isAgreementRequired,
-  } = useLegalConsent();
+  } = useLegalConsent(); // main の機能
 
   return (
-    <div className="app" style={{ position: 'relative' }}>
-      <LibraryPage />
+    <div className="app" style={{ position: 'relative' }}> {/* main のスタイルを適用 */}
+      <LibraryPage /> {/* main で表示されていたページ */}
+      {/* <SettingsPage /> */} {/* issue#84_01 で表示されていたページ (ルーティングで切り替える想定) */}
+      
+      {/* main の法的同意モーダル機能 */}
       <ConsentModal
         show={showConsentModal}
         onClose={closeConsentModal}

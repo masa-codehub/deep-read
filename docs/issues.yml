@@ -1471,25 +1471,67 @@ github_issues:
       milestone: "MVP Core QA" # Basic functionality
       labels: [type:user-story, feature:feedback, layer:usecase, layer:domain, layer:adapter-ai, layer:adapter-search, layer:adapter-db, layer:infrastructure, epic:EPIC-FEEDBACK-LOOP, MVP, priority:medium, TDD]
     - id: ISSUE-048
-      title: "[UserStory] 設定画面UIの実装 (US-SETTINGS-001)"
+      title: "[UserStory] 【完了】設定画面UIの実装 (US-SETTINGS-001) - 議論と今後の課題"
       description: |
-        ユーザーストーリー US-SETTINGS-001 のための設定画面UIを実装する。ユーザ固有のパラメータを表示・編集できるようにする。
+        本Issue「[UserStory] 設定画面UIの実装 (US-SETTINGS-001)」は、受け入れ基準を満たし、関連するテストケースも全てパスしたため、クローズします。ご対応ありがとうございました。
+
+        **本Issueで実装された主な機能:**
+
+        * ユーザー固有の設定（APIキー、ファイルアップロード上限）を表示・編集するためのUI (`SettingsPage.tsx`, `SettingsForm.tsx`) を作成しました。
+        * ページ読み込み時に、バックエンドAPI (`/api/settings`) から現在の設定値を取得し、フォームに表示する処理を実装しました。APIキーはマスキングして表示されます。
+        * 各設定項目の入力フォームを実装し、クライアントサイドでの基本的なバリデーション（ファイル上限値の範囲チェック、APIキー編集時の空文字チェックなど）が行われるようになりました。
+        * 「保存」ボタン押下時に、編集された設定値をバックエンドAPI (`/api/settings`) に送信し、設定を更新する処理を実装しました。
+        * 設定保存の成功・失敗に応じて、ユーザーに適切なフィードバックメッセージ（成功メッセージ、エラーメッセージ）が表示されるようになりました。
+        * 関連するUIコンポーネントの単体テスト (`SettingsForm.test.tsx`) を作成し、初期表示、バリデーション、API連携（成功・エラー）、APIキー編集フローなど、主要なシナリオをカバーしました。
+        * API呼び出しのためのクライアント関数 (`getUserSettings`, `updateUserSettings`) と関連する型定義 (`UserSettingsData`, `UserSettingsInputData`, `UpdateUserSettingsResponse` など) を `api.ts` および `types/settings.ts` に追加しました。
+        * MSWによるAPIモック (`mocks/handlers.ts`) に、設定取得・更新用のエンドポイントのハンドラを追加しました。
+
+        **コードレビューおよび開発過程での主な議論と改善点:**
+
+        * **エラー状態管理と表示ロジックの改善:**
+            * 当初、クライアントサイドのバリデーションエラーとAPIからのエラーメッセージの表示が競合し、テストが失敗する問題がありました。
+            * これに対し、エラー状態を「フィールド固有のエラー (`fieldErrors`)」と「フォーム全体のエラー (`formError`)」に明確に分離し、それぞれのステートを適切に更新・クリアするロジックに修正しました。
+            * JSX側でも、これらのエラーステートに基づいてメッセージが正しく表示されるように修正しました。これにより、テストが全てパスするようになりました。
+        * **バリデーションロジックの明確化:**
+            * `validate` 関数において、ファイルアップロード上限値が未入力の場合や、数値として不正な場合のチェック条件をより厳密にしました。
+            * `handleChange` で入力中のフィールドエラーとフォームエラーをクリアするようにし、ユーザーエクスペリエンスを向上させました。
+        * **テストコードの改善:**
+            * テストケース内で `waitFor` を適切に使用し、非同期なDOM更新を待つようにしました。
+            * エラーメッセージの存在だけでなく、期待されるテキスト内容が含まれているかを `toHaveTextContent` でアサートするようにしました。
+            * APIキー編集フローや、APIエラー時のフィールド固有エラーとフォーム全体のエラーが同時に表示されるケースなど、より具体的なシナリオのテストを追加しました。
+
+        **今後の課題・検討事項:**
+
+        1.  **フォーム管理ライブラリの導入検討 (継続提案):**
+            * 現状はReactの `useState` を用いた手動でのフォーム状態管理とバリデーションを行っていますが、今後アプリケーション内でフォームが増えることや、より複雑なバリデーション要件が出てくることを考慮すると、`react-hook-form` と `zod` (または同様のライブラリ) の導入を検討する価値があります。これにより、コードの記述量を削減し、可読性、保守性、型安全性を向上させることが期待できます。
+            * **アクション:** プロジェクト全体でのフォーム実装方針として、技術選定のための調査・検討タスクを起票する。
+
+        2.  **エラーメッセージおよび各種定数の一元管理 (継続提案):**
+            * UIに表示されるメッセージ文字列（エラーメッセージ、成功メッセージ、ラベルなど）や、バリデーションルールで使用するマジックナンバー（例: ファイル上限の最小値/最大値）などを、プロジェクト共通の定数ファイル（例: `src/constants/messages.ts`, `src/constants/validationRules.ts`）に集約することを推奨します。
+            * **期待される効果:** コードの一貫性向上、変更時の修正箇所の局所化、将来的な国際化対応の容易化。
+            * **アクション:** リファクタリングタスクとして、優先度を考慮し対応する。
+
+        3.  **リアルタイムバリデーションのUX検討:**
+            * 現在は主にフォーム送信時にバリデーションエラーが表示されますが、ユーザーエクスペリエンス向上のため、入力フィールドからフォーカスが外れたタイミング (`onBlur`) でのリアルタイムバリデーションの導入も検討できます。
+
+        4.  **ESLintによる静的コード解析の徹底:**
+            * コード品質を維持するため、ESLintによる静的コード解析ルールを整備し、CI/CDパイプラインやローカル開発環境で常にチェックが実行され、エラー/警告がない状態を保つ運用を推奨します。
       tasks:
-        - "[ ] 設定ページのHTMLテンプレート/コンポーネント作成 (`layer:adapter-ui`)"
-        - "[ ] ユーザの現在設定値をバックエンドから取得して表示する処理 (`layer:adapter-ui` -> `usecase`)"
-        - "[ ] 各設定項目（APIキー、ファイル上限等、MVPで決定する項目）の入力フォーム実装 (`layer:adapter-ui`)"
-        - "[ ] 保存ボタン押下時に設定変更ユースケースを呼び出す処理 (`layer:adapter-ui` -> `usecase`)"
-        - "[ ] 結果に応じた画面表示（成功・エラーメッセージ） (`layer:adapter-ui`)"
-        - "[ ] （TDD）UIコンポーネントテスト（可能であれば） (`type:test`)"
+        - "[x] 設定ページのHTMLテンプレート/コンポーネント作成 (`layer:adapter-ui`)"
+        - "[x] ユーザの現在設定値をバックエンドから取得して表示する処理 (`layer:adapter-ui` -> `usecase`)"
+        - "[x] 各設定項目（APIキー、ファイル上限等、MVPで決定する項目）の入力フォーム実装 (`layer:adapter-ui`)"
+        - "[x] 保存ボタン押下時に設定変更ユースケースを呼び出す処理 (`layer:adapter-ui` -> `usecase`)"
+        - "[x] 結果に応じた画面表示（成功・エラーメッセージ） (`layer:adapter-ui`)"
+        - "[x] （TDD）UIコンポーネントテスト（可能であれば） (`type:test`)"
       acceptance_criteria:
         - ユーザが設定ページを開くと、現在の設定値が表示されること。
         - ユーザが設定値を変更し保存すると、成功メッセージが表示され、設定がバックエンドに反映されること。
         - APIキーはマスキング表示されること。
         - 不正な入力値（例: 数値でない上限値）に対してエラーが表示されること。
-      related_requirements: [US-SETTINGS-001]
+      related_requirements: [US-SETTINGS-001, FR-CONFIG-001]
       dependencies: [TASK-CONFIG-ARCH-01, TASK-SEC-002] # TASK-CONFIG-ARCH-01 is ISSUE-029, TASK-SEC-002 is ISSUE-042
       milestone: "MVP Foundation" # Or MVP Release
-      labels: [type:user-story, feature:settings, layer:adapter-ui, epic:EPIC-SETTINGS, MVP, priority:medium]
+      labels: [type:user-story, feature:settings, layer:adapter-ui, epic:EPIC-SETTINGS, MVP, priority:medium, status:done]
     - id: ISSUE-049
       title: "[TechnicalTask] テストコードカバレッジを80%以上に向上 (TASK-TEST-COVERAGE-01)"
       description: |

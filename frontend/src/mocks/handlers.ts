@@ -71,7 +71,7 @@ export const handlers = [
       totalPages: Math.ceil(mockDocuments.length / limit),
     });
   }),
-  
+
   // ドキュメントごとのステータス取得API（ポーリング用）
   http.get('/api/documents/:documentId/status', ({ params }) => {
     const { documentId } = params;
@@ -116,6 +116,44 @@ export const handlers = [
     return HttpResponse.json(statuses, { status: 200 });
   }),
   // --- ここまで追加 ---
+
+  // ユーザー設定取得APIのモック
+  http.get('/api/settings', () => {
+    return HttpResponse.json({
+      apiKey: 'sk-test-1234abcd5678efgh',
+      fileUploadLimitMB: 50,
+    }, { status: 200 });
+  }),
+
+  // ユーザー設定更新APIのモック
+  http.put('/api/settings', async ({ request }) => {
+    const body = await request.json() as any; // anyでキャストするか、適切な型を定義
+    // バリデーション例: fileUploadLimitMBが数値で1以上1000以下
+    if (typeof body.fileUploadLimitMB !== 'number' || body.fileUploadLimitMB < 1 || body.fileUploadLimitMB > 1000) {
+      return HttpResponse.json({
+        success: false,
+        message: 'ファイル上限は1〜1000MBの数値で入力してください。',
+        errors: { fileUploadLimitMB: '1〜1000の数値で入力してください。' },
+      }, { status: 400 });
+    }
+    // APIキーのバリデーション例
+    if (body.apiKey !== undefined && typeof body.apiKey !== 'string') {
+      return HttpResponse.json({
+        success: false,
+        message: 'APIキーの形式が不正です。',
+        errors: { apiKey: 'APIキーの形式が不正です。' },
+      }, { status: 400 });
+    }
+    // 成功時
+    return HttpResponse.json({
+      success: true,
+      message: '設定を保存しました',
+      updatedSettings: {
+        apiKey: body.apiKey ?? 'sk-test-1234abcd5678efgh',
+        fileUploadLimitMB: body.fileUploadLimitMB,
+      },
+    }, { status: 200 });
+  }),
 
   // --- 法的同意APIのモック ---
   http.get('/api/legal/consent-status', () => {
