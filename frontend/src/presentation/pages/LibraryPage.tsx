@@ -4,9 +4,13 @@ import FileUploadModal from '../components/features/FileUpload/FileUploadModal';
 import DocumentList from '../components/features/DocumentList/DocumentList';
 import useDocumentLibrary from '../hooks/useDocumentLibrary';
 import useFileUpload from '../hooks/useFileUpload';
+import ChatPanel from '../components/features/ChatPanel';
+import { SearchBar } from '../components/features/Search/SearchBar';
+import { useLibrarySearch } from '../hooks/useLibrarySearch';
+import NoSearchResultsMessage from './NoSearchResultsMessage';
 import useDocumentStatusPolling from '../hooks/useDocumentStatusPolling'; // issue#12_01 から
-import ChatPanel from '../components/features/ChatPanel'; // main から
 import './LibraryPage.css';
+import './NoSearchResultsMessage.css';
 
 /**
  * ライブラリ画面コンポーネント
@@ -36,10 +40,21 @@ const LibraryPage: React.FC = () => {
     handleModalClose
   } = useFileUpload();
 
-  // ドキュメントステータスのポーリング処理を統合 (issue#12_01 から)
-  const { documents: updatedDocuments } = useDocumentStatusPolling(documents);
+  // ライブラリ検索機能のカスタムフック
+  const {
+    searchTerm,
+    setSearchTerm,
+    searchResults,
+    isLoading: isSearchLoading,
+    error: searchError,
+  } = useLibrarySearch();
 
-  // 選択されたドキュメントIDの状態 (main から)
+  // ドキュメントステータスのポーリング処理を統合 (issue#12_01 から)
+  // ポリング対象のドキュメントリストは、検索結果がない場合は元のドキュメントリスト、検索結果がある場合は検索結果リストとする
+  const documentsForPolling = searchTerm ? searchResults : documents;
+  const { documents: updatedDocuments } = useDocumentStatusPolling(documentsForPolling);
+
+  // 選択されたドキュメントIDの状態
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   // アップロード成功時は一覧を再取得
@@ -49,6 +64,17 @@ const LibraryPage: React.FC = () => {
     }
   }, [uploadStatus, refreshDocuments]);
 
+  // 検索キーワードがクリアされたら選択ドキュメントもクリア
+  useEffect(() => {
+    if (!searchTerm) {
+      setSelectedDocumentId(null);
+    }
+  }, [searchTerm]);
+
+  // 表示するドキュメントリストを決定
+  // 検索中であれば検索結果、そうでなければポーリングで更新されたドキュメント（または元のドキュメント）
+  const displayDocuments = searchTerm ? searchResults : (updatedDocuments || documents);
+
   return (
     <div className="library-page" data-testid="library-view-container">
       <header className="library-header">
@@ -57,6 +83,15 @@ const LibraryPage: React.FC = () => {
           <UploadButton
             onFileSelect={handleFileSelect}
             disabled={uploadStatus === 'uploading'}
+          />
+        </div>
+        <div className="library-search-area">
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            isLoading={isSearchLoading}
+            onClear={() => setSearchTerm('')}
+            placeholder="キーワードで検索"
           />
         </div>
       </header>
@@ -82,30 +117,33 @@ const LibraryPage: React.FC = () => {
 
         {/* ライブラリのコンテンツ（ドキュメント一覧など） */}
         <div className="library-documents" data-testid="document-container">
-          {isLoading && <p className="loading-message" data-testid="loading-message">読み込み中...</p>}
-
-          {error && (
+          {(isSearchLoading || isLoading) && <p className="loading-message" data-testid="loading-message">読み込み中...</p>}
+          {(searchError || error) && (
             <div className="error-container" data-testid="error-container">
-              <p className="error-message">ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。</p>
-              <p className="error-details" data-testid="error-details">{error}</p>
-              <button
-                className="retry-button"
-                data-testid="retry-button"
-                onClick={retryFetchDocuments}
-              >
-                再試行
-              </button>
+              <p className="error-message">{searchError ? '検索に失敗しました。' : 'ドキュメントの読み込みに失敗しました。しばらくしてからもう一度お試しください。'}</p>
+              <p className="error-details" data-testid="error-details">{searchError || error}</p>
+              {!searchError && error && ( // 通常のドキュメント読み込みエラーの場合のみ再試行ボタンを表示
+                <button
+                  className="retry-button"
+                  data-testid="retry-button"
+                  onClick={retryFetchDocuments}
+                >
+                  再試行
+                </button>
+              )}
             </div>
           )}
-
-          {!isLoading && !error && (
+          {!isSearchLoading && !searchError && !isLoading && !error && (
             <>
               <DocumentList
-                documents={updatedDocuments || documents} // issue#12_01 のポーリング結果を優先
+                documents={displayDocuments}
                 viewMode={viewMode}
-                onDocumentSelect={setSelectedDocumentId} // main のドキュメント選択機能
+                onDocumentSelect={setSelectedDocumentId}
               />
-              {selectedDocumentId && ( // main のチャットパネル表示
+              {searchTerm && searchResults.length === 0 && !isSearchLoading && (
+                <NoSearchResultsMessage />
+              )}
+              {selectedDocumentId && (
                 <div style={{ marginTop: 24 }}>
                   <ChatPanel documentId={selectedDocumentId} />
                 </div>

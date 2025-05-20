@@ -430,6 +430,16 @@ requirement_definition:
       FR-LIB-002:
         description: ユーザはドキュメントをタイトル、ファイル名、内容（全文検索）、メタデータで検索できること。
         note: ライブラリ活用性の基盤。
+        implementation_status: |
+          **実装状況:** ライブラリ検索UIの実装（ISSUE-015）が完了。フロントエンド側で以下を実装:
+          * `SearchBar.tsx` コンポーネント: 再利用可能な検索入力フィールド
+          * `useLibrarySearch.ts` カスタムフック: 検索ロジック（キーワード管理、API呼び出し、デバウンス、状態管理）をカプセル化
+          * `NoSearchResultsMessage.tsx` コンポーネント: 検索結果0件表示用
+          * `api.ts` の拡張: `searchLibraryDocuments`関数追加（ステータスコード別エラーメッセージ、AbortSignalによるキャンセル対応）
+          * テストコード充実: 正常系、エラー系、キャンセル処理に関するテスト実装
+          * UI連携: 検索結果を既存の`DocumentList`に反映、`selectedDocumentId`リセット処理
+          
+          検索結果のソート順選択UIは今後の課題として別issueで実装予定。
       FR-LIB-003:
         description: ユーザはドキュメントをタグ付けによって整理できること。
         note: ユーザによる情報整理を支援。

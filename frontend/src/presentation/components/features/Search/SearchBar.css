@@ -1,0 +1,26 @@
+/* SearchBar.css - 検索バーのスタイル */
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.search-bar-input {
+  flex: 1;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.search-bar-clear {
+  margin-left: 4px;
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: #888;
+}
+.search-bar-loading {
+  margin-left: 8px;
+  font-size: 0.9em;
+  color: #888;
+}

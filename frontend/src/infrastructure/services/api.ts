@@ -7,6 +7,7 @@ import type { DocumentStatusOutputData } from '../../types/document';
 import { PaginatedDocumentsResponse } from '../../types/paginatedDocumentsResponse';
 import { getCsrfToken } from '../../utils/csrf';
 import type { AskQuestionRequest, AskQuestionResponse } from '../../types/chat';
+import type { SearchLibraryRequest } from '../../types/search';
 
 /**
  * PDFファイルをアップロードする
@@ -288,3 +289,38 @@ export const loginUser = async (
     return { success: false, message: 'ネットワークエラーが発生しました。接続を確認してください。' };
   }
 };
+
+/**
+ * ライブラリ内のドキュメントをキーワードで検索するAPI呼び出し
+ * @param params - 検索リクエストパラメータ
+ * @param signal - AbortControllerのsignal（省略可）
+ * @returns 検索結果
+ */
+export async function searchLibraryDocuments(
+  params: SearchLibraryRequest,
+  signal?: AbortSignal
+): Promise<PaginatedDocumentsResponse> {
+  const urlParams = new URLSearchParams({ keyword: params.keyword });
+  if (params.sortBy) urlParams.append('sortBy', params.sortBy);
+  const res = await fetch(`/api/library/search?${urlParams.toString()}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Accept': 'application/json',
+    },
+    signal,
+  });
+  if (!res.ok) {
+    let errorMessage = '検索APIの呼び出しに失敗しました';
+    try {
+      const errorData = await res.json();
+      if (errorData.message) errorMessage = errorData.message;
+      else if (res.status === 401) errorMessage = '認証が必要です。ログインしてください。';
+      else if (res.status === 403) errorMessage = '権限がありません。';
+      else if (res.status === 400) errorMessage = 'リクエストが不正です。';
+      else if (res.status >= 500) errorMessage = 'サーバーエラーが発生しました。';
+    } catch {}
+    throw new Error(errorMessage);
+  }
+  return res.json();
+}
