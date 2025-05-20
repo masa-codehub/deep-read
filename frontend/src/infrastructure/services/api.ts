@@ -13,6 +13,7 @@ import type {
   UserSettingsInputData,
   UpdateUserSettingsResponse
 } from '../../types/settings';
+import type { LegalConsentStatus, AgreeToTermsRequest } from '../../types/legal';
 
 /**
  * PDFファイルをアップロードする
@@ -314,14 +315,80 @@ export const updateUserSettings = async (
     credentials: 'include',
     body: JSON.stringify(settings),
   });
-  const data = await response.json();
+  const data = await response.json(); // Assume JSON body for both success and error for this endpoint
   if (response.ok) {
-    return data;
+    return data; // data should conform to UpdateUserSettingsSuccessResponse
   } else {
-    return {
+    return { // Manually construct ApiErrorResponse part of UpdateUserSettingsResponse
       success: false,
       message: data.message || '設定の保存に失敗しました。',
       errors: data.errors,
     };
   }
+};
+
+// --- Legal Consent API ---
+
+/**
+ * ユーザーの法的同意状況を取得するAPI
+ * @returns {Promise<LegalConsentStatus>}
+ */
+export const getLegalConsentStatus = async (): Promise<LegalConsentStatus> => {
+  const csrfToken = getCsrfToken();
+  const response = await fetch('/api/legal/consent-status', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+    },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    let errorMessage = '法的同意状況の取得に失敗しました';
+    try {
+      const errorData = await response.json();
+      if (errorData && errorData.message) {
+        errorMessage = errorData.message;
+      } else {
+        errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+      }
+    } catch {
+      errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+    }
+    throw new Error(errorMessage);
+  }
+  return response.json();
+};
+
+/**
+ * 利用規約・プライバシーポリシーに同意するAPI
+ * @param {AgreeToTermsRequest} request
+ * @returns {Promise<void>}
+ */
+export const agreeToLegalTerms = async (request: AgreeToTermsRequest): Promise<void> => {
+  const csrfToken = getCsrfToken();
+  const response = await fetch('/api/legal/agree', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+    },
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    let errorMessage = '同意処理に失敗しました';
+    try {
+      const errorData = await response.json();
+      if (errorData && errorData.message) {
+        errorMessage = errorData.message;
+      } else {
+        errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+      }
+    } catch {
+      errorMessage = getErrorMessageFromStatus(response.status, errorMessage);
+    }
+    throw new Error(errorMessage);
+  }
+  // No specific JSON body expected on success for this endpoint, returns void
 };

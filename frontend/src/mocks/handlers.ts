@@ -71,7 +71,7 @@ export const handlers = [
       totalPages: Math.ceil(mockDocuments.length / limit),
     });
   }),
-  
+
   // ドキュメントごとのステータス取得API（ポーリング用）
   http.get('/api/documents/:documentId/status', ({ params }) => {
     const { documentId } = params;
@@ -127,7 +127,7 @@ export const handlers = [
 
   // ユーザー設定更新APIのモック
   http.put('/api/settings', async ({ request }) => {
-    const body = await request.json();
+    const body = await request.json() as any; // anyでキャストするか、適切な型を定義
     // バリデーション例: fileUploadLimitMBが数値で1以上1000以下
     if (typeof body.fileUploadLimitMB !== 'number' || body.fileUploadLimitMB < 1 || body.fileUploadLimitMB > 1000) {
       return HttpResponse.json({
@@ -153,6 +153,22 @@ export const handlers = [
         fileUploadLimitMB: body.fileUploadLimitMB,
       },
     }, { status: 200 });
+  }),
+
+  // --- 法的同意APIのモック ---
+  http.get('/api/legal/consent-status', () => {
+    return HttpResponse.json({
+      userId: 'u1',
+      hasAgreedToLatestTerms: false,
+      latestTermsVersion: 'v2',
+      userAgreedTermsVersion: 'v1',
+      hasAgreedToLatestPrivacyPolicy: false,
+      latestPrivacyPolicyVersion: 'v2',
+      userAgreedPrivacyPolicyVersion: 'v1',
+    }, { status: 200 });
+  }),
+  http.post('/api/legal/agree', async () => {
+    return new HttpResponse(null, { status: 204 });
   }),
 ];
 
