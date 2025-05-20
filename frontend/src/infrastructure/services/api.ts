@@ -8,6 +8,11 @@ import { PaginatedDocumentsResponse } from '../../types/paginatedDocumentsRespon
 import { getCsrfToken } from '../../utils/csrf';
 import type { AskQuestionRequest, AskQuestionResponse } from '../../types/chat';
 import type { SearchLibraryRequest } from '../../types/search';
+import type {
+  UserSettingsData,
+  UserSettingsInputData,
+  UpdateUserSettingsResponse
+} from '../../types/settings';
 
 /**
  * PDFファイルをアップロードする
@@ -265,3 +270,58 @@ export async function searchLibraryDocuments(
   }
   return res.json();
 }
+
+/**
+ * ユーザー設定を取得するAPI
+ * @returns {Promise<UserSettingsData>}
+ */
+export const getUserSettings = async (): Promise<UserSettingsData> => {
+  const csrfToken = getCsrfToken();
+  const response = await fetch('/api/settings', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+    },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    let errorMessage = 'ユーザー設定の取得に失敗しました。';
+    try {
+      const errorData = await response.json();
+      if (errorData.message) errorMessage = errorData.message;
+    } catch {}
+    throw new Error(errorMessage);
+  }
+  return response.json();
+};
+
+/**
+ * ユーザー設定を更新するAPI
+ * @param settings - 更新する設定値
+ * @returns {Promise<UpdateUserSettingsResponse>}
+ */
+export const updateUserSettings = async (
+  settings: UserSettingsInputData
+): Promise<UpdateUserSettingsResponse> => {
+  const csrfToken = getCsrfToken();
+  const response = await fetch('/api/settings', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+    },
+    credentials: 'include',
+    body: JSON.stringify(settings),
+  });
+  const data = await response.json();
+  if (response.ok) {
+    return data;
+  } else {
+    return {
+      success: false,
+      message: data.message || '設定の保存に失敗しました。',
+      errors: data.errors,
+    };
+  }
+};
